@@ -1,0 +1,115 @@
+# appearance
+
+## NERDTree
+[[plugins]]
+repo = 'scrooloose/nerdtree'
+hook_add = '''
+    nnoremap <silent><C-e> :<C-u>NERDTreeToggle<CR>
+    let g:NERDTreeWinSize = 40
+    let g:NERDTreeDirArrows = 1
+    let g:NERDTreeDirArrowExpandable = ''
+    let g:NERDTreeDirArrowCollapsible = ''
+    let NERDTreeShowHidden = 1
+    autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+'''
+
+[[plugins]]
+repo = 'tiagofumo/vim-nerdtree-syntax-highlight'
+
+[[plugins]]
+repo = 'jistr/vim-nerdtree-tabs'
+
+[[plugins]]
+repo = 'Xuyuanp/nerdtree-git-plugin'
+hook_add = '''
+    let g:NERDTreeIndicatorMapCustom = {
+        \ 'Modified'  : '',
+        \ 'Staged'    : '',
+        \ 'Untracked' : '',
+        \ 'Renamed'   : '➜',
+        \ 'Unmerged'  : '',
+        \ 'Deleted'   : '✖',
+        \ 'Dirty'     : ' ',
+        \ 'Clean'     : '',
+        \ 'Ignored'   : '',
+        \ 'Unknown'   : ''}
+'''
+
+## change window size
+[[plugins]]
+repo = 'simeji/winresizer'
+hook_add = '''
+    let g:winresizer_start_key = '<C-t>'
+    let g:winresizer_vert_resize = 5
+'''
+
+## icon
+[[plugins]]
+repo = 'ryanoasis/vim-devicons'
+hook_add = '''
+    let g:webdevicons_conceal_nerdtree_brackets = 1
+    let g:WebDevIconsNerdTreeAfterGlyphPadding = ' '
+'''
+
+## status bar
+[[plugins]]
+repo = 'vim-airline/vim-airline'
+hook_add = '''
+    let g:airline_powerline_fonts = 0
+    let g:airline#extensions#tabline#enabled = 1
+    let g:airline#extensions#tabline#show_buffers = 0
+    let g:airline#extensions#tabline#fnamemod = ':p:t'
+    let g:airline#extensions#tabline#buffer_idx_mode = 1
+    let g:airline#extensions#tabline#buffer_idx_format = {
+    \ '0': '0 ',
+    \ '1': '1 ',
+    \ '2': '2 ',
+    \ '3': '3 ',
+    \ '4': '4 ',
+    \ '5': '5 ',
+    \ '6': '6 ',
+    \ '7': '7 ',
+    \ '8': '8 ',
+    \ '9': '9 '
+    \}
+    let g:airline#extensions#virtualenv#enabled = 1
+    let g:airline#extensions#ale#enabled = 1
+    let g:airline_mode_map = {
+    \ 'n'  : 'N',
+    \ 'i'  : 'I',
+    \ 'R'  : 'R',
+    \ 'c'  : 'C',
+    \ 'v'  : 'V',
+    \ 'V'  : 'VL',
+    \ '' : 'VB',
+    \ }
+    let g:airline#parts#ffenc#skip_expected_string='utf-8[unix]'
+    let g:airline_section_a = airline#section#create(['mode', 'crypt'])
+    let g:airline_section_z = '%3p%% %3l/%L:%3v'
+'''
+
+[[plugins]]
+repo = 'vim-airline/vim-airline-themes'
+hook_add = '''
+    let g:airline_theme='luna'
+'''
+
+## color theme
+[[plugins]]
+repo = 'trevordmiller/nova-vim'
+hook_add = '''
+    set background=dark
+    colorscheme nova
+'''
+
+## indent guide
+[[plugins]]
+repo = 'nathanaelkane/vim-indent-guides'
+hook_add = '''
+    autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  guibg=#5F87AF ctermbg=67
+    autocmd VimEnter,Colorscheme * :hi IndentGuidesEven guibg=#5F5E87 ctermbg=60
+    let g:indent_guides_enable_on_vim_startup = 1
+    let g:indent_guides_guide_size = 1
+    let g:indent_guides_auto_colors=0
+    let g:indent_guides_color_change_percent = 30
+'''

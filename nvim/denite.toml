@@ -1,0 +1,35 @@
+# denite
+
+## denite
+[[plugins]]
+repo = 'Shougo/denite.nvim'
+hook_source = '''
+    nmap <silent> <C-j><C-p> :<C-u>Denite file_rec -default-action=vsplit -highlight-mode-insert=Search<CR>
+    nmap <silent> <C-j><C-b> :<C-u>Denite buffer -highlight-mode-insert=Search<CR>
+    nmap <silent> <C-j><C-g> :<C-u>Denite grep<CR>
+    nmap <silent> <C-j><C-u> :<C-u>Denite file_mru -highlight-mode-insert=Search<CR>
+    nmap <silent> <C-j><C-o> :<C-u>Denite outline -highlight-mode-insert=Search<CR>
+    call denite#custom#map('insert', "<C-j>", '<denite:move_to_next_line>')
+    call denite#custom#map('insert', "<C-k>", '<denite:move_to_previous_line>')
+    call denite#custom#map('insert', "<C-s>", '<denite:do_action:vsplit>')
+    call denite#custom#map('normal', "s", '<denite:do_action:vsplit>')
+    call denite#custom#map('insert', 'jj', '<denite:enter_mode:normal>')
+    call denite#custom#source('file_rec', 'matchers', ['matcher_fuzzy','matcher_ignore_globs'])
+    call denite#custom#filter('matcher_ignore_globs', 'ignore_globs',
+    \ [
+    \ '.git/', 'build/', '__pycache__/',
+    \ 'images/', '*.o', '*.make',
+    \ '*.png', '*.jpeg',
+    \ '*.pptx', '*.xlsx', '*.doc',
+    \ '*.min.*',
+    \ 'img/', 'fonts/'])
+    if executable('rg')
+      call denite#custom#var('file_rec', 'command',
+            \ ['rg', '--files', '--glob', '!.git'])
+      call denite#custom#var('grep', 'command', ['rg'])
+    endif
+'''
+
+## mru
+[[plugins]]
+repo = 'Shougo/neomru.vim'
