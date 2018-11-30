@@ -6,34 +6,12 @@ repo = 'scrooloose/nerdtree'
 hook_add = '''
     nnoremap <silent><C-e> :<C-u>NERDTreeToggle<CR>
     let g:NERDTreeWinSize = 40
-    let g:NERDTreeDirArrows = 1
-    let g:NERDTreeDirArrowExpandable = ''
-    let g:NERDTreeDirArrowCollapsible = ''
     let NERDTreeShowHidden = 1
     autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 '''
 
 [[plugins]]
-repo = 'tiagofumo/vim-nerdtree-syntax-highlight'
-
-[[plugins]]
 repo = 'jistr/vim-nerdtree-tabs'
-
-[[plugins]]
-repo = 'Xuyuanp/nerdtree-git-plugin'
-hook_add = '''
-    let g:NERDTreeIndicatorMapCustom = {
-        \ 'Modified'  : '',
-        \ 'Staged'    : '',
-        \ 'Untracked' : '',
-        \ 'Renamed'   : '➜',
-        \ 'Unmerged'  : '',
-        \ 'Deleted'   : '✖',
-        \ 'Dirty'     : ' ',
-        \ 'Clean'     : '',
-        \ 'Ignored'   : '',
-        \ 'Unknown'   : ''}
-'''
 
 ## change window size
 [[plugins]]
@@ -41,14 +19,6 @@ repo = 'simeji/winresizer'
 hook_add = '''
     let g:winresizer_start_key = '<C-t>'
     let g:winresizer_vert_resize = 5
-'''
-
-## icon
-[[plugins]]
-repo = 'ryanoasis/vim-devicons'
-hook_add = '''
-    let g:webdevicons_conceal_nerdtree_brackets = 1
-    let g:WebDevIconsNerdTreeAfterGlyphPadding = ' '
 '''
 
 ## status bar

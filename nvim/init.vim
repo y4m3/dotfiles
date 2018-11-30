@@ -1,30 +1,24 @@
 " dein basic setting
 if &compatible
-  set nocompatible               " Be iMproved
+  set nocompatible         " Be iMproved
 endif
 set runtimepath+=~/.cache/dein/repos/github.com/Shougo/dein.vim
-
 let g:cache_home = empty($XDG_CACHE_HOME) ? expand('$HOME/.cache') : $XDG_CACHE_HOME
 let g:config_home = empty($XDG_CONFIG_HOME) ? expand('$HOME/.config') : $XDG_CONFIG_HOME
-
 " dein {{{
 let s:dein_cache_dir = g:cache_home . '/dein'
-
 " reset augroup
 augroup MyAutoCmd
-    autocmd!
+  autocmd!
 augroup END
-
 if &runtimepath !~# '/dein.vim'
-    let s:dein_repo_dir = s:dein_cache_dir . '/repos/github.com/Shougo/dein.vim'
-
-    " Auto Download
-    if !isdirectory(s:dein_repo_dir)
-        call system('git clone https://github.com/Shougo/dein.vim ' . shellescape(s:dein_repo_dir))
-    endif
-
-    " load dein.vim as plugin
-    execute 'set runtimepath^=' . s:dein_repo_dir
+  let s:dein_repo_dir = s:dein_cache_dir . '/repos/github.com/Shougo/dein.vim'
+  " Auto Download
+  if !isdirectory(s:dein_repo_dir)
+    call system('git clone https://github.com/Shougo/dein.vim ' . shellescape(s:dein_repo_dir))
+  endif
+  " load dein.vim as plugin
+  execute 'set runtimepath^=' . s:dein_repo_dir
 endif
 
 " dein.vim settings
@@ -34,46 +28,46 @@ let g:dein#install_message_type = 'none'
 let g:dein#enable_notification = 1
 
 if dein#load_state(s:dein_cache_dir)
-    call dein#begin(s:dein_cache_dir)
-
-    let s:toml_dir = g:config_home . '/nvim'
-
-    call dein#load_toml(s:toml_dir . '/basic.toml', {'lazy': 0})
-    call dein#load_toml(s:toml_dir . '/appearance.toml', {'lazy': 0})
-    call dein#load_toml(s:toml_dir . '/denite.toml', {'lazy': 0})
-    call dein#load_toml(s:toml_dir . '/deoplete.toml', {'lazy': 0})
-    call dein#load_toml(s:toml_dir . '/operation.toml', {'lazy': 0})
-    call dein#load_toml(s:toml_dir . '/linter.toml', {'lazy': 0})
-    call dein#load_toml(s:toml_dir . '/git.toml', {'lazy': 0})
-
-    " lazy load
-    call dein#load_toml(s:toml_dir . '/quickrun.toml', {'lazy': 1})
-    call dein#load_toml(s:toml_dir . '/language/markdown.toml', {'lazy': 1})
-    call dein#load_toml(s:toml_dir . '/language/python.toml', {'lazy': 1})
-    call dein#load_toml(s:toml_dir . '/language/toml.toml', {'lazy': 1})
-
-    call dein#end()
-    call dein#save_state()
+  call dein#begin(s:dein_cache_dir)
+  let s:toml_dir = g:config_home . '/nvim'
+  call dein#load_toml(s:toml_dir . '/basic.toml', {'lazy': 0})
+  call dein#load_toml(s:toml_dir . '/appearance.toml', {'lazy': 0})
+  call dein#load_toml(s:toml_dir . '/denite.toml', {'lazy': 0})
+  call dein#load_toml(s:toml_dir . '/deoplete.toml', {'lazy': 0})
+  call dein#load_toml(s:toml_dir . '/operation.toml', {'lazy': 0})
+  call dein#load_toml(s:toml_dir . '/linter.toml', {'lazy': 0})
+  call dein#load_toml(s:toml_dir . '/git.toml', {'lazy': 0})
+  " lazy load
+  call dein#load_toml(s:toml_dir . '/quickrun.toml', {'lazy': 1})
+  call dein#load_toml(s:toml_dir . '/language/markdown.toml', {'lazy': 1})
+  call dein#load_toml(s:toml_dir . '/language/python.toml', {'lazy': 1})
+  call dein#load_toml(s:toml_dir . '/language/toml.toml', {'lazy': 1})
+  call dein#end()
+  call dein#save_state()
 endif
 
 if has('vim_starting') && dein#check_install()
-    call dein#install()
+  call dein#install()
 endif
 
 "------------------------------------
 " Setting
 "------------------------------------
-" python
-let g:loaded_python_provider = 1
-
 " filetype
 filetype plugin indent on
-
-" sql
-augroup fileTypeIndent
-    autocmd!
-    autocmd BufNewFile,BufRead *.sql setlocal tabstop=2 softtabstop=2 shiftwidth=2
-augroup END
+autocmd Filetype yaml setlocal tabstop=2 softtabstop=2 shiftwidth=2
+autocmd Filetype vim setlocal tabstop=2 softtabstop=2 shiftwidth=2
+autocmd Filetype html setlocal tabstop=2 softtabstop=2 shiftwidth=2
+autocmd Filetype ruby setlocal tabstop=2 softtabstop=2 shiftwidth=2
+autocmd Filetype jade setlocal tabstop=2 softtabstop=2 shiftwidth=2
+autocmd Filetype scss setlocal tabstop=2 softtabstop=2 shiftwidth=2
+autocmd Filetype jinja setlocal tabstop=2 softtabstop=2 shiftwidth=2
+autocmd Filetype j2 setlocal tabstop=2 softtabstop=2 shiftwidth=2
+autocmd Filetype css setlocal tabstop=2 softtabstop=2 shiftwidth=2
+autocmd Filetype coffee setlocal tabstop=2 softtabstop=2 shiftwidth=2
+autocmd Filetype hql setlocal tabstop=2 softtabstop=2 shiftwidth=2
+autocmd Filetype sql setlocal tabstop=2 softtabstop=2 shiftwidth=2
+autocmd Filetype javascript setlocal tabstop=2 softtabstop=2 shiftwidth=2
 
 "------------------------------------
 " Behavior
@@ -88,8 +82,8 @@ set noswapfile
 
 " UNDO
 if has('persistent_undo')
-    set undodir=~/.cache/undo
-    set undofile
+  set undodir=~/.cache/undo
+  set undofile
 endif
 
 " encode
@@ -106,7 +100,6 @@ set clipboard+=unnamed
 set clipboard=unnamed
 
 " shell
-set sh=zsh
 command! -nargs=* Ts split | terminal <args>
 command! -nargs=* Tv vsplit | terminal <args>
 
@@ -123,14 +116,9 @@ nnoremap <Down> gj
 nnoremap <Up>   gk
 nnoremap j gj
 nnoremap k gk
-
 nnoremap <C-w>c :<C-u>tabnew<CR>
 nnoremap <C-w>n gt
 nnoremap <C-w>p gT
-
-if has('nvim')
-  tnoremap <silent> <ESC> <C-\><C-n>
-endif
 
 "------------------------------------
 " Appearance
@@ -163,10 +151,11 @@ set listchars=tab:^\ ,trail:~
 
 " highlight spaces
 augroup HighlightTrailingSpaces
-    autocmd!
-    autocmd VimEnter,WinEnter,ColorScheme * highlight TrailingSpaces term=underline guibg=Red ctermbg=Red
-    autocmd VimEnter,WinEnter * match TrailingSpaces /\s\+$/
+  autocmd!
+  autocmd VimEnter,WinEnter,ColorScheme * highlight TrailingSpaces term=underline guibg=Red ctermbg=Red
+  autocmd VimEnter,WinEnter * match TrailingSpaces /\s\+$/
 augroup END
+
 "------------------------------------
 " Search
 "------------------------------------
