@@ -4,14 +4,11 @@ y4m3's dotfiles
 
 ## require
 
-- fzf
-- nvim
-- tpm
-- zplug
+- [Prezto](https://github.com/sorin-ionescu/prezto)
+- peco
 
 ## install
 
-```bash
-./install.sh
-```
-
+1. install prezto
+2. install peco
+3. set dotfiles alias
