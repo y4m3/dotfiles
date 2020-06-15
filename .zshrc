@@ -69,6 +69,7 @@ set -g set-titles-string '#W'
 alias cp='cp -i'
 alias gl="git log --graph --date=short --decorate=short --pretty=format:'%Cgreen%h %Creset%cd %Cblue%cn %Cred%d %Creset%s'"
 alias gs='git status'
+alias gr='cd $(git rev-parse --show-toplevel)'
 alias mkdir='mkdir -p'
 alias mv='mv -i'
 alias rm='rm -i'
