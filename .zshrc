@@ -19,7 +19,7 @@ setopt share_history
 ## prezto
 autoload -Uz promptinit
 promptinit
-prompt agnoster
+prompt redhat
 
 ## homebrew (macOS only)
 case ${OSTYPE} in
