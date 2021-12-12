@@ -48,7 +48,7 @@ zinit light Aloxaf/fzf-tab
 zinit ice wait'1' lucid pick'init.sh'
 zinit light "b4b4r07/enhancd"
 
-# upgrade ls (exa)
+# upgrade ls
 zinit ice wait lucid as"program" from"gh-r" mv"lsd* -> lsd" pick"lsd/lsd"
 zinit light Peltoche/lsd
 if builtin command -v lsd > /dev/null; then
