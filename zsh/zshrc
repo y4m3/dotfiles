@@ -20,9 +20,8 @@ autoload -Uz _zinit
 ### End of Zinit's installer chunk
 
 # load zsh files
-SCRIPT_PATH=`realpath $0`
-ZSHFILE_DIR=`dirname $SCRIPT_PATH`
-for file in $ZSHFILE_DIR/*.zsh; do
+DOTFILE_DIR=$HOME/dotfiles
+for file in $DOTFILE_DIR/zsh/*.zsh; do
   source "$file"
 done
 
