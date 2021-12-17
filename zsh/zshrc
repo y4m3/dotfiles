@@ -22,7 +22,7 @@ autoload -Uz _zinit
 # load zsh files
 DOTFILE_DIR=$HOME/dotfiles
 for file in $DOTFILE_DIR/zsh/*.zsh; do
-  source "$file"
+  source $file
 done
 
 # loading environment-dependent settings

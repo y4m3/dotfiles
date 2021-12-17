@@ -13,5 +13,11 @@ setopt inc_append_history
 setopt share_history
 setopt extended_history
 
+# language
+setopt print_eight_bit
+
+# check typo
+setopt correct
+
 # completion
 autoload -Uz compinit && compinit
