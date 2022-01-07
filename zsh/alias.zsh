@@ -9,9 +9,7 @@ alias cat="bat"
 # lsd
 if builtin command -v lsd > /dev/null; then
   alias ls=lsd
+  alias l='lsd -l'
   alias la='lsd -al'
-  alias l='ls -l'
-  alias la='ls -a'
-  alias lla='ls -la'
-  alias lt='ls --tree'
+  alias lt='lsd --tree'
 fi
