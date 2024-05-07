@@ -285,7 +285,7 @@ return {
       keymap("n", "ga", "<cmd>Lspsaga code_action<CR>", { desc = "Code action (lspsaga)" })
       keymap("n", "gr", "<cmd>Lspsaga rename<CR>", { desc = "Rename symbol (lspsaga)" })
       keymap("n", "ge", "<cmd>Lspsaga show_line_diagnostics<CR>", { desc = "Show line diagnostics (lspsaga)" })
-      keymap("n", "gb", "<cmd>Lspsaga show_buff_diagnostics<CR>", { desc = "Show buffer diagnostics (lspsaga)" })
+      keymap("n", "gb", "<cmd>Lspsaga show_buf_diagnostics<CR>", { desc = "Show buffer diagnostics (lspsaga)" })
       keymap("n", "g]", "<cmd>Lspsaga diagnostic_jump_next<CR>", { desc = "Jump to next diagnostic (lspsaga)" })
       keymap("n", "g[", "<cmd>Lspsaga diagnostic_jump_prev<CR>", { desc = "Jump to previous diagnostic (lspsaga)" })
       keymap(
