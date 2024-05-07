@@ -164,13 +164,13 @@ return {
 
       local markdownlint_settings = {
         filetypes = { "markdown", "telekasten" },
-        extra_args = get_markdownlint_config,
+        extra_args = get_markdownlint_config(),
       }
 
       local source_settings = {
         -- markdown
-        null_ls.builtins.diagnostics.markdownlint.with({ markdownlint_settings }),
-        null_ls.builtins.formatting.markdownlint.with({ markdownlint_settings }),
+        null_ls.builtins.diagnostics.markdownlint.with(markdownlint_settings),
+        null_ls.builtins.formatting.markdownlint.with(markdownlint_settings),
 
         -- shell
         null_ls.builtins.formatting.shfmt.with({ extra_args = { "-i", "2", "-ci", "-bn" } }),
@@ -199,6 +199,32 @@ return {
         null_ls.builtins.formatting.stylua.with({
           filetypes = { "lua" },
           extra_args = { "--indent-type", "Spaces", "--indent-width", "2" },
+        }),
+
+        -- sqlfluff
+        null_ls.builtins.formatting.sqlfluff.with({}),
+        null_ls.builtins.diagnostics.sqlfluff.with({
+          on_output = function(params)
+            local diagnostics = {}
+            for _, d in ipairs(params.output) do
+              local severity = vim.diagnostic.severity.HINT
+              if d.annotation_level == "warning" then
+                severity = vim.diagnostic.severity.WARN
+              elseif d.annotation_level == "error" then
+                severity = vim.diagnostic.severity.ERROR
+              end
+              table.insert(diagnostics, {
+                row = d.start_line,
+                col = d.start_column,
+                end_row = d.end_line,
+                end_col = d.end_column,
+                source = "SQLFluff",
+                message = d.message,
+                severity = severity,
+              })
+            end
+            return diagnostics
+          end,
         }),
       }
 
@@ -259,8 +285,9 @@ return {
       keymap("n", "ga", "<cmd>Lspsaga code_action<CR>", { desc = "Code action (lspsaga)" })
       keymap("n", "gr", "<cmd>Lspsaga rename<CR>", { desc = "Rename symbol (lspsaga)" })
       keymap("n", "ge", "<cmd>Lspsaga show_line_diagnostics<CR>", { desc = "Show line diagnostics (lspsaga)" })
-      keymap("n", "g[", "<cmd>Lspsaga diagnostic_jump_next<CR>", { desc = "Jump to next diagnostic (lspsaga)" })
-      keymap("n", "g]", "<cmd>Lspsaga diagnostic_jump_prev<CR>", { desc = "Jump to previous diagnostic (lspsaga)" })
+      keymap("n", "gb", "<cmd>Lspsaga show_buff_diagnostics<CR>", { desc = "Show buffer diagnostics (lspsaga)" })
+      keymap("n", "g]", "<cmd>Lspsaga diagnostic_jump_next<CR>", { desc = "Jump to next diagnostic (lspsaga)" })
+      keymap("n", "g[", "<cmd>Lspsaga diagnostic_jump_prev<CR>", { desc = "Jump to previous diagnostic (lspsaga)" })
       keymap(
         "t",
         "<C-d>",
