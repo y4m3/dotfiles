@@ -1,0 +1,3 @@
+# dotfiles
+
+run `install.sh`

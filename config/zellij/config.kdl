@@ -1,0 +1,96 @@
+////////////////////////////////////////
+// My custom config
+////////////////////////////////////////
+
+keybinds {
+  shared_except "locked" {
+       unbind "Ctrl h" // was Move, now Alt-v
+       unbind "Ctrl o" // was Session, now Alt-w
+       unbind "Ctrl s" // was Scroll, now Alt-s
+       unbind "Ctrl n" // was Resize, now Alt-z
+       unbind "Ctrl p" // was Pane, now Alt-a
+       unbind "Ctrl t" // was Tab, now Alt-b
+       unbind "Ctrl g" // was Locked, now Alt-g
+       unbind "Ctrl q" // was Quit, now Alt-q
+  }    
+
+  shared_except "pane" "locked" {
+    bind "Alt a" { SwitchToMode "pane"; }
+  }
+  shared_except "tab" "locked" {
+    bind "Alt b" { SwitchToMode "tab"; }
+  }
+  shared_except "resize" "locked" {
+    bind "Alt r" { SwitchToMode "resize"; }
+  }
+  shared_except "move" "locked" {
+    bind "Alt v" { SwitchToMode "move"; }
+  }
+  shared_except "scroll" "locked" {
+    bind "Alt s" { SwitchToMode "scroll"; }
+  }
+  shared_except "session" "locked" {
+    bind "Alt w" { SwitchToMode "session"; }
+  }
+  shared_except "tab" "locked" {
+    bind "Alt q" { Quit; }
+  }
+       
+  shared_except "locked" {
+       unbind "Alt h"
+       unbind "Alt j"
+       unbind "Alt k"
+       unbind "Alt l"
+
+       unbind "Alt Left"
+       unbind "Alt Right"
+       unbind "Alt Down"
+       unbind "Alt Up"
+
+       bind "Alt u" { MoveFocusOrTab "Left"; }
+       bind "Alt p" { MoveFocusOrTab "Right"; }
+       bind "Alt i" { MoveFocus "Down"; }
+       bind "Alt o" { MoveFocus "Up"; }
+
+       bind "Alt f" { ToggleFloatingPanes; }
+       bind "Alt t" { NewTab; }
+
+       bind "Alt 1" { GoToTab 1; }
+       bind "Alt 2" { GoToTab 2; }
+       bind "Alt 3" { GoToTab 3; }
+       bind "Alt 4" { GoToTab 4; }
+       bind "Alt 5" { GoToTab 5; }
+       bind "Alt 6" { GoToTab 6; }
+       bind "Alt 7" { GoToTab 7; }
+       bind "Alt 8" { GoToTab 8; }
+       bind "Alt 9" { GoToTab 9; }
+       bind "Alt 0" { GoToTab 10; }
+}
+}
+
+theme "solarized-dark"
+themes {
+    solarized-dark {
+        fg 253 246 227
+        bg 0 43 54
+        black 7 54 66
+        red 220 50 47
+        green 133 153 0
+        yellow 181 137 0
+        blue 38 139 210
+        magenta 211 54 130
+        cyan 42 161 152
+        white 238 232 213
+        orange 203 75 22
+    }
+}
+
+default_mode "locked"
+pane_frames false
+// default_layout "compact"
+scroll_buffer_size 100000
+ui {
+    pane_frames {
+        hide_session_name true
+    }
+}

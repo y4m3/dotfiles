@@ -1,0 +1,536 @@
+---
+hotkeys:
+  copy-current-path: []
+  ctrl-c:
+    - Ctrl-C
+  copy:
+    - Ctrl-Shift-C
+  paste:
+    - Ctrl-Shift-V
+    - Shift-Insert
+  select-all:
+    - Ctrl-Shift-A
+  clear: []
+  zoom-in:
+    - Ctrl-=
+    - Ctrl-Shift-=
+  zoom-out:
+    - Ctrl--
+    - Ctrl-Shift--
+  reset-zoom:
+    - Ctrl-0
+  home:
+    - Home
+  end:
+    - End
+  previous-word:
+    - Ctrl-Left
+  next-word:
+    - Ctrl-Right
+  delete-previous-word:
+    - Ctrl-Backspace
+  delete-line:
+    - Ctrl-Shift-Backspace
+  delete-next-word:
+    - Ctrl-Delete
+  search:
+    - Ctrl-Shift-F
+  pane-focus-all:
+    - Ctrl-Shift-I
+  focus-all-tabs:
+    - Ctrl-Alt-Shift-I
+  scroll-to-top:
+    - Ctrl-PageUp
+  scroll-up:
+    - Alt-PageUp
+  scroll-down:
+    - Alt-PageDown
+  scroll-to-bottom:
+    - Ctrl-PageDown
+  restart-telnet-session: []
+  restart-ssh-session: []
+  launch-winscp: []
+  settings-tab: {}
+  settings:
+    - Ctrl-,
+  serial:
+    - Alt-K
+  restart-serial-session: []
+  new-tab:
+    - Ctrl-Shift-T
+  toggle-window: []
+  new-window:
+    - Ctrl-Shift-N
+  workspace-profile-1: []
+  workspace-profile-2: []
+  workspace-profile-3: []
+  workspace-profile-4: []
+  workspace-profile-5: []
+  profile: {}
+  profile-selectors: {}
+  toggle-fullscreen:
+    - F11
+    - Alt-Enter
+  close-tab:
+    - Ctrl-Shift-W
+  reopen-tab:
+    - Ctrl-Shift-Z
+  toggle-last-tab: []
+  rename-tab:
+    - Ctrl-Shift-R
+  next-tab:
+    - Ctrl-Shift-Right
+    - Ctrl-Tab
+  previous-tab:
+    - Ctrl-Shift-Left
+    - Ctrl-Shift-Tab
+  move-tab-left:
+    - Ctrl-Shift-PageUp
+  move-tab-right:
+    - Ctrl-Shift-PageDown
+  rearrange-panes:
+    - Ctrl-Shift
+  duplicate-tab: []
+  restart-tab: []
+  reconnect-tab: []
+  disconnect-tab: []
+  explode-tab:
+    - Ctrl-Shift-.
+  combine-tabs:
+    - Ctrl-Shift-,
+  tab-1:
+    - Alt-1
+  tab-2:
+    - Alt-2
+  tab-3:
+    - Alt-3
+  tab-4:
+    - Alt-4
+  tab-5:
+    - Alt-5
+  tab-6:
+    - Alt-6
+  tab-7:
+    - Alt-7
+  tab-8:
+    - Alt-8
+  tab-9:
+    - Alt-9
+  tab-10:
+    - Alt-0
+  tab-11: []
+  tab-12: []
+  tab-13: []
+  tab-14: []
+  tab-15: []
+  tab-16: []
+  tab-17: []
+  tab-18: []
+  tab-19: []
+  tab-20: []
+  split-right:
+    - Ctrl-Shift-S
+  split-bottom:
+    - Ctrl-Shift-D
+  split-left: []
+  split-top: []
+  pane-nav-right:
+    - Ctrl-Alt-Right
+  pane-nav-down:
+    - Ctrl-Alt-Down
+  pane-nav-up:
+    - Ctrl-Alt-Up
+  pane-nav-left:
+    - Ctrl-Alt-Left
+  pane-nav-previous:
+    - Ctrl-Alt-[
+  pane-nav-next:
+    - Ctrl-Alt-]
+  pane-nav-1: []
+  pane-nav-2: []
+  pane-nav-3: []
+  pane-nav-4: []
+  pane-nav-5: []
+  pane-nav-6: []
+  pane-nav-7: []
+  pane-nav-8: []
+  pane-nav-9: []
+  pane-maximize:
+    - Ctrl-Alt-Enter
+  close-pane: []
+  pane-increase-vertical: []
+  pane-decrease-vertical: []
+  pane-increase-horizontal: []
+  pane-decrease-horizontal: []
+  switch-profile:
+    - Ctrl-Alt-T
+  profile-selector:
+    - Ctrl-Shift-E
+  command-selector:
+    - Ctrl-Shift-P
+terminal:
+  fontSize: 16
+  fontWeight: 400
+  fontWeightBold: 700
+  fallbackFont: null
+  linePadding: 0
+  bell: "off"
+  bracketedPaste: true
+  background: theme
+  ligatures: false
+  cursor: block
+  cursorBlink: true
+  hideTabIndex: false
+  showTabProfileIcon: false
+  hideCloseButton: false
+  hideTabOptionsButton: false
+  rightClick: clipboard
+  pasteOnMiddleClick: false
+  copyOnSelect: true
+  copyAsHTML: true
+  scrollOnInput: true
+  altIsMeta: false
+  wordSeparator: ' ()[]{}''"'
+  colorScheme:
+    name: tokyonight_moon
+    background: "#222436"
+    foreground: "#c8d3f5"
+    selection: "#2d3f76"
+    cursor: "#c8d3f5"
+    cursorAccent: "#222436"
+    colors:
+      - "#1b1d2b"
+      - "#ff757f"
+      - "#c3e88d"
+      - "#ffc777"
+      - "#82aaff"
+      - "#c099ff"
+      - "#86e1fc"
+      - "#828bb8"
+      - "#444a73"
+      - "#ff757f"
+      - "#c3e88d"
+      - "#ffc777"
+      - "#82aaff"
+      - "#c099ff"
+      - "#86e1fc"
+      - "#c8d3f5"
+    terminal:
+      cursor:
+        background: "#c8d3f5"
+        foreground: "#222436"
+      selection:
+        background: "#2d3f76"
+        foreground: "#c8d3f5"
+    tabBar:
+      background: "#222436"
+      inactiveBackground: "#2f334d"
+      inactiveForeground: "#545c7e"
+      activeBackground: "#82aaff"
+      activeForeground: "#1e2030"
+      hoverBackground: "#2f334d"
+      hoverForeground: "#82aaff"
+      newTabBackground: "#222436"
+      newTabForeground: "#82aaff"
+      newTabHoverBackground: "#222436"
+      newTabHoverForeground: "#82aaff"
+      newTabHoverBoldness: bold
+      border: "#1e2030"
+  lightColorScheme:
+    name: Tabby Default Light
+    foreground: "#4d4d4c"
+    background: "#ffffff"
+    cursor: "#4d4d4c"
+    colors:
+      - "#000000"
+      - "#c82829"
+      - "#718c00"
+      - "#eab700"
+      - "#4271ae"
+      - "#8959a8"
+      - "#3e999f"
+      - "#ffffff"
+      - "#000000"
+      - "#c82829"
+      - "#718c00"
+      - "#eab700"
+      - "#4271ae"
+      - "#8959a8"
+      - "#3e999f"
+      - "#ffffff"
+  customColorSchemes:
+    - name: tokyonight_moon
+      background: "#222436"
+      foreground: "#c8d3f5"
+      selection: "#2d3f76"
+      cursor: "#c8d3f5"
+      cursorAccent: "#222436"
+      colors:
+        - "#1b1d2b"
+        - "#ff757f"
+        - "#c3e88d"
+        - "#ffc777"
+        - "#82aaff"
+        - "#c099ff"
+        - "#86e1fc"
+        - "#828bb8"
+        - "#444a73"
+        - "#ff757f"
+        - "#c3e88d"
+        - "#ffc777"
+        - "#82aaff"
+        - "#c099ff"
+        - "#86e1fc"
+        - "#c8d3f5"
+      terminal:
+        cursor:
+          background: "#c8d3f5"
+          foreground: "#222436"
+        selection:
+          background: "#2d3f76"
+          foreground: "#c8d3f5"
+      tabBar:
+        background: "#222436"
+        inactiveBackground: "#2f334d"
+        inactiveForeground: "#545c7e"
+        activeBackground: "#82aaff"
+        activeForeground: "#1e2030"
+        hoverBackground: "#2f334d"
+        hoverForeground: "#82aaff"
+        newTabBackground: "#222436"
+        newTabForeground: "#82aaff"
+        newTabHoverBackground: "#222436"
+        newTabHoverForeground: "#82aaff"
+        newTabHoverBoldness: bold
+        border: "#1e2030"
+    - name: tokyonight_night
+      background: "#1a1b26"
+      foreground: "#c0caf5"
+      selection: "#283457"
+      cursor: "#c0caf5"
+      cursorAccent: "#1a1b26"
+      colors:
+        - "#15161e"
+        - "#f7768e"
+        - "#9ece6a"
+        - "#e0af68"
+        - "#7aa2f7"
+        - "#bb9af7"
+        - "#7dcfff"
+        - "#a9b1d6"
+        - "#414868"
+        - "#f7768e"
+        - "#9ece6a"
+        - "#e0af68"
+        - "#7aa2f7"
+        - "#bb9af7"
+        - "#7dcfff"
+        - "#c0caf5"
+      terminal:
+        cursor:
+          background: "#c0caf5"
+          foreground: "#1a1b26"
+        selection:
+          background: "#283457"
+          foreground: "#c0caf5"
+      tabBar:
+        background: "#1a1b26"
+        inactiveBackground: "#292e42"
+        inactiveForeground: "#545c7e"
+        activeBackground: "#7aa2f7"
+        activeForeground: "#16161e"
+        hoverBackground: "#292e42"
+        hoverForeground: "#7aa2f7"
+        newTabBackground: "#1a1b26"
+        newTabForeground: "#7aa2f7"
+        newTabHoverBackground: "#1a1b26"
+        newTabHoverForeground: "#7aa2f7"
+        newTabHoverBoldness: bold
+        border: "#16161e"
+    - name: tokyonight_storm
+      background: "#24283b"
+      foreground: "#c0caf5"
+      selection: "#2e3c64"
+      cursor: "#c0caf5"
+      cursorAccent: "#24283b"
+      colors:
+        - "#1d202f"
+        - "#f7768e"
+        - "#9ece6a"
+        - "#e0af68"
+        - "#7aa2f7"
+        - "#bb9af7"
+        - "#7dcfff"
+        - "#a9b1d6"
+        - "#414868"
+        - "#f7768e"
+        - "#9ece6a"
+        - "#e0af68"
+        - "#7aa2f7"
+        - "#bb9af7"
+        - "#7dcfff"
+        - "#c0caf5"
+      terminal:
+        cursor:
+          background: "#c0caf5"
+          foreground: "#24283b"
+        selection:
+          background: "#2e3c64"
+          foreground: "#c0caf5"
+      tabBar:
+        background: "#24283b"
+        inactiveBackground: "#292e42"
+        inactiveForeground: "#545c7e"
+        activeBackground: "#7aa2f7"
+        activeForeground: "#1f2335"
+        hoverBackground: "#292e42"
+        hoverForeground: "#7aa2f7"
+        newTabBackground: "#24283b"
+        newTabForeground: "#7aa2f7"
+        newTabHoverBackground: "#24283b"
+        newTabHoverForeground: "#7aa2f7"
+        newTabHoverBoldness: bold
+        border: "#1f2335"
+    - name: tokyonight_day
+      background: "#e1e2e7"
+      foreground: "#3760bf"
+      selection: "#b6bfe2"
+      cursor: "#3760bf"
+      cursorAccent: "#e1e2e7"
+      colors:
+        - "#e9e9ed"
+        - "#f52a65"
+        - "#587539"
+        - "#8c6c3e"
+        - "#2e7de9"
+        - "#9854f1"
+        - "#007197"
+        - "#6172b0"
+        - "#a1a6c5"
+        - "#f52a65"
+        - "#587539"
+        - "#8c6c3e"
+        - "#2e7de9"
+        - "#9854f1"
+        - "#007197"
+        - "#3760bf"
+      terminal:
+        cursor:
+          background: "#3760bf"
+          foreground: "#e1e2e7"
+        selection:
+          background: "#b6bfe2"
+          foreground: "#3760bf"
+      tabBar:
+        background: "#e1e2e7"
+        inactiveBackground: "#c4c8da"
+        inactiveForeground: "#8990b3"
+        activeBackground: "#2e7de9"
+        activeForeground: "#e9e9ec"
+        hoverBackground: "#c4c8da"
+        hoverForeground: "#2e7de9"
+        newTabBackground: "#e1e2e7"
+        newTabForeground: "#2e7de9"
+        newTabHoverBackground: "#e1e2e7"
+        newTabHoverForeground: "#2e7de9"
+        newTabHoverBoldness: bold
+        border: "#e9e9ec"
+  warnOnMultilinePaste: true
+  searchRegexAlwaysEnabled: false
+  searchOptions:
+    regex: false
+    wholeWord: false
+    caseSensitive: false
+  detectProgress: true
+  scrollbackLines: 25000
+  drawBoldTextInBrightColors: true
+  sixel: true
+  minimumContrastRatio: 4
+  trimWhitespaceOnPaste: true
+  font:
+  autoOpen: true
+  useConPTY: true
+  environment: {}
+  setComSpec: false
+  profile: local:wsl
+  showBuiltinProfiles: true
+  showRecentProfiles: 3
+  paneResizeStep: 0.1
+  focusFollowsMouse: false
+  identification: wt
+ssh:
+  warnOnClose: false
+  winSCPPath: null
+  agentType: auto
+  agentPath: null
+  x11Display: null
+  knownHosts: []
+  verifyHostKeys: true
+configSync:
+  configID: null
+  auto: false
+  parts:
+    hotkeys: true
+    appearance: true
+    vault: true
+clickableLinks:
+  modifier: null
+workspaceManager:
+  defaultWorkspaceProfile: 0
+  runOnStartup: false
+titleControl:
+  prefix: null
+  suffix: null
+  replacePattern: null
+  removePattern: null
+saveOutput:
+  autoSave: "off"
+  autoSaveDirectory: null
+accessibility:
+  animations: true
+appearance:
+  dock: "off"
+  dockScreen: current
+  dockFill: 0.5
+  dockSpace: 1
+  dockHideOnBlur: false
+  dockAlwaysOnTop: true
+  flexTabs: false
+  tabsLocation: top
+  tabsInFullscreen: false
+  cycleTabs: true
+  theme: Follow the color scheme
+  frame: thin
+  css: "/* * { color: blue !important; } */"
+  opacity: 0.9
+  vibrancy: false
+  vibrancyType: blur
+  lastTabClosesWindow: false
+  spaciness: 0.6
+  colorSchemeMode: dark
+profiles: []
+groups: []
+profileDefaults:
+  ssh:
+    disableDynamicTitle: true
+recoverTabs: true
+enableAnalytics: true
+enableWelcomeTab: true
+electronFlags:
+  - - force_discrete_gpu
+    - "0"
+enableAutomaticUpdates: true
+version: 7
+vault: null
+encrypted: false
+enableExperimentalFeatures: false
+pluginBlacklist: []
+commandBlacklist: []
+providerBlacklist: []
+profileBlacklist: []
+hacks:
+  disableGPU: false
+  disableVibrancyWhileDragging: false
+  enableFluentBackground: false
+language: null
+defaultQuickConnectProvider: ssh
