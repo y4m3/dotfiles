@@ -119,7 +119,14 @@ return {
         },
         automatic_installation = true,
         automatic_setup = true,
-        handlers = {},
+        handlers = {
+          function(source_name, source)
+            if source_name == "sqlfluff" then
+              source.disabled = true
+            end
+            return source
+          end,
+        },
       })
     end,
   },
@@ -137,6 +144,7 @@ return {
       local null_ls = require("null-ls")
       local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
 
+      -- markdownlint settings start
       local function find_markdownlint_config()
         local config_files = {
           ".markdownlint.json",
@@ -162,10 +170,12 @@ return {
         return {}
       end
 
+      local markdownlint_config = get_markdownlint_config()
       local markdownlint_settings = {
         filetypes = { "markdown", "telekasten" },
-        extra_args = get_markdownlint_config(),
+        extra_args = markdownlint_config,
       }
+      -- markdownlint_settings end
 
       local source_settings = {
         -- markdown
@@ -202,7 +212,7 @@ return {
         }),
 
         -- sqlfluff
-        null_ls.builtins.formatting.sqlfluff.with({}),
+        null_ls.builtins.formatting.sqlfluff,
         null_ls.builtins.diagnostics.sqlfluff.with({
           on_output = function(params)
             local diagnostics = {}
@@ -271,6 +281,9 @@ return {
           methods = {
             tyd = "textDocument/typeDefinition",
           },
+        },
+        ui = {
+          code_action = "",
         },
         scroll_preview = {
           scroll_down = "<C-n>",

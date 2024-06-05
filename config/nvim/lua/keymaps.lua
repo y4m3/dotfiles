@@ -88,6 +88,11 @@ map("n", "<Space>l", "$", {
   desc = "Move to the end of the line",
 })
 
+-- Map ESC and ESC in normal mode to clear search highlights
+map("n", "<Esc><Esc>", ":nohlsearch<CR>", {
+  desc = "Clear search highlights",
+})
+
 -- only for vscode-neovim
 if vim.g.vscode then
   local vscode = require("vscode-neovim")

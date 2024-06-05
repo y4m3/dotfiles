@@ -14,7 +14,7 @@ if not vim.g.vscode then
         vim.g.barbar_auto_setup = false
         require("barbar").setup({
           animation = true,
-          auto_hide = false,
+          auto_hide = true,
           tabpages = true,
           clickable = true,
           sidebar_filetypes = {

@@ -7,6 +7,7 @@ return {
     "hrsh7th/cmp-cmdline",
     "hrsh7th/cmp-nvim-lsp",
     "onsails/lspkind.nvim",
+    "f3fora/cmp-spell",
   },
   config = function()
     vim.opt.completeopt = "menu,menuone,noinsert"
@@ -20,18 +21,10 @@ return {
       },
 
       sources = cmp.config.sources({
-        {
-          name = "nvim_lsp",
-        },
-        {
-          name = "vsnip",
-        },
-        {
-          name = "path",
-        },
-        {
-          name = "buffer",
-        },
+        { name = "nvim_lsp" },
+        { name = "path" },
+        { name = "buffer" },
+        { name = "spell" },
       }),
 
       mapping = cmp.mapping.preset.insert({

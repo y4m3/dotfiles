@@ -28,6 +28,7 @@ local options = {
   numberwidth = 4, -- Set the width of the number column
   signcolumn = "yes", -- Always show the sign column
   wrap = true, -- Enable line wrapping
+  wrapscan = true, -- Search wraps at the end of the file
   breakindent = true, -- Enable break indent
   winblend = 0, -- Disable pseudo-transparency for floating windows
   wildoptions = "pum", -- Display completion matches using the popup menu
@@ -45,7 +46,8 @@ local options = {
     precedes = "❮",
   },
   showbreak = "→ ", -- Set the character to display for wrapped lines
-  breakindentopt = "shift:2,min:40,sbr",
+  breakindentopt = "shift:2,min:40,sbr", -- Set the options for break indent
+  laststatus = 3, -- Always show the status line
 }
 
 -- Iterate over the options table and set each option in Neovim

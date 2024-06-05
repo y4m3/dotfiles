@@ -68,20 +68,37 @@ keybinds {
 }
 }
 
-theme "solarized-dark"
+// theme "solarized-dark"
+// themes {
+//     solarized-dark {
+//         fg 253 246 227
+//         bg 0 43 54
+//         black 7 54 66
+//         red 220 50 47
+//         green 133 153 0
+//         yellow 181 137 0
+//         blue 38 139 210
+//         magenta 211 54 130
+//         cyan 42 161 152
+//         white 238 232 213
+//         orange 203 75 22
+//     }
+// }
+
+theme "tokyo-night-dark"
 themes {
-    solarized-dark {
-        fg 253 246 227
-        bg 0 43 54
-        black 7 54 66
-        red 220 50 47
-        green 133 153 0
-        yellow 181 137 0
-        blue 38 139 210
-        magenta 211 54 130
-        cyan 42 161 152
-        white 238 232 213
-        orange 203 75 22
+    tokyo-night-dark {
+        fg 169 177 214
+        bg 26 27 38
+        black 56 62 90
+        red 249 51 87
+        green 158 206 106
+        yellow 224 175 104
+        blue 122 162 247
+        magenta 187 154 247
+        cyan 42 195 222
+        white 192 202 245
+        orange 255 158 100
     }
 }
 

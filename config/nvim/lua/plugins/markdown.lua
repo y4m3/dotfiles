@@ -21,4 +21,8 @@ return {
       vim.g.vmt_max_level = 3
     end,
   },
+  {
+    "ixru/nvim-markdown",
+    config = function() end,
+  },
 }
