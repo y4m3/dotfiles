@@ -46,4 +46,17 @@ return {
       require("alpha").setup(require("alpha.themes.startify").config)
     end,
   },
+  {
+    "bun913/min-todo.vim",
+    config = function()
+      -- toggle task status in normal mode
+      vim.api.nvim_set_keymap("n", "<C-c>", ":ToggleTask<CR>", { noremap = true, silent = true })
+
+      -- create new task in insert mode
+      vim.api.nvim_set_keymap("i", "<C-c>", "<ESC>:CreateTask<CR>A", { noremap = true, silent = true })
+
+      -- open todo.md
+      vim.api.nvim_set_keymap("n", "<Leader>t", ":tabe ~/todo.md", { noremap = true, silent = true })
+    end,
+  },
 }
