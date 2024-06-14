@@ -81,18 +81,32 @@ end
 local function setup_clipboard()
   if is_ssh() then
     -- SSH
-    vim.g.clipboard = {
-      name = "xsel",
-      copy = {
-        ["+"] = "xsel --clipboard --input",
-        ["*"] = "xsel --primary --input",
-      },
-      paste = {
-        ["+"] = "xsel --clipboard --output",
-        ["*"] = "xsel --primary --output",
-      },
-      cache_enable = 1,
-    }
+    -- vim.g.clipboard = {
+    --   name = "xsel",
+    --   copy = {
+    --     ["+"] = "xsel --clipboard --input",
+    --     ["*"] = "xsel --primary --input",
+    --   },
+    --   paste = {
+    --     ["+"] = "xsel --clipboard --output",
+    --     ["*"] = "xsel --primary --output",
+    --   },
+    --   cache_enable = 1,
+    -- }
+    local function osc52_yank()
+      local buffer = vim.fn.system("base64", vim.v.event.regcontents[0])
+      buffer = string.gsub(buffer, "\n", "")
+      buffer = "\27]52;c;" .. buffer .. "\27\\"
+      vim.fn.system(string.format("echo -ne %s > %s", vim.fn.shellescape(buffer), vim.fn.shellescape(vim.g.tty)))
+    end
+
+    vim.api.nvim_create_autocmd("TextYankPost", {
+      callback = function()
+        if vim.v.event.operator == "y" then
+          osc52_yank()
+        end
+      end,
+    })
   elseif is_wsl() then
     -- Windows to WSL2
     vim.g.clipboard = {
