@@ -35,7 +35,7 @@ if not vim.g.vscode then
           transparent = true,
           styles = {
             sidebars = "dark", -- style for sidebars, see below
-            floats = "dark",   -- style for floating windows
+            floats = "dark", -- style for floating windows
           },
         })
 
@@ -52,7 +52,7 @@ if not vim.g.vscode then
       config = function()
         require("transparent").setup({
           extra_groups = {
-            "NormalFloat",    -- plugins which have float panel such as Lazy, Mason, LspInfo
+            "NormalFloat", -- plugins which have float panel such as Lazy, Mason, LspInfo
             "NvimTreeNormal", -- NvimTree
           },
         })
