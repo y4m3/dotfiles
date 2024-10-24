@@ -24,7 +24,7 @@ return {
         "marksman",
         "pylsp",
         "ruff",
-        "tsserver",
+        "ts_ls",
       }
 
       require("mason").setup()
@@ -88,13 +88,18 @@ return {
         vim.lsp.buf.format({
           async = true,
         })
-      end, { noremap = true, desc = "Format current buffer" })
+      end, {
+        noremap = true,
+        desc = "Format current buffer",
+      })
 
       -- format on save
       vim.api.nvim_create_autocmd("BufWritePre", {
         buffer = bufnr,
         callback = function()
-          vim.lsp.buf.format({ async = false })
+          vim.lsp.buf.format({
+            async = false,
+          })
         end,
       })
     end,
@@ -102,14 +107,11 @@ return {
   {
     "jay-babu/mason-null-ls.nvim",
     event = { "BufReadPre", "BufNewFile" },
-    dependencies = {
-      "williamboman/mason.nvim",
-      "nvimtools/none-ls.nvim",
-    },
+    dependencies = { "williamboman/mason.nvim", "nvimtools/none-ls.nvim" },
     config = function()
       require("mason-null-ls").setup({
         ensure_installed = {
-          "diagnosticls",
+          "diagnostic-languageserver",
           "markdownlint",
           "shellcheck",
           "shfmt",
@@ -177,15 +179,12 @@ return {
       }
       -- markdownlint_settings end
 
-      local source_settings = {
-        -- markdown
+      local source_settings = { -- markdown
         null_ls.builtins.diagnostics.markdownlint.with(markdownlint_settings),
-        null_ls.builtins.formatting.markdownlint.with(markdownlint_settings),
-
-        -- shell
-        null_ls.builtins.formatting.shfmt.with({ extra_args = { "-i", "2", "-ci", "-bn" } }),
-
-        -- prettier
+        null_ls.builtins.formatting.markdownlint.with(markdownlint_settings), -- shell
+        null_ls.builtins.formatting.shfmt.with({
+          extra_args = { "-i", "2", "-ci", "-bn" },
+        }), -- prettier
         null_ls.builtins.formatting.prettier.with({
           filetypes = {
             "javascript",
@@ -203,15 +202,11 @@ return {
             "graphql",
             "handlebars",
           },
-        }),
-
-        -- lua
+        }), -- lua
         null_ls.builtins.formatting.stylua.with({
           filetypes = { "lua" },
           extra_args = { "--indent-type", "Spaces", "--indent-width", "2" },
-        }),
-
-        -- sqlfluff
+        }), -- sqlfluff
         null_ls.builtins.formatting.sqlfluff,
         null_ls.builtins.diagnostics.sqlfluff.with({
           on_output = function(params)
@@ -244,12 +239,17 @@ return {
         -- format on save
         on_attach = function(client, bufnr)
           if client.supports_method("textDocument/formatting") then
-            vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })
+            vim.api.nvim_clear_autocmds({
+              group = augroup,
+              buffer = bufnr,
+            })
             vim.api.nvim_create_autocmd("BufWritePre", {
               group = augroup,
               buffer = vim.api.nvim_get_current_buf(),
               callback = function()
-                vim.lsp.buf.format({ async = false })
+                vim.lsp.buf.format({
+                  async = false,
+                })
               end,
             })
           end
@@ -260,10 +260,7 @@ return {
   {
     "nvimdev/lspsaga.nvim",
     branch = "main",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-      "nvim-tree/nvim-web-devicons",
-    },
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
     config = function()
       require("lspsaga").setup({
         finder = {
@@ -292,21 +289,36 @@ return {
       })
 
       local keymap = vim.keymap.set
-      keymap("n", "K", "<cmd>Lspsaga hover_doc<CR>", { desc = "Show hover documentation (lspsaga)" })
-      keymap("n", "gf", "<cmd>Lspsaga finder<CR>", { desc = "Find references (lspsaga)" })
-      keymap("n", "gd", "<cmd>Lspsaga peek_definition<CR>", { desc = "Peek definition (lspsaga)" })
-      keymap("n", "ga", "<cmd>Lspsaga code_action<CR>", { desc = "Code action (lspsaga)" })
-      keymap("n", "gr", "<cmd>Lspsaga rename<CR>", { desc = "Rename symbol (lspsaga)" })
-      keymap("n", "ge", "<cmd>Lspsaga show_line_diagnostics<CR>", { desc = "Show line diagnostics (lspsaga)" })
-      keymap("n", "gb", "<cmd>Lspsaga show_buf_diagnostics<CR>", { desc = "Show buffer diagnostics (lspsaga)" })
-      keymap("n", "g]", "<cmd>Lspsaga diagnostic_jump_next<CR>", { desc = "Jump to next diagnostic (lspsaga)" })
-      keymap("n", "g[", "<cmd>Lspsaga diagnostic_jump_prev<CR>", { desc = "Jump to previous diagnostic (lspsaga)" })
-      keymap(
-        "t",
-        "<C-d>",
-        [[<C-\><C-n><cmd>Lspsaga close_floaterm<CR>]],
-        { desc = "Close floating terminal (lspsaga)" }
-      )
+      keymap("n", "K", "<cmd>Lspsaga hover_doc<CR>", {
+        desc = "Show hover documentation (lspsaga)",
+      })
+      keymap("n", "gf", "<cmd>Lspsaga finder<CR>", {
+        desc = "Find references (lspsaga)",
+      })
+      keymap("n", "gd", "<cmd>Lspsaga peek_definition<CR>", {
+        desc = "Peek definition (lspsaga)",
+      })
+      keymap("n", "ga", "<cmd>Lspsaga code_action<CR>", {
+        desc = "Code action (lspsaga)",
+      })
+      keymap("n", "gr", "<cmd>Lspsaga rename<CR>", {
+        desc = "Rename symbol (lspsaga)",
+      })
+      keymap("n", "ge", "<cmd>Lspsaga show_line_diagnostics<CR>", {
+        desc = "Show line diagnostics (lspsaga)",
+      })
+      keymap("n", "gb", "<cmd>Lspsaga show_buf_diagnostics<CR>", {
+        desc = "Show buffer diagnostics (lspsaga)",
+      })
+      keymap("n", "g]", "<cmd>Lspsaga diagnostic_jump_next<CR>", {
+        desc = "Jump to next diagnostic (lspsaga)",
+      })
+      keymap("n", "g[", "<cmd>Lspsaga diagnostic_jump_prev<CR>", {
+        desc = "Jump to previous diagnostic (lspsaga)",
+      })
+      keymap("t", "<C-d>", [[<C-\><C-n><cmd>Lspsaga close_floaterm<CR>]], {
+        desc = "Close floating terminal (lspsaga)",
+      })
     end,
   },
   {
