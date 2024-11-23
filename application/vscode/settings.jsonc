@@ -1,0 +1,259 @@
+{
+  // Basic settings
+  "remote.autoForwardPortsSource": "hybrid",
+  "editor.cursorStyle": "block",
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.guides.bracketPairs": true,
+  "editor.unicodeHighlight.invisibleCharacters": false,
+  "editor.unicodeHighlight.ambiguousCharacters": false,
+  "editor.unicodeHighlight.allowedCharacters": {
+    "゠": true,
+    "，": true,
+    "；": true,
+    "：": true,
+    "！": true,
+    "？": true,
+    "．": true,
+    "‘": true,
+    "’": true,
+    "（": true,
+    "）": true,
+    "［": true,
+    "］": true,
+    "｛": true,
+    "｝": true,
+    "〔": true,
+    "〕": true,
+    "＜": true,
+    "＞": true,
+    "ノ": true,
+  },
+  "editor.bracketPairColorization.enabled": true,
+  "editor.language.colorizedBracketPairs": [
+    [
+      "‘",
+      "’"
+    ],
+    [
+      "“",
+      "”"
+    ],
+    [
+      "(",
+      ")"
+    ],
+    [
+      "（",
+      "）"
+    ],
+    [
+      "｟",
+      "｠"
+    ],
+    [
+      "[",
+      "]"
+    ],
+    [
+      "［",
+      "］"
+    ],
+    [
+      "〚",
+      "〛"
+    ],
+    [
+      "〔",
+      "〕"
+    ],
+    [
+      "{",
+      "}"
+    ],
+    [
+      "｛",
+      "｝"
+    ],
+    [
+      "〈",
+      "〉"
+    ],
+    [
+      "《",
+      "》"
+    ],
+    [
+      "「",
+      "」"
+    ],
+    [
+      "『",
+      "』"
+    ],
+    [
+      "【",
+      "】"
+    ],
+    [
+      "〖",
+      "〗"
+    ],
+    [
+      "〝",
+      "〟"
+    ],
+  ],
+  "files.watcherExclude": {
+    "**/.git/**": true,
+    "**/.venv/**": true,
+    "**/.ipynb_checkpoints/**": true,
+  },
+  "editor.minimap.enabled": false,
+  "editor.wordWrap": "on",
+  "editor.rulers": [
+    88,
+    120
+  ],
+  "editor.lineNumbers": "relative",
+  "editor.unicodeHighlight.nonBasicASCII": false,
+  // Font settings
+  "editor.fontFamily": "'UDEV Gothic 35NFLG'",
+  "debug.console.fontFamily": "'UDEV Gothic NFLG'",
+  "editor.codeLensFontFamily": "'UDEV Gothic 35NFLG'",
+  "notebook.output.fontFamily": "'UDEV Gothic 35NFLG'",
+  "terminal.integrated.fontFamily": "'UDEV Gothic 35NFLG'",
+  "debug.console.fontSize": 14,
+  "terminal.integrated.fontSize": 14,
+  "editor.fontLigatures": true,
+  "workbench.editor.enablePreviewFromQuickOpen": true,
+  "workbench.editor.openPositioning": "last",
+  "extensions.experimental.affinity": {
+    "asvetliakov.vscode-neovim": 1
+  },
+  "git.autofetch": true,
+  "workbench.colorCustomizations": {
+    "editorIndentGuide.background1": "#3E5F8A",
+    "editorIndentGuide.background2": "#7D6B7D",
+    "editorIndentGuide.background3": "#A67F5D",
+    "editorIndentGuide.background4": "#6B8E23",
+    "editorIndentGuide.background5": "#4682B4",
+    "editorIndentGuide.background6": "#8A2BE2",
+    "editorIndentGuide.activeBackground1": "#F0F8FF",
+    "editorIndentGuide.activeBackground2": "#FFF0F5",
+    "editorIndentGuide.activeBackground3": "#FAFAD2",
+    "editorIndentGuide.activeBackground4": "#F0FFF0",
+    "editorIndentGuide.activeBackground5": "#F0F8FF",
+    "editorIndentGuide.activeBackground6": "#E6E6FA"
+  },
+  // Neovim integration
+  "vscode-neovim.useWSL": true,
+  "vscode-neovim.compositeKeys": {
+    "jj": {
+      "command": "vscode-neovim.escape"
+    },
+    "jk": {
+      "command": "vscode-neovim.escape"
+    }
+  },
+  // GitHub Copilot
+  "github.copilot.chat.localeOverride": "ja",
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": true,
+    "markdown": true,
+    "scminput": false
+  },
+  // Markdown settings
+  "[markdown]": {
+    "editor.tabSize": 4,
+    "editor.quickSuggestions": {
+      "other": "on",
+      "comments": "on",
+      "strings": "on"
+    },
+    "editor.snippetSuggestions": "top",
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.wordWrap": "bounded",
+    "editor.wordBreak": "keepAll",
+    "editor.wordWrapColumn": 120
+  },
+  "markdownlint.config": {
+    "single-title": {
+      "front_matter_title": ""
+    }, // Ignore the front matter header
+    "MD007": {
+      "indent": 4 // Set list indentation to 4
+    },
+    "MD013": false, // Disable MD013: max line length conflicts with textlint
+    "MD024": {
+      "siblings_only": true // Allow duplicate headings with different parents
+    },
+    "MD033": false, // Allow HTML in Markdown
+    "MD034": false, // Allow plain URL representations
+  },
+  "markdown.extension.toc.levels": "2..6",
+  "markdown.extension.list.indentationSize": "inherit",
+  // Python settings
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    },
+    "diffEditor.ignoreTrimWhitespace": true
+  },
+  "ruff.lint.enable": true,
+  // Notebook settings
+  "notebook.formatOnSave.enabled": true,
+  "notebook.formatOnCellExecution": true,
+  "[jupyter]": {
+    "vim.disableExtension": true
+  },
+  // SQL settings
+  "[sql]": {
+    "editor.defaultFormatter": "dorzey.vscode-sqlfluff",
+    "editor.tabSize": 4,
+    "editor.formatOnSaveMode": "file",
+    "editor.formatOnSave": true,
+  },
+  "sqlfluff.dialect": "bigquery",
+  "sqlfluff.config": "${workspaceFolder}/.sqlfluff",
+  "files.associations": {
+    "*.sql": "sql-bigquery"
+  },
+  // Spell checker
+  "cSpell.ignorePaths": [
+    ".git",
+    ".vscode",
+    ".ipynb",
+    "Roaming"
+  ],
+  "cSpell.customDictionaries": {
+    "myWords": {
+      "name": "myWords",
+      "path": "~/.my-words.txt",
+      "scope": "user",
+      "addWords": true
+    },
+    "custom": true,
+  },
+  "cSpell.enabledFileTypes": {
+    "*": true,
+    "markdown": true,
+    "sql": true,
+    "sql-bigquery": true
+  },
+  // Lua settings
+  "[lua]": {
+    "editor.defaultFormatter": "JohnnyMorganz.stylua",
+  },
+  // Japanese proofreading settings
+  "japanese-proofreading.textlint.丸かっこ（）": false,
+  "japanese-proofreading.textlint.外来語カタカナ表記": false,
+  // --------------------------------------------------
+  // Below are ad-hoc settings
+  // --------------------------------------------------
+}

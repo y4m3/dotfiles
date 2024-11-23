@@ -7,9 +7,10 @@ return {
     "hrsh7th/cmp-cmdline",
     "hrsh7th/cmp-nvim-lsp",
     "onsails/lspkind.nvim",
+    "f3fora/cmp-spell",
   },
   config = function()
-    vim.opt.completeopt = "menu,menuone,noinsert"
+    vim.opt.completeopt = "menu,menuone,noinsert,noselect"
 
     local cmp = require("cmp")
     cmp.setup({
@@ -20,25 +21,17 @@ return {
       },
 
       sources = cmp.config.sources({
-        {
-          name = "nvim_lsp",
-        },
-        {
-          name = "vsnip",
-        },
-        {
-          name = "path",
-        },
-        {
-          name = "buffer",
-        },
+        { name = "nvim_lsp" },
+        { name = "path" },
+        { name = "buffer" },
+        { name = "spell" },
       }),
 
       mapping = cmp.mapping.preset.insert({
         ["<Tab>"] = cmp.mapping.select_next_item(),
         ["<S-Tab>"] = cmp.mapping.select_prev_item(),
         ["<C-space>"] = cmp.mapping.complete(),
-        -- ["<C-e>"] = cmp.mapping.abort(),
+        ["<C-e>"] = cmp.mapping.abort(),
         ["<CR>"] = cmp.mapping.confirm({
           select = true,
         }),

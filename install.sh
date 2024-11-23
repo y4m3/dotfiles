@@ -2,6 +2,8 @@
 
 DOTFILES_PATH="$HOME/dotfiles"
 
+mkdir "$HOME/.config"
+
 find "$DOTFILES_PATH/config" -mindepth 1 -maxdepth 1 | while read -r item; do
   item_name=$(basename "$item")
   target_path="$HOME/.config/$item_name"

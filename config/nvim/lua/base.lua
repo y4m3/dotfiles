@@ -24,10 +24,11 @@ local options = {
   tabstop = 4, -- Number of spaces that a <Tab> in the file counts for
   cursorline = true, -- Highlight the current line
   number = true, -- Show line numbers
-  relativenumber = false, -- Disable relative line numbers
+  relativenumber = true, -- Disable relative line numbers
   numberwidth = 4, -- Set the width of the number column
   signcolumn = "yes", -- Always show the sign column
   wrap = true, -- Enable line wrapping
+  wrapscan = true, -- Search wraps at the end of the file
   breakindent = true, -- Enable break indent
   winblend = 0, -- Disable pseudo-transparency for floating windows
   wildoptions = "pum", -- Display completion matches using the popup menu
@@ -45,7 +46,8 @@ local options = {
     precedes = "❮",
   },
   showbreak = "→ ", -- Set the character to display for wrapped lines
-  breakindentopt = "shift:2,min:40,sbr",
+  breakindentopt = "shift:2,min:40,sbr", -- Set the options for break indent
+  laststatus = 3, -- Always show the status line
 }
 
 -- Iterate over the options table and set each option in Neovim
@@ -79,18 +81,32 @@ end
 local function setup_clipboard()
   if is_ssh() then
     -- SSH
-    vim.g.clipboard = {
-      name = "xsel",
-      copy = {
-        ["+"] = "xsel --clipboard --input",
-        ["*"] = "xsel --primary --input",
-      },
-      paste = {
-        ["+"] = "xsel --clipboard --output",
-        ["*"] = "xsel --primary --output",
-      },
-      cache_enable = 1,
-    }
+    -- vim.g.clipboard = {
+    --   name = "xsel",
+    --   copy = {
+    --     ["+"] = "xsel --clipboard --input",
+    --     ["*"] = "xsel --primary --input",
+    --   },
+    --   paste = {
+    --     ["+"] = "xsel --clipboard --output",
+    --     ["*"] = "xsel --primary --output",
+    --   },
+    --   cache_enable = 1,
+    -- }
+    local function osc52_yank()
+      local buffer = vim.fn.system("base64", vim.v.event.regcontents[0])
+      buffer = string.gsub(buffer, "\n", "")
+      buffer = "\27]52;c;" .. buffer .. "\27\\"
+      vim.fn.system(string.format("echo -ne %s > %s", vim.fn.shellescape(buffer), vim.fn.shellescape(vim.g.tty)))
+    end
+
+    vim.api.nvim_create_autocmd("TextYankPost", {
+      callback = function()
+        if vim.v.event.operator == "y" then
+          osc52_yank()
+        end
+      end,
+    })
   elseif is_wsl() then
     -- Windows to WSL2
     vim.g.clipboard = {
@@ -112,3 +128,8 @@ local function setup_clipboard()
 end
 
 setup_clipboard()
+
+-- If running in WSL, set the file browser to wslview
+if is_wsl() then
+  vim.g.netrw_browsex_viewer = "wslview"
+end

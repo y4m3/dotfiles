@@ -4,7 +4,7 @@ if not vim.g.vscode then
     version = "*",
     config = function()
       require("no-neck-pain").setup({
-        width = 90,
+        width = 120,
         buffers = {
           wo = {
             fillchars = "eob: ",

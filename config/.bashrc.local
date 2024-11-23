@@ -1,0 +1,29 @@
+# history
+export HISTCONTROL=ignoredups:erasedups
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+export HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
+export HISTIGNORE=$'&:ls:ll:la:ps:top:df:du:pwd:cd:exit:clear'
+
+export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+shopt -s histappend
+
+# completion
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+# mise
+eval "$(~/.local/bin/mise activate bash)"
+
+# load all files in config/bash
+for file in ~/dotfiles/config/bash/*.sh; do
+  source "$file"
+done
+
+# starship (always at the end of the file)
+eval "$(starship init bash)"

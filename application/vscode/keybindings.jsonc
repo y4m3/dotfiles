@@ -1,0 +1,222 @@
+[
+  // Do not use Ctrl+V in the terminal
+  {
+    "key": "ctrl+v",
+    "command": "-workbench.action.terminal.paste",
+    "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+  },
+  // Trigger suggestion/autocomplete in the editor
+  {
+    "key": "ctrl+i",
+    "command": "editor.action.triggerSuggest",
+    "when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly && !suggestWidgetVisible"
+  },
+  // Navigate editor groups
+  {
+    "key": "ctrl+h",
+    "command": "workbench.action.navigateLeft"
+  },
+  {
+    "key": "ctrl+l",
+    "command": "workbench.action.navigateRight"
+  },
+  {
+    "key": "ctrl+k",
+    "command": "workbench.action.navigateUp"
+  },
+  {
+    "key": "ctrl+j",
+    "command": "workbench.action.navigateDown"
+  },
+  // Switch between tabs
+  {
+    "key": "Alt+l",
+    "command": "workbench.action.nextEditor"
+  },
+  {
+    "key": "Alt+h",
+    "command": "workbench.action.previousEditor"
+  },
+  // Close editor (buffer) with Alt + X
+  {
+    "key": "Alt+x",
+    "command": "workbench.action.terminal.killEditor",
+    "when": "terminalEditorFocus && terminalFocus && terminalHasBeenCreated && resourceScheme == 'vscode-terminal' || terminalEditorFocus && terminalFocus && terminalProcessSupported && resourceScheme == 'vscode-terminal'"
+  },
+  {
+    "key": "ctrl+w",
+    "command": "-workbench.action.terminal.killEditor",
+    "when": "terminalEditorFocus && terminalFocus && terminalHasBeenCreated && resourceScheme == 'vscode-terminal' || terminalEditorFocus && terminalFocus && terminalProcessSupported && resourceScheme == 'vscode-terminal'"
+  },
+  // Close the active editor
+  {
+    "key": "Alt+x",
+    "command": "workbench.action.closeActiveEditor"
+  },
+  {
+    "key": "ctrl+w",
+    "command": "-workbench.action.closeActiveEditor"
+  },
+  // Operations in explorer
+  //// Create a new file
+  {
+    "key": "a",
+    "command": "explorer.newFile",
+    "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
+  },
+  //// Create a new directory
+  {
+    "key": "ctrl+a",
+    "command": "explorer.newFolder",
+    "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
+  },
+  //// Delete files or directories
+  {
+    "key": "x",
+    "command": "deleteFile",
+    "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
+  },
+  //// Copy files or directories
+  {
+    "key": "y",
+    "command": "filesExplorer.copy",
+    "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus"
+  },
+  //// Open a file and set focus on it
+  {
+    "key": "ctrl+o",
+    "command": "explorer.openAndPassFocus",
+    "when": "filesExplorerFocus && foldersViewVisible && !explorerResourceIsFolder && !inputFocus"
+  },
+  {
+    "key": "ctrl+down",
+    "command": "-explorer.openAndPassFocus",
+    "when": "filesExplorerFocus && foldersViewVisible && !explorerResourceIsFolder && !inputFocus"
+  },
+  // Panel operations
+  //// Toggle the panel with Ctrl + Space twice
+  {
+    "key": "ctrl+space ctrl+space",
+    "command": "workbench.action.togglePanel"
+  },
+  //// Switch focus in panel tabs
+  {
+    "key": "ctrl+space ctrl+o",
+    "command": "workbench.panel.output.focus"
+  },
+  {
+    "key": "ctrl+space ctrl+p",
+    "command": "workbench.panel.markers.view.focus"
+  },
+  {
+    "key": "ctrl+space ctrl+t",
+    "command": "workbench.action.terminal.focus"
+  },
+  {
+    "key": "ctrl+space ctrl+d",
+    "command": "workbench.debug.action.focusRepl"
+  },
+  //// Open a new terminal
+  {
+    "key": "ctrl+space ctrl+n",
+    "command": "workbench.action.terminal.new"
+  },
+  //// Switch terminals
+  {
+    "key": "ctrl+space ctrl+j",
+    "command": "workbench.action.terminal.focusNext",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+space ctrl+k",
+    "command": "workbench.action.terminal.focusPrevious",
+    "when": "terminalFocus"
+  },
+  //// Kill a terminal
+  {
+    "key": "ctrl+space ctrl+x",
+    "command": "workbench.action.terminal.kill",
+    "when": "terminalFocus"
+  },
+  // Show the explorer view
+  {
+    "key": "ctrl+space e",
+    "command": "workbench.view.explorer"
+  },
+  // Toggle sidebar visibility
+  {
+    "key": "ctrl+space ctrl+e",
+    "command": "workbench.action.toggleSidebarVisibility"
+  },
+  // Navigation outside the editor
+  //// Navigate suggestions in suggestion widget
+  {
+    "key": "ctrl+j",
+    "command": "selectNextSuggestion",
+    "when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible"
+  },
+  {
+    "key": "ctrl+k",
+    "command": "selectPrevSuggestion",
+    "when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible"
+  },
+  //// Navigate in the command palette
+  {
+    "key": "ctrl+j",
+    "command": "workbench.action.quickOpenSelectNext",
+    "when": "inQuickOpen"
+  },
+  {
+    "key": "ctrl+k",
+    "command": "workbench.action.quickOpenSelectPrevious",
+    "when": "inQuickOpen"
+  },
+  //// Quickfix navigation
+  {
+    "key": "ctrl+k",
+    "when": "codeActionMenuVisible",
+    "command": "selectPrevCodeAction"
+  },
+  {
+    "key": "ctrl+j",
+    "when": "codeActionMenuVisible",
+    "command": "selectNextCodeAction"
+  },
+  //// Show definition in the side panel (go to definition)
+  {
+    "key": "ctrl+g d",
+    "command": "editor.action.revealDefinitionAside",
+    "when": "editorHasDefinitionProvider && editorTextFocus && !isInEmbeddedEditor"
+  },
+  //// Show definition in peek view
+  {
+    "key": "ctrl+g ctrl+d",
+    "command": "editor.action.peekDefinition",
+    "when": "editorHasDefinitionProvider && editorTextFocus && !isInEmbeddedEditor"
+  },
+  // Notebook operations
+  //// Insert a markdown cell below in notebook
+  {
+    "key": "m",
+    "command": "notebook.cell.insertMarkdownCellBelow",
+    "when": "notebookEditorFocused && !inputFocus && !notebookOutputInputFocused"
+  },
+  //// Insert a code cell below in notebook
+  {
+    "key": "o",
+    "command": "notebook.cell.insertCodeCellBelowAndFocusContainer",
+    "when": "notebookEditorFocused && !inputFocus && !notebookOutputInputFocused"
+  },
+  //// Start inline chat from the current line
+  {
+    "key": "alt+i",
+    "command": "inlineChat.startWithCurrentLine",
+    "when": "editorFocus && github.copilot.chat.editor.enableLineTrigger && inlineChatHasProvider && !editorReadonly && !inlineChatVisible"
+  },
+  //// Open chat panel
+  {
+    "key": "ctrl+shift+i",
+    "command": "workbench.panel.chat",
+    "when": "workbench.panel.chat.view.copilot.active"
+  }
+]

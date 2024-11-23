@@ -1,0 +1,55 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    - id: check-added-large-files
+    - id: check-json
+    - id: check-toml
+    - id: check-xml
+    - id: check-yaml
+    - id: debug-statements
+    - id: detect-private-key
+    - id: end-of-file-fixer
+    - id: pretty-format-json
+      args: [
+        "--autofix",
+        "--no-sort-keys"
+      ]
+
+  - repo: https://github.com/JohnnyMorganz/StyLua
+    rev: v2.0.1
+    hooks:
+      - id: stylua
+        args:
+          - --config-path=./config/stylua.toml
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.15.0
+    hooks:
+    - id: markdownlint-cli2
+      args: [
+        "**/*.md",
+        "--config", "./config/.markdownlint.json"
+      ]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.8.0
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args: [ --fix ]
+      # Run the formatter.
+      - id: ruff-format
+
+  # - repo: https://github.com/sqlfluff/sqlfluff
+  #   rev: stable_version
+  #   hooks:
+  #     - id: sqlfluff-lint
+  #       args: [
+  #         "--path", ".sqlfluff"
+  #       ]
+  #     - id: sqlfluff-fix
+  #       args: [
+  #         "--path", ".sqlfluff"
+  #       ]

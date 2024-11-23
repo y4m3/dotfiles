@@ -88,6 +88,16 @@ map("n", "<Space>l", "$", {
   desc = "Move to the end of the line",
 })
 
+-- Map ESC and ESC in normal mode to clear search highlights
+map("n", "<Esc><Esc>", ":nohlsearch<CR>", {
+  desc = "Clear search highlights",
+})
+
+-- Map <Esc> in Terminal mode to <C-\><C-n> to exit to Normal mode
+map("t", "<Esc>", "<C-\\><C-n>", {
+  desc = "Exit terminal mode with <Esc>",
+})
+
 -- only for vscode-neovim
 if vim.g.vscode then
   local vscode = require("vscode-neovim")

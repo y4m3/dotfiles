@@ -25,6 +25,8 @@ if not vim.g.vscode then
           weeklies_create_nonexisting = true,
           template_new_note = templ_dir .. "/new_note.md",
           template_new_daily = templ_dir .. "/new_daily.md",
+          journal_auto_open = true,
+          sort = "modified",
         })
 
         vim.keymap.set("n", "<leader>z", "<cmd>Telekasten panel<CR>", { silent = true, desc = "Open Telekasten panel" })
