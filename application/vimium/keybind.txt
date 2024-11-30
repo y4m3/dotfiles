@@ -1,0 +1,7 @@
+# Insert your preferred key mappings here.
+
+map J nextTab
+map K previousTab
+
+map o Vomnibar.activateInNewTab
+map O Vomnibar.activate
