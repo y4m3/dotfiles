@@ -24,7 +24,7 @@ if not vim.g.vscode then
           "marksman",
           "pylsp",
           "ruff",
-          "ts_ls",
+          "tsserver",
         }
         require("mason").setup()
         require("mason-lspconfig").setup({
