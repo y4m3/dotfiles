@@ -114,12 +114,14 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 install with cargo
 
 ```bash
-cargo install \
+cargo install --locked \
+  bat \
   eza \
   fd-find \
   ripgrep \
   stylua \
-  zellij
+  zellij \
+  zoxide
 ```
 
 ### wsl environment
