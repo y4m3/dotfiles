@@ -6,11 +6,10 @@ if not vim.g.vscode then
         "iamcco/markdown-preview.nvim",
         "renerocksai/calendar-vim",
       },
-      config = function()
+      opts = function()
         local home = vim.fn.expand("~/zettelkasten")
         local templ_dir = vim.fn.stdpath("config") .. "/zettelkasten/templates"
-
-        require("telekasten").setup({
+        return {
           home = home,
           templates = templ_dir,
           dailies = home .. "/" .. "daily",
@@ -27,63 +26,22 @@ if not vim.g.vscode then
           template_new_daily = templ_dir .. "/new_daily.md",
           journal_auto_open = true,
           sort = "modified",
-        })
-
-        vim.keymap.set("n", "<leader>z", "<cmd>Telekasten panel<CR>", { silent = true, desc = "Open Telekasten panel" })
-        vim.keymap.set(
-          "n",
-          "<leader>zf",
-          "<cmd>Telekasten find_notes<CR>",
-          { silent = true, desc = "Find notes using Telescope (telekasten)" }
-        )
-        vim.keymap.set(
-          "n",
-          "<leader>zg",
-          "<cmd>Telekasten search_notes<CR>",
-          { silent = true, desc = "Search notes using Telescope (telekasten)" }
-        )
-        vim.keymap.set(
-          "n",
-          "<leader>zd",
-          "<cmd>Telekasten goto_today<CR>",
-          { silent = true, desc = "Go to today's daily note (telekasten)" }
-        )
-        vim.keymap.set(
-          "n",
-          "<leader>zz",
-          "<cmd>Telekasten follow_link<CR>",
-          { silent = true, desc = "Follow link under cursor (telekasten)" }
-        )
-        vim.keymap.set(
-          "n",
-          "<leader>zn",
-          "<cmd>Telekasten new_note<CR>",
-          { silent = true, desc = "Create new note (telekasten)" }
-        )
-        vim.keymap.set(
-          "n",
-          "<leader>zc",
-          "<cmd>Telekasten show_calendar<CR>",
-          { silent = true, desc = "Show calendar (telekasten)" }
-        )
-        vim.keymap.set(
-          "n",
-          "<leader>zb",
-          "<cmd>Telekasten show_backlinks<CR>",
-          { silent = true, desc = "Show backlinks (telekasten)" }
-        )
-        vim.keymap.set(
-          "n",
-          "<leader>zI",
-          "<cmd>Telekasten insert_img_link<CR>",
-          { silent = true, desc = "Insert image link (telekasten)" }
-        )
-        vim.keymap.set(
-          "i",
-          "[[",
-          "<cmd>Telekasten insert_link<CR>",
-          { silent = true, desc = "Insert link (telekasten)" }
-        )
+        }
+      end,
+      keys = {
+        { "<leader>z", "<cmd>Telekasten panel<CR>", desc = "Open Telekasten panel" },
+        { "<leader>zf", "<cmd>Telekasten find_notes<CR>", desc = "Find notes using Telescope (telekasten)" },
+        { "<leader>zg", "<cmd>Telekasten search_notes<CR>", desc = "Search notes using Telescope (telekasten)" },
+        { "<leader>zd", "<cmd>Telekasten goto_today<CR>", desc = "Go to today's daily note (telekasten)" },
+        { "<leader>zz", "<cmd>Telekasten follow_link<CR>", desc = "Follow link under cursor (telekasten)" },
+        { "<leader>zn", "<cmd>Telekasten new_note<CR>", desc = "Create new note (telekasten)" },
+        { "<leader>zc", "<cmd>Telekasten show_calendar<CR>", desc = "Show calendar (telekasten)" },
+        { "<leader>zb", "<cmd>Telekasten show_backlinks<CR>", desc = "Show backlinks (telekasten)" },
+        { "<leader>zI", "<cmd>Telekasten insert_img_link<CR>", desc = "Insert image link (telekasten)" },
+        { "i[[", "<cmd>Telekasten insert_link<CR>", mode = "i", desc = "Insert link (telekasten)" },
+      },
+      config = function(_, opts)
+        require("telekasten").setup(opts)
       end,
     },
   }

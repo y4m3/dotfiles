@@ -3,20 +3,19 @@ if not vim.g.vscode then
     {
       "lukas-reineke/indent-blankline.nvim",
       main = "ibl",
-      opts = {},
-      config = function()
-        local highlight = {
-          "CursorColumn",
-          "Whitespace",
-        }
-        require("ibl").setup({
-          indent = { highlight = highlight, char = "" },
-          whitespace = {
-            highlight = highlight,
-            remove_blankline_trail = false,
-          },
-          scope = { enabled = false },
-        })
+      opts = {
+        indent = {
+          highlight = { "CursorColumn", "Whitespace" },
+          char = "",
+        },
+        whitespace = {
+          highlight = { "CursorColumn", "Whitespace" },
+          remove_blankline_trail = false,
+        },
+        scope = { enabled = false },
+      },
+      config = function(_, opts)
+        require("ibl").setup(opts)
       end,
     },
   }

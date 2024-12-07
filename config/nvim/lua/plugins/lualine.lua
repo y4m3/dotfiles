@@ -1,19 +1,18 @@
 if not vim.g.vscode then
   return {
-    "nvim-lualine/lualine.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    config = function()
-      require("lualine").setup({
+    {
+      "nvim-lualine/lualine.nvim",
+      dependencies = { "nvim-tree/nvim-web-devicons" },
+      opts = {
         options = {
           icons_enabled = true,
-        },
-        always_divide_middle = true,
-        tabline = {}, -- for barbar
-        globalstatus = false,
-        refresh = {
-          statusline = 1000,
-          tabline = 1000,
-          winbar = 1000,
+          always_divide_middle = true,
+          globalstatus = false,
+          refresh = {
+            statusline = 1000,
+            tabline = 1000,
+            winbar = 1000,
+          },
         },
         sections = {
           lualine_a = { "mode" },
@@ -34,8 +33,11 @@ if not vim.g.vscode then
         winbar = {},
         inactive_winbar = {},
         extensions = {},
-      })
-    end,
+      },
+      config = function(_, opts)
+        require("lualine").setup(opts)
+      end,
+    },
   }
 else
   return {}

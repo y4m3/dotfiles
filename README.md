@@ -28,11 +28,13 @@ sudo apt install -y \
     htop \
     jq \
     luarocks \
+    lynx \
     net-tools \
     openssh-server \
     pipx \
     rsync \
     sed \
+    shfmt \
     tar \
     tmux \
     tree \
@@ -157,10 +159,15 @@ install gh cli
 
 install markdown linter
 
+- [markdownlint-cli](https://github.com/igorshubovych/markdownlint-cli)
 - [markdownlint-cli2](https://github.com/DavidAnson/markdownlint-cli2)
+- [tree-sitter-cli](https://github.com/tree-sitter/tree-sitter/blob/master/cli/README.md)
 
 ```bash
-npm install -g markdownlint-cli2
+npm install -g \
+    markdownlint-cli \
+    markdownlint-cli2 \
+    tree-sitter-cli
 ```
 
 pre-commit

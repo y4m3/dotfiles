@@ -2,16 +2,27 @@ if not vim.g.vscode then
   return {
     {
       "bun913/min-todo.vim",
-      config = function()
-        -- toggle task status in normal mode
-        vim.api.nvim_set_keymap("n", "<C-c>", ":ToggleTask<CR>", { noremap = true, silent = true })
-
-        -- create new task in insert mode
-        vim.api.nvim_set_keymap("i", "<C-c>", "<ESC>:CreateTask<CR>", { noremap = true, silent = true })
-
-        -- open todo.md
-        vim.api.nvim_set_keymap("n", "<Leader>t", ":tabe ~/todo.md<CR>", { noremap = true, silent = true })
-      end,
+      lazy = false,
+      keys = {
+        {
+          "<C-c>",
+          ":ToggleTask<CR>",
+          mode = "n",
+          desc = "Toggle task status",
+        },
+        {
+          "<C-c>",
+          "<ESC>:CreateTask<CR>",
+          mode = "i",
+          desc = "Create new task",
+        },
+        {
+          "<Leader>t",
+          ":tabe ~/todo.md<CR>",
+          mode = "n",
+          desc = "Open todo.md",
+        },
+      },
     },
   }
 else

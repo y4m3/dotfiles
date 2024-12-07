@@ -1,15 +1,17 @@
 if not vim.g.vscode then
   return {
+    -- Solarized Theme
     -- {
     --   "maxmx03/solarized.nvim",
     --   lazy = false,
     --   priority = 1000,
-    --   config = function()
+    --   opts = {
+    --     theme = "neo",
+    --     transparent = true,
+    --   },
+    --   config = function(_, opts)
     --     vim.o.background = "dark"
     --     vim.cmd.colorscheme("solarized")
-    --     transparent = true
-    --     theme = "neo"
-    --
     --     require("lualine").setup({
     --       options = {
     --         icons_enabled = true,
@@ -18,27 +20,23 @@ if not vim.g.vscode then
     --     })
     --   end,
     -- },
+    -- Tokyo Night Theme
     {
       "folke/tokyonight.nvim",
-      -- lazy = false,
-      -- priority = 1000,
-      -- opts = {},
-      config = function()
+      lazy = false,
+      priority = 1000,
+      opts = {
+        style = "moon",
+        transparent = true,
+        styles = {
+          sidebars = "dark",
+          floats = "dark",
+        },
+      },
+      config = function(_, opts)
         vim.o.background = "dark"
+        require("tokyonight").setup(opts)
         vim.cmd.colorscheme("tokyonight")
-
-        require("tokyonight").setup({
-          -- style = "storm",
-          style = "moon",
-          -- style = "night",
-          -- style = "day", -- need background = "light"
-          transparent = true,
-          styles = {
-            sidebars = "dark", -- style for sidebars, see below
-            floats = "dark", -- style for floating windows
-          },
-        })
-
         require("lualine").setup({
           options = {
             icons_enabled = true,
@@ -47,19 +45,21 @@ if not vim.g.vscode then
         })
       end,
     },
+    -- Transparent Plugin
     {
       "xiyaowong/transparent.nvim",
-      config = function()
-        require("transparent").setup({
-          extra_groups = {
-            "NormalFloat", -- plugins which have float panel such as Lazy, Mason, LspInfo
-            "NvimTreeNormal", -- NvimTree
-          },
-        })
-
-        require("transparent").clear_prefix("NeoTree")
-        require("transparent").clear_prefix("lualine")
-        require("transparent").clear_prefix("bufferline")
+      opts = {
+        extra_groups = {
+          "NormalFloat", -- Plugins with float panels (e.g., Lazy, Mason, LspInfo)
+          "NvimTreeNormal", -- NvimTree
+        },
+      },
+      config = function(_, opts)
+        require("transparent").setup(opts)
+        -- Clear specific prefixes for transparency
+        for _, prefix in ipairs({ "NeoTree", "lualine", "bufferline" }) do
+          require("transparent").clear_prefix(prefix)
+        end
       end,
     },
   }

@@ -1,11 +1,19 @@
 if not vim.g.vscode then
   return {
-    { "dstein64/vim-startuptime" },
+    -- vim-startuptime Plugin
+    {
+      "dstein64/vim-startuptime",
+    },
+    -- alpha-nvim Plugin
     {
       "goolord/alpha-nvim",
       dependencies = { "nvim-tree/nvim-web-devicons" },
-      config = function()
-        require("alpha").setup(require("alpha.themes.startify").config)
+      opts = function()
+        local startify = require("alpha.themes.startify")
+        return startify.config
+      end,
+      config = function(_, opts)
+        require("alpha").setup(opts)
       end,
     },
   }

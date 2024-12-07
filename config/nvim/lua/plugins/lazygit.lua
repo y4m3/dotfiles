@@ -6,17 +6,19 @@ if not vim.g.vscode then
         "nvim-telescope/telescope.nvim",
         "nvim-lua/plenary.nvim",
       },
-
-      config = function()
+      opts = {
+        setup_autocmd = true, -- Custom flag for autocmd setup
+      },
+      config = function(_, opts)
         require("telescope").load_extension("lazygit")
-
-        vim.api.nvim_create_autocmd({ "BufEnter" }, {
-          callback = function()
-            require("lazygit.utils").project_root_dir()
-          end,
-        })
+        if opts.setup_autocmd then
+          vim.api.nvim_create_autocmd({ "BufEnter" }, {
+            callback = function()
+              require("lazygit.utils").project_root_dir()
+            end,
+          })
+        end
       end,
-
       cmd = {
         "LazyGit",
         "LazyGitConfig",
@@ -24,7 +26,6 @@ if not vim.g.vscode then
         "LazyGitFilter",
         "LazyGitFilterCurrentFile",
       },
-
       keys = {
         { "<leader>lg", "<cmd>LazyGit<cr>", desc = "LazyGit" },
       },
