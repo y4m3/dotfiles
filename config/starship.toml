@@ -1,32 +1,9 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 command_timeout = 1000
 
-format = """
-[](color_orange)\
-[ $os ](bg:color_orange fg:color_fg0)\
-[](bg:color_yellow fg:color_orange)\
-$directory\
-[](fg:color_yellow bg:color_acurqua)\
-$git_branch\
-$git_status\
-[](fg:color_aqua bg:color_blue)\
-$c\
-$rust\
-$golang\
-$nodejs\
-$php\
-$java\
-$kotlin\
-$haskell\
-$python\
-[](fg:color_blue bg:color_bg3)\
-$docker_context\
-[](fg:color_bg3 bg:color_bg1)\
-$time\
-[ ](fg:color_bg1)\
-$line_break$character"""
+format = "$os$directory$git_branch$git_status$c$rust$golang$nodejs$php$java$kotlin$haskell$python$docker_context$time$line_break$character"
 
-palette = 'gruvbox_dark'
+palette = 'hacker'
 
 [palettes.gruvbox_dark]
 color_fg0 = '#fbf1c7'
@@ -40,40 +17,50 @@ color_purple = '#b16286'
 color_red = '#cc241d'
 color_yellow = '#d79921'
 
+[palettes.hacker]
+hacker_fg = '#5CB06C'
+hacker_bg = '#081208'
+hacker_bg_alt = '#061006'
+hacker_bg_light = '#0A1808'
+hacker_green = '#2A8A2A'
+hacker_green_bright = '#4A9A4A'
+hacker_cyan = '#308585'
+hacker_cyan_bright = '#409090'
+hacker_blue = '#407C8D'
+hacker_blue_bright = '#6090B0'
+hacker_yellow = '#8A8A2A'
+hacker_yellow_bright = '#A0A02A'
+hacker_red = '#8A2323'
+hacker_red_bright = '#AC4545'
+hacker_comment = '#3A5A3A'
+hacker_accent1 = '#008A00'
+hacker_accent2 = '#3080A0'
+
 [os]
 disabled = false
-style = "bg:color_orange fg:color_fg0"
+style = "fg:hacker_bg"
+format = "$symbol "
 
 [os.symbols]
 Windows = "󰍲"
 Ubuntu = "󰕈"
-SUSE = ""
-Raspbian = "󰐿"
-Mint = "󰣭"
 Macos = "󰀵"
-Manjaro = ""
 Linux = "󰌽"
-Gentoo = "󰣨"
-Fedora = "󰣛"
 Alpine = ""
 Amazon = ""
-Android = ""
 Arch = "󰣇"
-Artix = "󰣇"
 CentOS = ""
 Debian = "󰣚"
-Redhat = "󱄛"
-RedHatEnterprise = "󱄛"
 
 [username]
 show_always = true
-style_user = "bg:color_orange fg:color_fg0"
-style_root = "bg:color_orange fg:color_fg0"
-format = '[ $user ]($style)'
+style_user = "fg:hacker_bg"
+style_root = "fg:hacker_bg"
+format = "$user "
 
 [directory]
-style = "fg:color_fg0 bg:color_yellow"
-format = "[ $path ]($style)"
+style = "fg:hacker_fg"
+format = "$path "
 truncation_length = 3
 truncation_symbol = "…/"
 
@@ -85,78 +72,90 @@ truncation_symbol = "…/"
 "Developer" = "󰲋 "
 
 [git_branch]
-symbol = ""
-style = "bg:color_aqua"
-format = '[[ $symbol $branch ](fg:color_fg0 bg:color_aqua)]($style)'
+disabled = false
+symbol = ""
+style = "fg:hacker_fg"
+format = "$symbol $branch "
 
 [git_status]
-style = "bg:color_aqua"
-format = '[[($all_status$ahead_behind )](fg:color_fg0 bg:color_aqua)]($style)'
+disabled = false
+style = "fg:hacker_yellow"
+format = "$all_status "
+stashed = "$"
+ahead = "↑"
+behind = "↓"
+diverged = "↕"
+conflicted = "fg:hacker_red bold"
+deleted = "✘"
+renamed = "»"
+modified = "*"
+staged = "+"
+untracked = "*"
 
 [nodejs]
 symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
+style = "fg:hacker_fg"
+format = "$symbol ($version) "
 
 [c]
 symbol = " "
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
+style = "fg:hacker_fg"
+format = "$symbol ($version) "
 
 [rust]
 symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
+style = "fg:hacker_fg"
+format = "$symbol ($version) "
 
 [golang]
 symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
+style = "fg:hacker_fg"
+format = "$symbol ($version) "
 
 [php]
 symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
+style = "fg:hacker_fg"
+format = "$symbol ($version) "
 
 [java]
 symbol = " "
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
+style = "fg:hacker_fg"
+format = "$symbol ($version) "
 
 [kotlin]
 symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
+style = "fg:hacker_fg"
+format = "$symbol ($version) "
 
 [haskell]
 symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
+style = "fg:hacker_fg"
+format = "$symbol ($version) "
 
 [python]
 symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
+style = "fg:hacker_fg"
+format = "$symbol ($version) "
 
 [docker_context]
 symbol = ""
-style = "bg:color_bg3"
-format = '[[ $symbol( $context) ](fg:#83a598 bg:color_bg3)]($style)'
+style = "fg:hacker_fg"
+format = "$symbol ($context) "
 
 [time]
 disabled = false
 time_format = "%R"
-style = "bg:color_bg1"
-format = '[[  $time ](fg:color_fg0 bg:color_bg1)]($style)'
+style = "fg:hacker_fg"
+format = " $time "
 
 [line_break]
 disabled = false
 
 [character]
 disabled = false
-success_symbol = '[](bold fg:color_green)'
-error_symbol = '[](bold fg:color_red)'
-vimcmd_symbol = '[](bold fg:color_green)'
-vimcmd_replace_one_symbol = '[](bold fg:color_purple)'
-vimcmd_replace_symbol = '[](bold fg:color_purple)'
-vimcmd_visual_symbol = '[](bold fg:color_yellow)'
+success_symbol = '[](bold fg:hacker_green)'
+error_symbol = '[](bold fg:hacker_red)'
+vimcmd_symbol = '[▶](bold fg:hacker_green)'
+vimcmd_replace_one_symbol = '[◆](bold fg:hacker_green_bright)'
+vimcmd_replace_symbol = '[◇](bold fg:hacker_green_bright)'
+vimcmd_visual_symbol = '[■](bold fg:hacker_yellow)'

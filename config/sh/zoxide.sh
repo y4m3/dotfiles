@@ -1,3 +1,3 @@
 if command -v zoxide &> /dev/null; then
-    eval "$(zoxide init --cmd cd bash)"
+    eval "$(zoxide init bash)"
 fi
