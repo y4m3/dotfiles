@@ -1,5 +1,6 @@
 # https://github.com/eza-community/eza
-if command -v eza &> /dev/null; then
+# zshとbashの両方で動作するようにコマンド存在確認
+if command -v eza > /dev/null 2>&1; then
     # Define LS_COLORS based on the Hacker theme palette (terminal.ansi* colors)
     # Using RGB colors (requires compatible terminal)
     HACKER_FG="38;2;124;220;135" # foreground: #7CDC87
@@ -11,25 +12,24 @@ if command -v eza &> /dev/null; then
     HACKER_BLUE="38;2;96;156;173"   # terminal.ansiBlue: #609CAD
     HACKER_COMMENT="38;2;80;112;80"  # terminal.ansiBrightBlack: #507050 (Used for less important things)
 
-    # Simplified LS_COLORS definition using corrected colors
-    LS_COLORS="fi=$HACKER_FG:"                  # Default file
-    LS_COLORS="$LS_COLORS:di=1;$HACKER_GREEN_BRIGHT:" # Directory
-    LS_COLORS="$LS_COLORS:ex=1;$HACKER_GREEN:"        # Executable
-    LS_COLORS="$LS_COLORS:ln=1;$HACKER_CYAN:"         # Symbolic link
-    LS_COLORS="$LS_COLORS:or=1;$HACKER_RED:"          # Orphan link
-    LS_COLORS="$LS_COLORS:mi=1;$HACKER_RED:"          # Missing file
-    LS_COLORS="$LS_COLORS:so=1;$HACKER_YELLOW:"       # Socket
-    LS_COLORS="$LS_COLORS:pi=1;$HACKER_YELLOW:"       # Pipe
-    LS_COLORS="$LS_COLORS:bd=1;$HACKER_YELLOW:"       # Block device
-    LS_COLORS="$LS_COLORS:cd=1;$HACKER_YELLOW:"       # Character device
+    # Simplified LS_COLORS definition using corrected colors - zsh compatible format
+    export LS_COLORS=""
+    LS_COLORS+="fi=${HACKER_FG}:"                  # Default file
+    LS_COLORS+="di=1;${HACKER_GREEN_BRIGHT}:" # Directory
+    LS_COLORS+="ex=1;${HACKER_GREEN}:"        # Executable
+    LS_COLORS+="ln=1;${HACKER_CYAN}:"         # Symbolic link
+    LS_COLORS+="or=1;${HACKER_RED}:"          # Orphan link
+    LS_COLORS+="mi=1;${HACKER_RED}:"          # Missing file
+    LS_COLORS+="so=1;${HACKER_YELLOW}:"       # Socket
+    LS_COLORS+="pi=1;${HACKER_YELLOW}:"       # Pipe
+    LS_COLORS+="bd=1;${HACKER_YELLOW}:"       # Block device
+    LS_COLORS+="cd=1;${HACKER_YELLOW}:"       # Character device
     # Git status (Matches theme gitDecoration colors where possible)
-    LS_COLORS="$LS_COLORS:ga=1;$HACKER_GREEN:"        # Added (Matches untrackedResourceForeground)
-    LS_COLORS="$LS_COLORS:gm=1;$HACKER_YELLOW:"       # Modified (Matches modifiedResourceForeground)
-    LS_COLORS="$LS_COLORS:gd=1;$HACKER_RED:"          # Deleted (Matches deletedResourceForeground)
-    LS_COLORS="$LS_COLORS:gv=1;$HACKER_CYAN:"         # Renamed
-    LS_COLORS="$LS_COLORS:gt=1;$HACKER_CYAN:"         # Type changed
-
-    export LS_COLORS
+    LS_COLORS+="ga=1;${HACKER_GREEN}:"        # Added (Matches untrackedResourceForeground)
+    LS_COLORS+="gm=1;${HACKER_YELLOW}:"       # Modified (Matches modifiedResourceForeground)
+    LS_COLORS+="gd=1;${HACKER_RED}:"          # Deleted (Matches deletedResourceForeground)
+    LS_COLORS+="gv=1;${HACKER_CYAN}:"         # Renamed
+    LS_COLORS+="gt=1;${HACKER_CYAN}:"         # Type changed
 
     # Aliases using eza
     alias ls="eza --icons --git"

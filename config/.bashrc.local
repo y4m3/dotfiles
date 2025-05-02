@@ -21,9 +21,6 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# mise
-eval "$(~/.local/bin/mise activate bash)"
-
 # load all files in config/sh
 for file in ~/dotfiles/config/sh/*.sh; do
   source "$file"

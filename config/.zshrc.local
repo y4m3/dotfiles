@@ -17,12 +17,6 @@ setopt append_history share_history hist_ignore_all_dups
 autoload -Uz compinit
 compinit -u
 
-if [ -f ~/.local/bin/mise ]; then
-  eval "$(~/.local/bin/mise activate zsh)"
-else
-  echo "Warning: mise script not found at ~/.local/bin/mise"
-fi
-
 # load all files in config/zsh
 if [ -d ~/dotfiles/config/sh ]; then
   for file in ~/dotfiles/config/sh/*.sh; do

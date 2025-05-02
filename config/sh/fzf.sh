@@ -1,6 +1,6 @@
 # https://github.com/junegunn/fzf
 # common
-if command -v fzf &> /dev/null; then
+if command -v fzf > /dev/null 2>&1; then
     export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
     export FZF_CTRL_R_OPTS="--height 40% --layout=reverse --border"
 fi
