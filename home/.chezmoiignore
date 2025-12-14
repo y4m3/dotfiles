@@ -1,0 +1,3 @@
+# Files to ignore after initial creation
+# These files are created once by chezmoi but not updated thereafter
+
