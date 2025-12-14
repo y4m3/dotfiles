@@ -19,7 +19,3 @@ alias df='df -h'
 alias du='du -h'
 alias free='free -h'
 alias mkdir='mkdir -pv'
-
-# Custom aliases (personal favorites)
-alias gs='git status'
-alias gl='git log --oneline --graph --decorate --all'
