@@ -7,8 +7,12 @@ DEST=${2:-/root}
 chezmoi init --source="$SRC" --destination="$DEST"
 chezmoi apply --source="$SRC" --destination="$DEST" --force
 
-# Note: run-once runner removed. Prefer using chezmoi-native `create_`
-# templates (e.g. `home/create_.bashrc.local.tmpl`) for create-if-missing
-# behaviour. If you need more complex per-destination initialization,
-# add explicit scripts to your container pipeline instead of embedding
-# them here.
+# Execute scripts deployed from run_once_* templates
+# chezmoi strips the run_once_ prefix when deploying
+# Pattern matches: 00-prerequisites.sh, 10-install-rust.sh, etc.
+for script in "$DEST"/[0-9][0-9]-*.sh; do
+	if [ -f "$script" ]; then
+		echo "Running: $script"
+		bash "$script"
+	fi
+done

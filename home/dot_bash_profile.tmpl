@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# ~/.bash_profile managed by chezmoi
+# Executed for login shells (both interactive and non-interactive)
+
+# Source PATH and runtime configurations for non-interactive login shells
+# These should work without requiring interactive shell features
+if [ -f "$HOME/.bashrc.d/20-paths.sh" ]; then
+    source "$HOME/.bashrc.d/20-paths.sh"
+fi
+
+if [ -f "$HOME/.bashrc.d/40-runtimes.sh" ]; then
+    source "$HOME/.bashrc.d/40-runtimes.sh"
+fi
+
+# For interactive login shells, also source .bashrc
+case "$-" in
+    *i*)
+        if [ -f "$HOME/.bashrc" ]; then
+            source "$HOME/.bashrc"
+        fi
+        ;;
+esac
