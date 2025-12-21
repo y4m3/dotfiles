@@ -1,0 +1,136 @@
+# GitHub Tools
+
+Development tools for GitHub integration.
+
+## gh (GitHub CLI)
+
+Official GitHub command-line tool. Execute PR, Issue, and repository operations from the terminal.
+
+### Basic Usage
+
+```bash
+# Authentication (first time only)
+gh auth login
+
+# PR operations
+gh pr list                    # List PRs
+gh pr view 123                # View PR details
+gh pr create                  # Create PR
+gh pr checkout 123            # Checkout PR locally
+
+# Issue operations
+gh issue list                 # List issues
+gh issue create               # Create issue
+gh issue view 456             # View issue details
+
+# Repository operations
+gh repo clone owner/repo      # Clone repository
+gh repo view                  # View repository info
+```
+
+### Installation Method
+
+This dotfiles installs from the official APT repository:
+
+```bash
+# Automatically executed in run_once_300-devtools-gh.sh
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
+  sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | \
+  sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+sudo apt update
+sudo apt install -y gh
+```
+
+**Policy**: Using the official APT repository benefits from system-wide dependency management and security updates.
+
+## ghq (Repository Manager)
+
+Tool for unified Git repository management. Clones into structures like `~/ghq/github.com/owner/repo`.
+
+### Basic Usage
+
+```bash
+# Clone repository (automatically placed in appropriate directory)
+ghq get https://github.com/owner/repo
+ghq get owner/repo                      # Short form
+
+# List local repositories
+ghq list
+
+# Get repository path
+ghq root                                # Root directory (default: ~/ghq)
+ghq list -p owner/repo                  # Full path of specific repository
+```
+
+### Integration with fzf
+
+Combining ghq with fzf enables fast repository search and navigation:
+
+```bash
+# Interactively select repository and navigate
+cd $(ghq list -p | fzf)
+
+# Example alias (add to .bashrc.local)
+alias repo='cd $(ghq list -p | fzf)'
+```
+
+### Installation Method
+
+This dotfiles installs via Go's `go install`:
+
+```bash
+# Automatically executed in run_once_310-devtools-ghq.sh
+go install github.com/x-motemen/ghq@latest
+```
+
+**Prerequisites**: Requires `golang-go` package (installed by `run_once_000-prerequisites.sh`)
+
+**Policy**: Since ghq is a Go tool, we use `go install`. This is the most reliable method as there's no official package and binary distribution is limited.
+
+### Custom Configuration
+
+Configurable in `~/.gitconfig`:
+
+```ini
+[ghq]
+    root = ~/ghq           # Repository root directory
+    # root = ~/src         # Multiple roots can also be configured
+```
+
+## Troubleshooting
+
+### gh Not Found
+
+Check if APT repository is correctly added:
+
+```bash
+apt policy gh
+# If reinstallation is needed
+bash home/run_once_300-devtools-gh.sh.tmpl
+```
+
+### ghq Not Found
+
+Check if Go is installed:
+
+```bash
+command -v go && go version
+
+# If Go is missing
+bash home/run_once_000-prerequisites.sh.tmpl
+
+# Reinstall ghq
+bash home/run_once_310-devtools-ghq.sh.tmpl
+```
+
+### GOPATH Configuration
+
+Binaries installed with `go install` are placed in `~/go/bin`. Check if it's in PATH:
+
+```bash
+echo "$PATH" | grep go/bin
+
+# If not included, add to .bashrc.local
+export PATH="$HOME/go/bin:$PATH"
+```

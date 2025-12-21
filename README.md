@@ -55,4 +55,54 @@ chezmoi diff
 - Behaviour: on `chezmoi apply`, files named `create_<name>` are created at the destination path `<name>` only when the destination file is absent. After creation the file is managed as a normal, user-editable file.
 - Prefer `create_` over ad-hoc run-once scripts for simple create-if-missing semantics; use CI/container pipeline scripts for more complex, idempotent initialization steps.
 
+### run_once Scripts: Numbering Convention
+
+run_once scripts use 3-digit numbers (000-999) to manage categories and execution order.
+
+#### Category System (Hundreds Place)
+
+- **0XX: Foundation & System** - System foundation, OS base packages, system configuration
+- **1XX: Language Runtimes** - Programming language runtime environments (Rust, Node.js, Python, Go, etc.)
+- **2XX: CLI Tools & Utilities** - Command-line tools (fzf, cargo tools, shell extensions, etc.)
+- **3XX: Development Tools** - Development environment, version control (Git-related, editors, linters, etc.)
+- **4XX: Infrastructure & Cloud** - Infrastructure and cloud tools (Docker, Kubernetes, AWS/GCP/Azure CLI, etc.)
+- **5XX: Networking & Security** - Network and security tools (HTTP clients, DNS, VPN, etc.)
+- **6XX: Data & Database** - Data processing and database-related (DB clients, data processing tools, etc.)
+- **7XX: Monitoring & Observability** - Monitoring and observability tools
+- **8XX: Reserved** - Reserved for future major categories
+- **9XX: User-specific & Experimental** - User-specific and experimental tools
+
+When adding new tools, use an available number in the appropriate category.
+
 (y4m3 × GitHub Copilot)
+
+## Quickstart
+- Host: `make build`, `make dev` (launch login shell in container), `make test` (automated tests)
+- Inside container: Run `bash scripts/apply-container.sh` to execute `chezmoi init/apply` together
+
+## Make Targets
+- `build`: Build Docker image
+- `shell`: Launch bash shell in clean container
+- `dev`: Apply dotfiles and drop into login shell (for manual testing)
+- `test`: Run all tests (bash/cargo/github/node/zoxide)
+- `test-shell`: Launch interactive shell with tests pre-applied (for individual test execution)
+- `clean-state`: Clear Docker persistent volumes (re-run run_once scripts)
+
+## Installed Tools
+
+- **Rust Ecosystem**: bat, eza, fd-find, ripgrep, starship, zoxide
+- **Node.js**: NodeSource 22.x
+- **GitHub Tools**: gh (GitHub CLI), ghq (repository manager)
+- **Others**: fzf (fuzzy finder)
+
+## Documentation
+
+For detailed usage and customization methods, refer to:
+
+- **[Configuration Guide](docs/configuration.md)** - Configuration policy and customization methods
+- **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
+- **Tool-specific details**:
+  - [fzf](docs/tools/fzf.md) - Fuzzy finder
+  - [Cargo Tools](docs/tools/cargo-tools.md) - bat, eza, fd, ripgrep, starship
+  - [zoxide](docs/tools/zoxide.md) - Directory jumping
+  - [GitHub Tools](docs/tools/github-tools.md) - gh, ghq
