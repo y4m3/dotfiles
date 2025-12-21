@@ -23,6 +23,11 @@ export XDG_CACHE_HOME="$HOME/.cache"
 # PATH
 export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 
+# Add cargo bin if rust is installed
+if [ -d "$HOME/.cargo/bin" ]; then
+    PATH="$HOME/.cargo/bin:$PATH"
+fi
+
 # History
 HISTSIZE=10000
 HISTFILESIZE=20000
@@ -80,10 +85,10 @@ fi
 # Prompt and history
 PROMPT_COMMAND='__last_status=$?; history -a'
 
-# Prompt selection priority: 1) $PROMPT_STYLE env var, 2) chezmoi template (from .chezmoidata.yaml), 3) bare
+# Prompt selection priority: 1) $PROMPT_STYLE env var (set in ~/.bashrc.local), 2) bare (default)
 _prompt_dir="$HOME/.bash_prompt.d"
 _prompt_loaded=false
-PROMPT_STYLE="${PROMPT_STYLE:-{{ .prompt_style }}}"
+PROMPT_STYLE="${PROMPT_STYLE:-bare}"
 if [ -d "$_prompt_dir" ] && [ -r "$_prompt_dir/${PROMPT_STYLE}.sh" ]; then
     . "$_prompt_dir/${PROMPT_STYLE}.sh"
     _prompt_loaded=true

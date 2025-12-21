@@ -3,11 +3,12 @@
 # This file is created by chezmoi using `create_` when it does not exist.
 # After creation it's intentionally left for the user to customize.
 
-# Prompt style selection: bare, enhanced and other styles in dot_bash_prompt.d
-export PROMPT_STYLE=enhanced
+# Prompt style selection: bare, enhanced or starship
+export PROMPT_STYLE=starship
+export VIRTUAL_ENV_DISABLE_PROMPT=1
 
 # Enable automatic `ls` after `cd` if ENABLE_CD_LS is set to 1
-export ENABLE_CD_LS=0
+export ENABLE_CD_LS=1
 
 # Aliases
 # alias v='vim'

@@ -1,5 +1,0 @@
-# chezmoi template data
-# This file provides variables available in all templates (.tmpl files)
-
-# Prompt style selection: bare, enhanced, or starship
-prompt_style: enhanced

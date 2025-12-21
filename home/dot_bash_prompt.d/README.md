@@ -7,9 +7,8 @@ This directory contains selectable prompt styles for bash. Available prompt styl
 
 ## Selection Priority (from highest to lowest)
 
-1. Environment variable `PROMPT_STYLE` (set in shell session or configuration files)
-2. chezmoi template variable `prompt_style` (defined in .chezmoidata.yaml file)
-3. Built-in default: `bare`
+1. Environment variable `PROMPT_STYLE` (set in `~/.bashrc.local` or shell session)
+2. Built-in default: `bare`
 
 ## Usage Example (Session-only Switch)
 
@@ -20,9 +19,9 @@ export PROMPT_STYLE=enhanced
 exec $SHELL
 ```
 
-## Persistent Configuration Per Host
+## Persistent Configuration
 
-To persistently change the prompt style for a specific host, add the following to `~/.bashrc.$HOSTNAME` or `~/.bashrc.local`:
+To persistently change the prompt style, add the following to `~/.bashrc.local`:
 
 ```sh
 export PROMPT_STYLE=enhanced
