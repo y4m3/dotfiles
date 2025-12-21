@@ -18,6 +18,8 @@ path_prepend "/sbin"
 path_prepend "/bin"
 
 # User-specific prepends (idempotent)
+path_prepend "$HOME/.fzf/bin"
+path_prepend "$HOME/.cargo/bin"
 path_prepend "$HOME/.local/bin"
 path_prepend "$HOME/bin"
 
@@ -33,4 +35,13 @@ for p in $PATH; do
 done
 IFS="$_old_ifs"
 PATH="$_new"
+
+# Ensure user bins are present (conditional)
+if [ -d "$HOME/.cargo/bin" ]; then
+  case ":$PATH:" in *":$HOME/.cargo/bin:"*) : ;; *) PATH="$HOME/.cargo/bin:$PATH" ;; esac
+fi
+if [ -d "$HOME/.local/bin" ]; then
+  case ":$PATH:" in *":$HOME/.local/bin:"*) : ;; *) PATH="$HOME/.local/bin:$PATH" ;; esac
+fi
+
 export PATH
