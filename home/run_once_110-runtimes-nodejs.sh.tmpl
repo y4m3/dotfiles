@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Install Node.js LTS via NodeSource repository (for Context7 MCP and other tools)
+set -euo pipefail
+
+# Note: In Docker, we DO install Node.js to verify the installer works.
+
+echo "==> Installing Node.js LTS..."
+
+# Check if Node.js is already installed
+if command -v node >/dev/null 2>&1; then
+    NODE_VERSION=$(node --version)
+    echo "✓ Node.js already installed: $NODE_VERSION"
+    exit 0
+fi
+
+# Install curl if not present
+if ! command -v curl >/dev/null 2>&1; then
+    echo "==> Installing curl..."
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y curl
+fi
+
+echo "==> Adding NodeSource repository (22.x LTS)..."
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+echo "==> Installing Node.js (LTS) ..."
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+
+# Verify installation
+if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+    echo "✓ Node.js installed successfully"
+    echo "  Node: $(node --version)"
+    echo "  npm: $(npm --version)"
+else
+    echo "Error: Node.js installation failed" >&2
+    exit 1
+fi

@@ -1,0 +1,43 @@
+#!/bin/bash
+# run_once_00-prerequisites.sh.tmpl
+# Install prerequisite system tools (skipped in Docker containers)
+
+set -e
+
+# Skip in Docker containers (packages are pre-installed in Dockerfile)
+if [ -f /.dockerenv ]; then
+    echo "==> Running in Docker, skipping prerequisites (pre-installed)"
+    exit 0
+fi
+
+echo "==> Checking prerequisite system tools..."
+
+# Check if essential tools are already installed
+if command -v git &>/dev/null && \
+   command -v curl &>/dev/null && \
+   command -v gcc &>/dev/null; then
+    echo "✓ Prerequisites already installed"
+else
+    echo "==> Installing prerequisite packages..."
+
+    # Update package lists
+    sudo apt-get update
+
+    # Install essential build tools and dependencies
+    sudo apt-get install -y \
+        bash-completion \
+        build-essential \
+        ca-certificates \
+        curl \
+        git \
+        gnupg \
+        golang-go \
+        locales \
+        openssh-client \
+        pkg-config \
+        python3-dev \
+        tzdata \
+        vim
+
+    echo "✓ Prerequisites installed successfully"
+fi

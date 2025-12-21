@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# run_once_10-install-rust.sh.tmpl
+# Install Rust (rustup + cargo) for host environment
+
+set -euo pipefail
+
+echo "==> Checking Rust installation..."
+
+# Skip if rustup is already installed
+if command -v rustup &>/dev/null; then
+    echo "✓ Rust already installed ($(rustup --version))"
+else
+    echo "==> Installing Rust via rustup..."
+
+    # Install Rust using official installer
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+
+    # Load cargo environment for current session
+    if [ -f "$HOME/.cargo/env" ]; then
+        source "$HOME/.cargo/env"
+    fi
+
+    echo "✓ Rust installed successfully"
+    echo "  rustc: $(rustc --version)"
+    echo "  cargo: $(cargo --version)"
+fi

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Install fzf using official git clone + install method
+set -euo pipefail
+
+echo "==> Installing fzf..."
+
+FZF_DIR="$HOME/.fzf"
+
+# Check if fzf is already installed
+if [ -d "$FZF_DIR" ] && command -v fzf >/dev/null 2>&1; then
+    echo "✓ fzf already installed: $(fzf --version)"
+    exit 0
+fi
+
+if [ -d "$FZF_DIR" ]; then
+    echo "Updating existing fzf installation..."
+    cd "$FZF_DIR"
+    git pull
+else
+    echo "Cloning fzf repository..."
+    git clone --depth 1 https://github.com/junegunn/fzf.git "$FZF_DIR"
+fi
+
+# Run official install script (no plugin manager, no key bindings auto-setup)
+# Pipe 'y' to answer "yes" to interactive prompts
+echo "y" | "$FZF_DIR/install" --no-update-rc 2>&1 | grep -v "^Do you want" || true
+
+echo "✓ fzf installed to $FZF_DIR"
