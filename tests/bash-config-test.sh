@@ -20,11 +20,8 @@ trap 'rm -rf "$tmpdir"' EXIT
 
 # Test 1: PATH includes home bin entries
 # Source the paths configuration and check PATH
-(
-    source ~/.bashrc.d/20-paths.sh 2>/dev/null || true
-    echo "$PATH"
-) >"$tmpdir/path.out" 2>"$tmpdir/path.err"
-assert_string_contains "$(cat "$tmpdir/path.out")" "$HOME/.local/bin" "PATH includes \$HOME/.local/bin"
+source ~/.bashrc.d/20-paths.sh 2>/dev/null
+assert_string_contains "$PATH" "$HOME/.local/bin" "PATH includes \$HOME/.local/bin"
 
 # Test 2: Locale is UTF-8
 # Check system locale (already set by Docker)
@@ -51,7 +48,8 @@ else
 fi
 
 # Test 6: Timezone is set to JST
-assert_command "[ \"\${TZ}\" = 'Asia/Tokyo' ]" "Timezone set to JST (Asia/Tokyo)"
+source ~/.bashrc.d/10-user-preferences.sh 2>/dev/null
+assert_command "[ \"$TZ\" = 'Asia/Tokyo' ]" "Timezone set to JST (Asia/Tokyo)"
 
 # Test 7: bash_profile exists
 assert_file_exists "$HOME/.bashrc" "bashrc deployed"

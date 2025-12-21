@@ -14,6 +14,16 @@ if [ -f "$HOME/.cargo/env" ]; then
     source "$HOME/.cargo/env"
 fi
 
+# Ensure user bins are in PATH (fzf and local tools)
+case ":$PATH:" in
+    *":$HOME/.fzf/bin:"*) : ;;
+    *) PATH="$HOME/.fzf/bin:$PATH" ;;
+esac
+case ":$PATH:" in
+    *":$HOME/.local/bin:"*) : ;;
+    *) PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
 # Set CARGO_HOME to default if not already set
 export CARGO_HOME="${CARGO_HOME:-$HOME/.cargo}"
 
@@ -37,21 +47,18 @@ assert_command "[ -d \"$CARGO_HOME/bin\" ]" "Cargo bin directory exists"
 assert_string_contains "$PATH" "$CARGO_HOME/bin" "Cargo bin in PATH"
 
 # Test 6: rustc version can be retrieved
-assert_command "rustc --version | grep -q 'rustc'" "rustc version check successful"
+assert_command "rustc --version | command grep -q 'rustc'" "rustc version check successful"
 
 # Test 7: cargo-installed CLI tools are available
-for tool in bat exa fd rg starship; do
+for tool in bat eza fd rg starship zoxide; do
     assert_executable "$tool" "cargo tool available: $tool"
 done
 
 # Test 8: cargo version can be retrieved
-assert_command "cargo --version | grep -q 'cargo'" "cargo version check successful"
+assert_command "cargo --version | command grep -q 'cargo'" "cargo version check successful"
 
-# Test 9: rustup shows toolchain
-assert_command "rustup toolchain list | grep -q stable" "rustup stable toolchain available"
-
-# Test 10: cargo can find dependencies (offline check)
-assert_command "cargo --version >/dev/null 2>&1" "cargo executable is functional"
+# Test 9: rustup shows stable toolchain
+assert_command "rustup toolchain list | command grep -q stable" "rustup stable toolchain available"
 
 echo ""
 print_summary

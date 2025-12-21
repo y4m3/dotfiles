@@ -21,12 +21,11 @@ fi
 TEST_PASS=0
 TEST_FAIL=0
 
-# fail: Print error message and exit
+# fail: Print error message and increment counter
 # Usage: fail "Error message"
 fail() {
     echo -e "${RED}FAIL${NC}: $*" >&2
     TEST_FAIL=$((TEST_FAIL + 1))
-    exit 1
 }
 
 # pass: Print success message
@@ -88,10 +87,10 @@ assert_string_contains() {
     local expected="$2"
     local desc="${3:-Output contains '$expected'}"
     
-    if echo "$actual" | grep -q "$expected"; then
+    if echo "$actual" | grep -qF "$expected"; then
         pass "$desc"
     else
-        fail "$desc (output: $actual)"
+        fail "$desc (expected: '$expected', actual: '$actual')"
     fi
 }
 
@@ -113,10 +112,10 @@ print_summary() {
     
     if [ $TEST_FAIL -eq 0 ]; then
         echo -e "${GREEN}All tests passed!${NC}"
-        return 0
+        exit 0
     else
         echo -e "${RED}Some tests failed!${NC}"
-        return 1
+        exit 1
     fi
 }
 
