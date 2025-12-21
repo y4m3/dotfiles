@@ -3,7 +3,7 @@
 # Optional utilities and small helpers used by interactive shells.
 
 # Initialize zoxide (smart cd) if available
-if command -v zoxide >/dev/null 2>&1; then
+if command -v zoxide > /dev/null 2>&1; then
   export _ZO_RESOLVE_SYMLINKS=1
   export _ZO_ECHO=1
   export _ZO_EXCLUDE_DIRS="/tmp:/var/tmp:/run:/proc:/sys:/dev:/snap:$HOME/.cache:$HOME/.local/share:$HOME/**/node_modules:$HOME/**/__pycache__:$HOME/**/.venv:$HOME/**/.git"
@@ -20,7 +20,7 @@ if command -v zoxide >/dev/null 2>&1; then
       shift
       zoxide remove "$1"
     else
-      if command -v __zoxide_z >/dev/null 2>&1; then
+      if command -v __zoxide_z > /dev/null 2>&1; then
         __zoxide_z "$@"
       else
         zoxide "$@"
@@ -28,7 +28,7 @@ if command -v zoxide >/dev/null 2>&1; then
     fi
   }
   # Optional: auto-ls even when cd is zoxide-backed (opt-in via ENABLE_CD_LS=1)
-  if [ "${ENABLE_CD_LS:-0}" -eq 1 ] && command -v __zoxide_z >/dev/null 2>&1; then
+  if [ "${ENABLE_CD_LS:-0}" -eq 1 ] && command -v __zoxide_z > /dev/null 2>&1; then
     cd() {
       __zoxide_z "$@"
       local status=$?

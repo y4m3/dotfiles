@@ -47,7 +47,7 @@ assert_command() {
   local cmd="$1"
   local desc="${2:-$cmd}"
 
-  if eval "$cmd" &>/dev/null; then
+  if eval "$cmd" &> /dev/null; then
     pass "$desc"
   else
     fail "$desc (command failed: $cmd)"
@@ -73,7 +73,7 @@ assert_executable() {
   local cmd="$1"
   local desc="${2:-$cmd is executable}"
 
-  if command -v "$cmd" >/dev/null 2>&1; then
+  if command -v "$cmd" > /dev/null 2>&1; then
     pass "$desc"
   else
     fail "$desc (command not found: $cmd)"

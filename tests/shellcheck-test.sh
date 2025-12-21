@@ -32,7 +32,7 @@ assert_command "shfmt --version" "shfmt version check successful"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
-cat >"$tmpdir/test.sh" <<'EOF'
+cat > "$tmpdir/test.sh" << 'EOF'
 #!/bin/bash
 echo "Hello, World!"
 EOF
@@ -40,7 +40,7 @@ EOF
 assert_command "shellcheck \"$tmpdir/test.sh\"" "shellcheck can lint simple script"
 
 # Test 6: shfmt can format a simple script
-cat >"$tmpdir/unformatted.sh" <<'EOF'
+cat > "$tmpdir/unformatted.sh" << 'EOF'
 #!/bin/bash
 if [ 1 -eq 1 ]; then
 echo "test"

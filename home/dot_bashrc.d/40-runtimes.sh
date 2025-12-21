@@ -8,7 +8,7 @@ if [ -f "$HOME/.cargo/env" ]; then
 fi
 
 # Starship prompt (enabled via PROMPT_STYLE=starship)
-if command -v starship >/dev/null 2>&1; then
+if command -v starship > /dev/null 2>&1; then
   if [ "${PROMPT_STYLE:-}" = "starship" ]; then
     eval "$(starship init bash)"
 

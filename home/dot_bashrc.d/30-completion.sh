@@ -8,14 +8,14 @@ if [ -f /usr/share/bash-completion/bash_completion ]; then
 fi
 
 # gh - GitHub CLI completion
-if command -v gh >/dev/null 2>&1; then
+if command -v gh > /dev/null 2>&1; then
   # 'gh completion -s bash' outputs a script; source it inline
   eval "$(gh completion -s bash)"
 fi
 
 # fzf - fuzzy finder integration (0.48.0+)
 # Official setup using fzf --bash (provides key bindings and completion)
-if command -v fzf >/dev/null 2>&1; then
+if command -v fzf > /dev/null 2>&1; then
   eval "$(fzf --bash)"
 
   # FZF environment variables for customization

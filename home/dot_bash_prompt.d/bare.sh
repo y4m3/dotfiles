@@ -3,11 +3,11 @@
 # Features: exit status (✓/✗), git branch with dirty mark
 
 __git_branch_dirty() {
-  command -v git >/dev/null 2>&1 || return
+  command -v git > /dev/null 2>&1 || return
   local br
-  br=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || return
+  br=$(git rev-parse --abbrev-ref HEAD 2> /dev/null) || return
   local dirty=''
-  git diff --quiet --ignore-submodules -- 2>/dev/null || dirty='*'
+  git diff --quiet --ignore-submodules -- 2> /dev/null || dirty='*'
   printf '(%s%s)' "$br" "$dirty"
 }
 

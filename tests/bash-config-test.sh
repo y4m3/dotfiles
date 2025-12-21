@@ -20,7 +20,7 @@ trap 'rm -rf "$tmpdir"' EXIT
 
 # Test 1: PATH includes home bin entries
 # Source the paths configuration and check PATH
-source ~/.bashrc.d/20-paths.sh 2>/dev/null
+source ~/.bashrc.d/20-paths.sh 2> /dev/null
 assert_string_contains "$PATH" "$HOME/.local/bin" "PATH includes \$HOME/.local/bin"
 
 # Test 2: Locale is UTF-8
@@ -39,7 +39,7 @@ assert_file_exists "$HOME/.bash_prompt.d/bare.sh" "Bare prompt file deployed"
 assert_file_exists "$HOME/.bash_prompt.d/enhanced.sh" "Enhanced prompt file deployed"
 
 # Test 5: Terminal supports colors
-tput colors >"$tmpdir/colors.out" 2>"$tmpdir/colors.err" || echo "0" >"$tmpdir/colors.out"
+tput colors > "$tmpdir/colors.out" 2> "$tmpdir/colors.err" || echo "0" > "$tmpdir/colors.out"
 color_count=$(cat "$tmpdir/colors.out")
 if [ "$color_count" -ge 16 ]; then
   pass "Terminal supports 16+ colors"
@@ -48,7 +48,7 @@ else
 fi
 
 # Test 6: Timezone is set to JST
-source ~/.bashrc.d/10-user-preferences.sh 2>/dev/null
+source ~/.bashrc.d/10-user-preferences.sh 2> /dev/null
 assert_command "[ \"$TZ\" = 'Asia/Tokyo' ]" "Timezone set to JST (Asia/Tokyo)"
 
 # Test 7: bash_profile exists

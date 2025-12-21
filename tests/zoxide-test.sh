@@ -18,7 +18,7 @@ assert_executable "zoxide" "zoxide binary installed"
 assert_command "zoxide query -l" "zoxide query command works"
 
 # Test 3: Verify 60-utils.sh sets environment variables
-source ~/.bashrc.d/60-utils.sh 2>/dev/null
+source ~/.bashrc.d/60-utils.sh 2> /dev/null
 assert_command "[ \"$_ZO_RESOLVE_SYMLINKS\" = \"1\" ]" "_ZO_RESOLVE_SYMLINKS environment variable set"
 assert_command "[ \"$_ZO_ECHO\" = \"1\" ]" "_ZO_ECHO environment variable set"
 
