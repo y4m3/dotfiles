@@ -1,0 +1,99 @@
+"$schema" = "https://starship.rs/config-schema.json"
+
+add_newline = true
+
+# ====================
+# Prompt layout
+# ====================
+format = """
+$directory$git_branch$git_status
+$username$hostname$python$cmd_duration$jobs
+$character
+"""
+
+# ====================
+# Username (show)
+# ====================
+[username]
+show_always = true
+style_user = "fg:#7CDC87"
+format = "[$user]($style) "
+
+# ====================
+# Host (context)
+# ====================
+[hostname]
+ssh_only = false
+ssh_symbol = " "
+style = "fg:#507050"
+format = "[$ssh_symbol$hostname]($style) "
+
+# ====================
+# Directory (focus)
+# ====================
+[directory]
+style = "fg:#40A0C0"
+format = "[  $path]($style)[$read_only]($read_only_style) "
+truncation_length = 3
+truncation_symbol = "…/"
+read_only = " "
+read_only_style = "fg:#507050"
+
+
+# ====================
+# Git (branch)
+# ====================
+[git_branch]
+symbol = "󰊢 "
+style = "fg:#A070C0"
+format = "[$symbol$branch]($style) "
+
+# ====================
+# Git status (FIX: $all_status)
+# ====================
+[git_status]
+style = "fg:#A070C0"
+format = "[\\[$all_status$ahead_behind\\]]($style) "
+
+up_to_date = "= "
+conflicted = "~${count} "
+untracked  = "?${count} "
+stashed    = "\\$${count} "
+modified   = "!${count} "
+staged     = "+${count} "
+renamed    = "»${count} "
+deleted    = "✘${count} "
+
+ahead    = "⇡${count} "
+behind   = "⇣${count} "
+diverged = "⇕⇡${ahead_count}⇣${behind_count} "
+
+# ====================
+# Python runtime
+# ====================
+[python]
+disabled = false
+symbol = "󰌠 "
+style = "fg:#40B5B5"
+format = "[$symbol$version]($style) [$virtualenv]($style) "
+
+# ====================
+# Duration / jobs (measurements)
+# ====================
+[cmd_duration]
+min_time = 500
+style = "fg:#507050"
+format = " [$duration]($style) "
+
+[jobs]
+symbol = "+"
+style = "fg:#507050"
+format = "[$symbol$number]($style) "
+
+# ====================
+# Input (character): shape fixed, only color changes on error
+# ====================
+[character]
+success_symbol = "[❯](fg:#40B5B5)"
+error_symbol   = "[❯](fg:#081208 bg:#AA3333)"
+vicmd_symbol   = "[❯](fg:#40B5B5)"
