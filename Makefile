@@ -16,7 +16,7 @@ DOCKER_RUN_BASE := docker run --rm -v "$(PWD):$(WORKDIR)" -w $(WORKDIR)
 DOCKER_RUN_IT := $(DOCKER_RUN_BASE) -it
 
 # Declare phony targets (not file-based; always execute when invoked)
-.PHONY: build shell dev test test-shell clean-state
+.PHONY: build shell dev test test-shell clean-state lint format
 
 # build: Construct Docker image from Dockerfile
 # Creates a Docker image containing Ubuntu 24.04, essential tools (git, curl),
@@ -58,4 +58,34 @@ test-shell: build
 clean-state:
 	docker volume rm dotfiles-state cargo-data rustup-data || true
 	@echo "✓ Persistent state cleared (dotfiles-state, cargo-data, rustup-data)."
+
+# lint: Run shellcheck on all shell scripts
+# Validates shell scripts for common errors and best practices
+# Runs in Docker container (no host installation required)
+# Excludes SC1090/SC1091 (dynamic source files)
+lint: build
+	$(DOCKER_RUN_BASE) $(VOLUMES_FULL) $(IMAGE) \
+	  bash -lc 'bash scripts/apply-container.sh && \
+	           echo "==> Running shellcheck..." && \
+	           shellcheck -e SC1090,SC1091 \
+	                      home/run_once_*.sh.tmpl \
+	                      home/dot_bashrc.d/*.sh \
+	                      home/dot_bash_prompt.d/*.sh \
+	                      scripts/*.sh \
+	                      tests/*.sh tests/lib/*.sh'
+
+# format: Format all shell scripts with shfmt
+# Applies consistent formatting (reads .editorconfig for indent settings)
+# Runs in Docker container (no host installation required)
+format: build
+	$(DOCKER_RUN_BASE) $(VOLUMES_FULL) $(IMAGE) \
+	  bash -lc 'bash scripts/apply-container.sh && \
+	           export PATH="$$HOME/.local/bin:$$PATH" && \
+	           echo "==> Formatting shell scripts with shfmt..." && \
+	           shfmt -w home/run_once_*.sh.tmpl \
+	                    home/dot_bashrc.d/*.sh \
+	                    home/dot_bash_prompt.d/*.sh \
+	                    scripts/*.sh \
+	                    tests/*.sh tests/lib/*.sh && \
+	           echo "✓ Shell scripts formatted"'
 	@echo "  Next 'make dev' or 'make test-*' will re-run all run_once_* scripts."
