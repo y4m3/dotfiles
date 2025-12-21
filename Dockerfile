@@ -5,15 +5,22 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Tokyo
 
 # Install only essential tools for chezmoi and bash execution
-# Other tools will be installed by run_once_ scripts on first container run
+# run_once_ scripts will handle additional tools on host systems
 RUN apt-get update && apt-get install -y \
     bash-completion \
+    build-essential \
     ca-certificates \
     curl \
+    git \
+    gnupg \
+    golang-go \
     locales \
     openssh-client \
+    pkg-config \
+    python3-dev \
     sudo \
     tzdata \
+    vim \
     && rm -rf /var/lib/apt/lists/*
 
 # Generate UTF-8 locale for interactive shells
