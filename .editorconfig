@@ -13,6 +13,15 @@ insert_final_newline = true
 max_line_length = 120
 trim_trailing_whitespace = true
 
+[*.sh]
+# Shell script formatting (shfmt compatible)
+# Based on common shell scripting best practices
+switch_case_indent = true      # Indent case statements (readable)
+binary_next_line = false        # && and || at end of line (common style)
+space_redirects = true          # Space after redirects: > file (Google style)
+keep_padding = false            # Auto-format alignment (consistent)
+function_next_line = false      # func() { on same line (K&R style)
+
 [*.md]
 max_line_length = off
 trim_trailing_whitespace = false
