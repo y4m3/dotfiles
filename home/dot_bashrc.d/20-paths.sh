@@ -4,8 +4,8 @@
 # Prepend a directory to PATH if not already present
 path_prepend() {
   case ":$PATH:" in
-  *":$1:") : ;;
-  *) PATH="$1:$PATH" ;;
+    *":$1:") : ;;
+    *) PATH="$1:$PATH" ;;
   esac
 }
 
@@ -29,8 +29,8 @@ IFS=:
 _new=""
 for p in $PATH; do
   case ":$_new:" in
-  *":$p:") ;; # already present
-  *) if [ -z "$_new" ]; then _new="$p"; else _new="$_new:$p"; fi ;;
+    *":$p:") ;; # already present
+    *) if [ -z "$_new" ]; then _new="$p"; else _new="$_new:$p"; fi ;;
   esac
 done
 IFS="$_old_ifs"

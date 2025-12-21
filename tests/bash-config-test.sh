@@ -29,9 +29,9 @@ assert_string_contains "$LANG" "UTF-8" "Locale LANG is UTF-8"
 
 # Test 3: bash-completion is available (check if file is present)
 if [ -f /usr/share/bash-completion/bash_completion ] || [ -f /etc/bash_completion ]; then
-    pass "bash-completion available"
+  pass "bash-completion available"
 else
-    fail "bash-completion not available"
+  fail "bash-completion not available"
 fi
 
 # Test 4: Prompt files are deployed
@@ -42,9 +42,9 @@ assert_file_exists "$HOME/.bash_prompt.d/enhanced.sh" "Enhanced prompt file depl
 tput colors >"$tmpdir/colors.out" 2>"$tmpdir/colors.err" || echo "0" >"$tmpdir/colors.out"
 color_count=$(cat "$tmpdir/colors.out")
 if [ "$color_count" -ge 16 ]; then
-    pass "Terminal supports 16+ colors"
+  pass "Terminal supports 16+ colors"
 else
-    warn "Terminal reports only $color_count colors"
+  warn "Terminal reports only $color_count colors"
 fi
 
 # Test 6: Timezone is set to JST

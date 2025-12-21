@@ -27,26 +27,30 @@ __venv() {
 }
 
 __prompt_status() {
+  # shellcheck disable=SC2154
   [ "$__last_status" -eq 0 ] && printf '✓' || printf '✗'
 }
 
 __prompt_parts() {
-  local git_info=$(__git_info)
-  local venv=$(__venv)
-  local python_ver=$(__python_version)
-  
+  local git_info
+  local venv
+  local python_ver
+  git_info=$(__git_info)
+  venv=$(__venv)
+  python_ver=$(__python_version)
+
   # Avoid duplication if git_branch and venv_name are identical
   if [ -n "$venv" ] && [ -n "$git_info" ]; then
     local venv_name="${venv#[}"
     venv_name="${venv_name%]}"
     local git_branch="${git_info#(}"
     git_branch="${git_branch%%)*}"
-    
+
     if [ "$venv_name" = "$git_branch" ]; then
       git_info=""
     fi
   fi
-  
+
   printf '%s%s%s' "$git_info" "$python_ver" "$venv"
 }
 

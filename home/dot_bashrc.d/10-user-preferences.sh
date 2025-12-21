@@ -32,22 +32,22 @@ fi
 
 # Prefer bat/batcat for cat
 if command -v bat >/dev/null 2>&1; then
-	alias cat='bat --plain'
+  alias cat='bat --plain'
 elif command -v batcat >/dev/null 2>&1; then
-	# Debian/Ubuntu package name
-	alias bat='batcat'
-	alias cat='batcat --plain'
+  # Debian/Ubuntu package name
+  alias bat='batcat'
+  alias cat='batcat --plain'
 fi
 
 # Prefer ripgrep for grep
 if command -v rg >/dev/null 2>&1; then
-	alias grep='rg'
-	# Config file is automatically loaded from ~/.ripgreprc
-	export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
+  alias grep='rg'
+  # Config file is automatically loaded from ~/.ripgreprc
+  export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
 fi
 
 # fd (fd-find) - modern find alternative
 if command -v fd >/dev/null 2>&1; then
-	alias find='fd'
-	# Ignore patterns are automatically loaded from ~/.fdignore
+  alias find='fd'
+  # Ignore patterns are automatically loaded from ~/.fdignore
 fi

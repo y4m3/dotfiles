@@ -12,6 +12,7 @@ __git_branch_dirty() {
 }
 
 __prompt_status() {
+  # shellcheck disable=SC2154
   [ "$__last_status" -eq 0 ] && printf '✓' || printf '✗'
 }
 

@@ -23,4 +23,3 @@ assert_command "[ \"$_ZO_RESOLVE_SYMLINKS\" = \"1\" ]" "_ZO_RESOLVE_SYMLINKS env
 assert_command "[ \"$_ZO_ECHO\" = \"1\" ]" "_ZO_ECHO environment variable set"
 
 print_summary
-

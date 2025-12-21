@@ -11,17 +11,17 @@ source "$SCRIPT_DIR/lib/helpers.sh"
 
 # Load Cargo environment (required for non-interactive shells)
 if [ -f "$HOME/.cargo/env" ]; then
-    source "$HOME/.cargo/env"
+  source "$HOME/.cargo/env"
 fi
 
 # Ensure user bins are in PATH (fzf and local tools)
 case ":$PATH:" in
-    *":$HOME/.fzf/bin:"*) : ;;
-    *) PATH="$HOME/.fzf/bin:$PATH" ;;
+  *":$HOME/.fzf/bin:"*) : ;;
+  *) PATH="$HOME/.fzf/bin:$PATH" ;;
 esac
 case ":$PATH:" in
-    *":$HOME/.local/bin:"*) : ;;
-    *) PATH="$HOME/.local/bin:$PATH" ;;
+  *":$HOME/.local/bin:"*) : ;;
+  *) PATH="$HOME/.local/bin:$PATH" ;;
 esac
 
 # Set CARGO_HOME to default if not already set
@@ -51,7 +51,7 @@ assert_command "rustc --version | command grep -q 'rustc'" "rustc version check 
 
 # Test 7: cargo-installed CLI tools are available
 for tool in bat eza fd rg starship zoxide; do
-    assert_executable "$tool" "cargo tool available: $tool"
+  assert_executable "$tool" "cargo tool available: $tool"
 done
 
 # Test 8: cargo version can be retrieved
