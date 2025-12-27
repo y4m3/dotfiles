@@ -1,0 +1,41 @@
+gui:
+  nerdFontsVersion: "3"               # Nerd Fonts v3 (Tokyonight glyphs)
+  scrollHeight: 4                     # Faster list scroll
+  sidePanelWidth: 0.35                # Wider files/branches panel
+  showCommandLog: false               # Hide noisy command log
+  showBottomLine: false               # Minimal footer
+  mouseEvents: true                   # Enable mouse support
+  theme:                              # Tokyonight-ish palette
+    activeBorderColor: ["#7aa2f7", "bold"]
+    inactiveBorderColor: ["#2a2f3a"]
+    optionsTextColor: ["#7aa2f7"]
+    selectedLineBgColor: ["#1f2335"]
+    selectedRangeBgColor: ["#1f2335"]
+    cherryPickedCommitBgColor: ["#1f2335"]
+    cherryPickedCommitFgColor: ["#9ece6a"]
+    unstagedChangesColor: ["#f7768e"]
+    defaultFgColor: ["#c0caf5"]
+    searchingActiveBorderColor: ["#f7768e", "bold"]
+
+git:
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never --features=tokyo-night
+  autoFetch: false                    # Avoid surprise network calls
+  branchLogCmd: git log --graph --color=always --abbrev-commit --decorate --date=relative --format='%C(auto)%h%d %s %C(245)%cr %C(250)%an'
+  pull:
+    mode: ffOnly                      # Fail if not fast-forward (aligns with .gitconfig)
+  merging:
+    manualCommit: false               # Auto-commit merge by default
+
+os:
+  editPreset: ""                      # Use $VISUAL/$EDITOR if set; override here if needed
+
+keybinding:
+  universal:
+    quit: q
+    quit-alt1: <c-c>
+    return: <esc>
+  files:
+    edit: e                           # Open file in editor
+    openStatusFilter: <c-f>           # Toggle status filter
