@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Install lazydocker from GitHub releases
+set -euo pipefail
+
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
+
+case "$(uname -m)" in
+x86_64 | amd64) arch="x86_64" ;;
+aarch64 | arm64) arch="arm64" ;;
+*)
+  echo "Unsupported architecture: $(uname -m)" >&2
+  exit 1
+  ;;
+esac
+
+if [ -n "${LAZYDOCKER_VERSION:-}" ]; then
+  version="$LAZYDOCKER_VERSION"
+else
+  version=$(curl -fsSL https://api.github.com/repos/jesseduffield/lazydocker/releases/latest | jq -r '.tag_name')
+fi
+
+if [ -z "$version" ] || [ "$version" = "null" ]; then
+  echo "Failed to resolve lazydocker version" >&2
+  exit 1
+fi
+
+version_trimmed="${version#v}"
+asset="lazydocker_${version_trimmed}_Linux_${arch}.tar.gz"
+url="https://github.com/jesseduffield/lazydocker/releases/download/${version}/${asset}"
+
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+curl -fsSL "$url" -o "$tmpdir/lazydocker.tar.gz"
+tar -xzf "$tmpdir/lazydocker.tar.gz" -C "$tmpdir" lazydocker
+
+install -m 0755 "$tmpdir/lazydocker" "$INSTALL_DIR/lazydocker"
+
+echo "==> lazydocker version: $("$INSTALL_DIR/lazydocker" --version)"

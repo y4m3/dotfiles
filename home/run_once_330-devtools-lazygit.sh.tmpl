@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Install lazygit from GitHub releases
+set -euo pipefail
+
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
+
+# Detect architecture
+case "$(uname -m)" in
+x86_64 | amd64) arch="x86_64" ;;
+aarch64 | arm64) arch="arm64" ;;
+*)
+  echo "Unsupported architecture: $(uname -m)" >&2
+  exit 1
+  ;;
+esac
+
+# Resolve version
+if [ -n "${LAZYGIT_VERSION:-}" ]; then
+  version="$LAZYGIT_VERSION"
+else
+  version=$(curl -fsSL https://api.github.com/repos/jesseduffield/lazygit/releases/latest | jq -r '.tag_name')
+fi
+
+if [ -z "$version" ] || [ "$version" = "null" ]; then
+  echo "Failed to resolve lazygit version" >&2
+  exit 1
+fi
+
+version_trimmed="${version#v}"
+asset="lazygit_${version_trimmed}_Linux_${arch}.tar.gz"
+url="https://github.com/jesseduffield/lazygit/releases/download/${version}/${asset}"
+
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+curl -fsSL "$url" -o "$tmpdir/lazygit.tar.gz"
+tar -xzf "$tmpdir/lazygit.tar.gz" -C "$tmpdir" lazygit
+
+install -m 0755 "$tmpdir/lazygit" "$INSTALL_DIR/lazygit"
+
+echo "==> lazygit version: $("$INSTALL_DIR/lazygit" --version)"

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Install git-delta from GitHub releases
+set -euo pipefail
+
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
+
+# Detect architecture
+case "$(uname -m)" in
+x86_64 | amd64) target_arch="x86_64-unknown-linux-gnu" ;;
+aarch64 | arm64) target_arch="aarch64-unknown-linux-gnu" ;;
+*)
+  echo "Unsupported architecture: $(uname -m)" >&2
+  exit 1
+  ;;
+esac
+
+# Resolve version
+if [ -n "${DELTA_VERSION:-}" ]; then
+  version="$DELTA_VERSION"
+else
+  version=$(curl -fsSL https://api.github.com/repos/dandavison/delta/releases/latest | jq -r '.tag_name')
+fi
+
+if [ -z "$version" ] || [ "$version" = "null" ]; then
+  echo "Failed to resolve delta version" >&2
+  exit 1
+fi
+
+version_trimmed="${version#v}"
+asset="delta-${version_trimmed}-${target_arch}.tar.gz"
+url="https://github.com/dandavison/delta/releases/download/${version}/${asset}"
+
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+curl -fsSL "$url" -o "$tmpdir/delta.tar.gz"
+tar -xzf "$tmpdir/delta.tar.gz" -C "$tmpdir"
+
+binary_path=$(find "$tmpdir" -maxdepth 3 -type f -name delta | head -n 1)
+if [ -z "$binary_path" ]; then
+  echo "delta binary not found in archive" >&2
+  exit 1
+fi
+
+install -m 0755 "$binary_path" "$INSTALL_DIR/delta"
+
+echo "==> delta version: $("$INSTALL_DIR/delta" --version)"
