@@ -24,10 +24,11 @@ alias mkdir='mkdir -pv'
 # Tool-friendly aliases (enabled when tools are available)
 # eza for ls family (exa is EOL)
 if command -v eza > /dev/null 2>&1; then
-  alias ls='eza --color=auto --group-directories-first'
-  alias ll='eza -alF --git'
-  alias la='eza -a'
-  alias tree='eza --tree --color=auto --group-directories-first'
+  alias ls='eza --color=auto --group-directories-first --icons'
+  alias ll='eza -alF --git --icons --header --time-style=long-iso'
+  alias la='eza -a --icons'
+  alias tree='eza --tree --color=auto --group-directories-first --icons'
+  alias llt='eza -alF --git --icons --tree --level=2'
 fi
 
 # Prefer bat/batcat for cat
