@@ -1,3 +1,68 @@
+# chezmoi-first setup guide
+
+This repository manages dotfiles with [chezmoi](https://www.chezmoi.io/#what-does-chezmoi-do). Host setup is the primary path; Docker is only for validation.
+
+### Requirements
+
+- curl, git
+
+```bash
+sudo apt update; sudo apt install -y curl git
+```
+
+## Quick start (host)
+
+1) Install chezmoi and apply this repo:
+```bash
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply y4m3
+```
+
+2) Update later:
+```bash
+chezmoi update
+```
+(`chezmoi pull && chezmoi apply` is equivalent)
+
+
+## What chezmoi manages here
+
+- `home/` dotfiles (`dot_*`, `dot_*/*.sh`, `create_*` templates)
+- `run_once_*.sh.tmpl`: first-run install scripts (numbered by category)
+- Themed configs (delta, lazygit, zellij, yazi)
+
+## Run-once numbering (brief)
+
+- 0xx: Foundation (prerequisites)
+- 1xx: Language runtimes (e.g., uv)
+- 2xx: CLI/Shell (direnv, yq, btop, yazi, zellij)
+- 3xx: Dev tools (delta, lazygit, lazydocker)
+
+## Optional: Docker for testing
+
+Use only when you need a throwaway validation environment.
+
+```bash
+make build     # Build Docker image
+make dev       # chezmoi apply in container + login shell
+make test      # Run all tests
+make lint      # shellcheck in lint image
+make format    # shfmt in lint image
+```
+- Manual inside container: `bash scripts/apply-container.sh`
+- Reset persistent volumes: `make clean-state`
+
+## Directory quick reference
+
+- `home/`: dotfiles sources (e.g., dot_bashrc, dot_bashrc.d/*)
+- `tests/`: tool smoke tests
+- `docs/`: policy and templates (e.g., docs/templates/envrc-examples.md)
+- `Dockerfile`, `Makefile`: container validation & automation
+
+## Tips
+
+- `create_*.tmpl` are "create-if-missing" templates; existing files are preserved.
+- Host application is the source of truth; Docker is for safe verification.
+
 # Bash Configuration Testing Workflow for Ubuntu 24.04
 
 This directory contains a minimal setup for testing chezmoi-managed bash configurations on Ubuntu 24.04 containers
@@ -31,61 +96,43 @@ chezmoi init \
  --source=/workspace \
  --destination=/root
 
-chezmoi apply \
- --source=/workspace \
- --destination=/root \
- --force
+# chezmoi setup (host-first)
 
-chezmoi diff
+Minimal steps on your host (Linux/WSL/macOS). Docker is only for validation.
+
+## Quick start (host)
+
+Install and apply (replace `$GITHUB_USERNAME`):
+```bash
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply $GITHUB_USERNAME
+```
+Update later:
+```bash
+chezmoi update
 ```
 
-## Directory Structure
+## Managed scope
 
-- Dockerfile: Minimal Ubuntu 24.04 image with chezmoi (includes bash-completion, locales, and color terminal support)
-- home/: Bash configuration files (`dot_bashrc`, `dot_bashrc.d/`, `dot_bash_prompt.d/`)
+- `home/`: dotfiles (`dot_*`, `create_*`)
+- `run_once_*.sh.tmpl`: one-time installers (numbered)
+- themed configs: delta, lazygit, zellij, yazi
 
-### File Naming Convention
+Run-once numbering: 0xx=base, 1xx=lang, 2xx=CLI, 3xx=dev tools.
 
-- chezmoi source files: `home/dot_*` → deployed as: `~/.*` (after applying)
-- Example: `home/dot_bashrc.d` → `~/.bashrc.d`
+## Docker (optional)
 
-### Chezmoi: create_ templates
+```bash
+make build   # build image
+make dev     # apply + login shell
+make test    # run tests
+make lint    # shellcheck
+make format  # shfmt
+```
+Manual: `bash scripts/apply-container.sh`; reset volumes: `make clean-state`.
 
-- Use `create_`-prefixed source files when you want chezmoi to create a file only if it does not already exist on the destination. This is the recommended, official way to provide "create-if-missing" defaults (for example, `home/create_.bashrc.local.tmpl`).
-- Behaviour: on `chezmoi apply`, files named `create_<name>` are created at the destination path `<name>` only when the destination file is absent. After creation the file is managed as a normal, user-editable file.
-- Prefer `create_` over ad-hoc run-once scripts for simple create-if-missing semantics; use CI/container pipeline scripts for more complex, idempotent initialization steps.
-
-### run_once Scripts: Numbering Convention
-
-run_once scripts use 3-digit numbers (000-999) to manage categories and execution order.
-
-#### Category System (Hundreds Place)
-
-- **0XX: Foundation & System** - System foundation, OS base packages, system configuration
-- **1XX: Language Runtimes** - Programming language runtime environments (Rust, Node.js, Python, Go, etc.)
-- **2XX: CLI Tools & Utilities** - Command-line tools (fzf, cargo tools, shell extensions, etc.)
-- **3XX: Development Tools** - Development environment, version control (Git-related, editors, linters, etc.)
-- **4XX: Infrastructure & Cloud** - Infrastructure and cloud tools (Docker, Kubernetes, AWS/GCP/Azure CLI, etc.)
-- **5XX: Networking & Security** - Network and security tools (HTTP clients, DNS, VPN, etc.)
-- **6XX: Data & Database** - Data processing and database-related (DB clients, data processing tools, etc.)
-- **7XX: Monitoring & Observability** - Monitoring and observability tools
-- **8XX: Reserved** - Reserved for future major categories
-- **9XX: User-specific & Experimental** - User-specific and experimental tools
-
-When adding new tools, use an available number in the appropriate category.
-
-(y4m3 × GitHub Copilot)
-
-## Quickstart
-- Host: `make build`, `make dev` (launch login shell in container), `make test` (automated tests)
-- Inside container: Run `bash scripts/apply-container.sh` to execute `chezmoi init/apply` together
-
-## Make Targets
-- `build`: Build Docker image
-- `shell`: Launch bash shell in clean container
-- `dev`: Apply dotfiles and drop into login shell (for manual testing)
-- `test`: Run all tests (bash/cargo/github/node/zoxide)
-- `test-shell`: Launch interactive shell with tests pre-applied (for individual test execution)
+## Notes
+- `create_*.tmpl` only creates missing files.
+- Host setup is the source of truth; use Docker just to verify.
 - `clean-state`: Clear Docker persistent volumes (re-run run_once scripts)
 
 ## Installed Tools

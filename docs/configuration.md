@@ -1,6 +1,22 @@
 # Configuration Guide
 
-This guide explains the configuration policy and customization methods for this dotfiles repository.
+This guide explains the configuration policy and customization methods for this dotfiles repository. Assumes host application; Docker is for validation only.
+
+## Quick apply (host)
+
+Install chezmoi and apply (replace `$GITHUB_USERNAME`):
+
+```bash
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply $GITHUB_USERNAME
+```
+
+Update later:
+
+```bash
+chezmoi update
+```
+
+For Docker validation, refer to "Docker (optional)" section in README.
 
 ## Design Principles
 
