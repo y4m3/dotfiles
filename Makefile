@@ -15,6 +15,7 @@ VOLUMES_FULL := $(VOLUME_DOTFILES) $(VOLUME_CARGO) $(VOLUME_RUSTUP)
 # Common docker run base command
 DOCKER_RUN_BASE := docker run --rm -v "$(PWD):$(WORKDIR)" -w $(WORKDIR)
 DOCKER_RUN_IT := $(DOCKER_RUN_BASE) -it
+DOCKER_RUN_BASE_USER := $(DOCKER_RUN_BASE) -u $(shell id -u):$(shell id -g)
 
 # Declare phony targets (not file-based; always execute when invoked)
 .PHONY: build shell dev test test-shell clean-state build-lint lint format 
@@ -69,7 +70,7 @@ build-lint: Dockerfile.lint
 # Excludes SC1090/SC1091 (dynamic source files)
 lint: build-lint
 	@echo "==> Running shellcheck on all shell scripts..."
-	@docker run --rm -v "$(PWD):$(WORKDIR)" -w $(WORKDIR) $(IMAGE_LINT) \
+	@$(DOCKER_RUN_BASE_USER) $(IMAGE_LINT) \
 	  shellcheck -e SC1090,SC1091 \
 	             home/run_once_*.sh.tmpl \
 	             home/dot_bashrc.d/*.sh \
@@ -83,7 +84,7 @@ lint: build-lint
 # Reads .editorconfig for indent settings
 format: build-lint
 	@echo "==> Formatting shell scripts with shfmt..."
-	@docker run --rm -v "$(PWD):$(WORKDIR)" -w $(WORKDIR) $(IMAGE_LINT) \
+	@$(DOCKER_RUN_BASE_USER) $(IMAGE_LINT) \
 	  shfmt -w home/run_once_*.sh.tmpl \
 	           home/dot_bashrc.d/*.sh \
 	           home/dot_bash_prompt.d/*.sh \

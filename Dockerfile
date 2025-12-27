@@ -14,10 +14,13 @@ RUN apt-get update && apt-get install -y \
     git \
     gnupg \
     golang-go \
+    direnv \
+    jq \
     locales \
     openssh-client \
     pkg-config \
     python3-dev \
+    tmux \
     sudo \
     tzdata \
     vim \
