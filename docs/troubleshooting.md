@@ -2,36 +2,40 @@
 
 Common issues and solutions for this dotfiles.
 
+## Quick re-apply on host
+
+```bash
+# Initial apply (host)
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply $GITHUB_USERNAME
+
+# Update later
+chezmoi update
+```
+
 ## General Issues
 
-### Re-running run_once Scripts
+### Re-running run_once scripts
 
-Chezmoi records the state of executed scripts, so they won't normally re-execute.
+ChezMoi tracks executed run_once scripts. To re-run:
 
-**Docker Environment (Recommended):**
+- **Clean chezmoi state (host):**
+	```bash
+	rm -rf ~/.local/share/chezmoi/run_once_*
+	chezmoi apply
+	```
 
-```bash
-# Clear persistent volumes for complete reset
-make clean-state
-make build
-make test
-```
+- **Docker reset (optional for validation):**
+	```bash
+	make clean-state
+	make build
+	make test
+	```
 
-**Re-running Individual Scripts:**
-
-```bash
-# Execute script directly
-bash home/run_once_000-prerequisites.sh.tmpl
-bash home/run_once_100-runtimes-rust.sh.tmpl
-```
-
-**Clear Chezmoi State:**
-
-```bash
-# Delete state files (Warning: all run_once will re-execute)
-rm -rf ~/.local/share/chezmoi/run_once_*
-chezmoi apply
-```
+- **Run a specific script manually:**
+	```bash
+	bash home/run_once_000-prerequisites.sh.tmpl
+	bash home/run_once_240-shell-direnv.sh.tmpl
+	```
 
 ### Added Directory Not Reflected in PATH
 
@@ -142,15 +146,14 @@ exec bash -l
 **Solutions**:
 
 ```bash
-# 1. Check installation status
-apt policy gh
+# 1. Check installation status via script
+bash home/run_once_300-devtools-gh.sh.tmpl --check
 
-# 2. Reinstall
+# 2. Reinstall using managed script
 bash home/run_once_300-devtools-gh.sh.tmpl
 
-# 3. If still not working, update apt
-sudo apt update
-sudo apt install -y gh
+# 3. If still not working, re-run prerequisites
+bash home/run_once_000-prerequisites.sh.tmpl
 ```
 
 ### ghq Not Found
@@ -267,40 +270,26 @@ git mv source destination
 
 ## Test Issues
 
-### make test Fails
+### make test fails
 
-**Symptoms**: Error occurs with `make test`
-
-**Diagnostic Steps**:
-
+1. Identify the failing test:
 ```bash
-# 1. Check which test is failing
 make test
-
-# 2. Run individual tests
-docker run --rm -it -v "$(pwd):/workspace" dotfiles-test:ubuntu24.04 bash
-bash scripts/apply-container.sh
-bash tests/bash-config-test.sh
-bash tests/cargo-test.sh
-bash tests/github-tools-test.sh
-bash tests/node-test.sh
-bash tests/zoxide-test.sh
-
-# 3. Manual verification in interactive shell
+```
+2. Run a specific test (inside container or host):
+```bash
+bash tests/<name>-test.sh
+```
+3. Manual verification shell:
+```bash
 make dev
 ```
 
-### Reset Test Environment
+### Reset test environment (Docker)
 
 ```bash
-# Completely clear Docker volumes and state
 make clean-state
-
-# Rebuild image
-docker rmi dotfiles-test:ubuntu24.04
 make build
-
-# Re-run tests
 make test
 ```
 
