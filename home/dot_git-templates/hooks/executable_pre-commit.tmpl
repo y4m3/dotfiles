@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# pre-commit hook: Check user.name and user.email are configured
+
+# Get user config
+user_name=$(git config user.name)
+user_email=$(git config user.email)
+
+if [ -z "$user_name" ] || [ -z "$user_email" ]; then
+    cat >&2 <<'EOF'
+========================================
+ERROR: Git user identity not configured
+========================================
+
+Please edit ~/.gitconfig.local and uncomment the [user] section:
+
+    [user]
+        name = Your Name
+        email = your.email@example.com
+
+Then reload your shell or run:
+    source ~/.bashrc
+
+DO NOT use 'git config --global' directly.
+Edit ~/.gitconfig.local instead.
+========================================
+EOF
+    exit 1
+fi
+
+exit 0

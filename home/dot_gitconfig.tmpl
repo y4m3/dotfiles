@@ -1,0 +1,71 @@
+# Include local user-specific settings (name, email, etc.)
+# IMPORTANT: Edit ~/.gitconfig.local before making commits
+[include]
+    path = ~/.gitconfig.local
+
+[core]
+    pager = delta
+    editor = vim
+    hooksPath = ~/.git-templates/hooks
+
+[init]
+    defaultBranch = main
+
+[ghq]
+    root = ~/repos
+
+[fetch]
+    prune = true
+
+[pull]
+    rebase = false
+    ff = only
+
+[push]
+    default = simple
+
+[status]
+    submoduleSummary = true
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true
+    side-by-side = true
+    line-numbers = true
+    features = tokyo-night
+
+[delta "tokyo-night"]
+    syntax-theme = OneHalfDark
+    file-style = bold #7aa2f7
+    hunk-header-style = bold #bb9af7
+    minus-style = syntax "#382a33"
+    minus-non-emph-style = syntax "#2a1f26"
+    minus-empty-style = syntax "#2a1f26"
+    plus-style = syntax "#1f2d2d"
+    plus-non-emph-style = syntax "#142322"
+    plus-empty-style = syntax "#142322"
+    zero-style = syntax "#1a1b26"
+    line-numbers-zero-style = "#3b4261"
+    line-numbers-minus-style = "#f7768e"
+    line-numbers-plus-style = "#9ece6a"
+
+[merge]
+    conflictstyle = diff3
+
+[diff]
+    colorMoved = default
+    algorithm = histogram
+    mnemonicPrefix = true
+    renames = copies
+
+[alias]
+    st = status -sb
+    co = checkout
+    br = branch
+    ci = commit
+    unstage = reset HEAD --
+    last = log -1 HEAD
+    lg = log --graph --oneline --decorate --all
+    amend = commit --amend --no-edit
