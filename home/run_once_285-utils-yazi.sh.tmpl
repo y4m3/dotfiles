@@ -29,7 +29,7 @@ asset="yazi-${target}.zip"
 url="https://github.com/sxyazi/yazi/releases/download/${version}/${asset}"
 
 tmpdir=$(mktemp -d)
-trap "rm -rf '$tmpdir'" EXIT
+trap 'rm -rf "$tmpdir"' EXIT
 
 curl -fsSL "$url" -o "$tmpdir/yazi.zip"
 unzip -q "$tmpdir/yazi.zip" -d "$tmpdir/extract"

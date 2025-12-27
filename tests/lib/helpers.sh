@@ -124,7 +124,6 @@ print_summary() {
 setup_tmpdir() {
   local tmpdir
   tmpdir=$(mktemp -d)
-  trap 'rm -rf "$tmpdir"' EXIT
   echo "$tmpdir"
 }
 

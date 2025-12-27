@@ -15,7 +15,8 @@ gui:
       - blue
 
 commandTemplates:
-  restartService: "docker restart {{ .Container.ID }}"
+  # Render literal Go template placeholders for lazydocker to substitute
+  restartService: "docker restart {{ "{{" }} .Container.ID {{ "}}" }}"
   dockerCompose: "docker-compose"
 
 logs:

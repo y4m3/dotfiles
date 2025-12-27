@@ -29,7 +29,7 @@ asset="btop-${target}.tbz"
 url="https://github.com/aristocratos/btop/releases/download/${version}/${asset}"
 
 tmpdir=$(mktemp -d)
-trap "rm -rf \"$tmpdir\"" EXIT
+trap 'rm -rf "$tmpdir"' EXIT
 
 curl -fsSL "$url" -o "$tmpdir/btop.tbz"
 tar -xjf "$tmpdir/btop.tbz" -C "$tmpdir"
