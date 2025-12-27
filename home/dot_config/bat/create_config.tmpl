@@ -1,11 +1,14 @@
-# ~/.config/bat/config — bat defaults
+# ~/.config/bat/config — bat defaults (tokyo-night friendly)
 # See: https://github.com/sharkdp/bat#configuration
 
 # Always use colors
 --color=always
 
+# Theme (bat built-in). OneHalfDark is closest to tokyo-night.
+--theme=OneHalfDark
+
 # Show line numbers and grid
 --style=header,grid,numbers
 
-# Use less as pager when needed
+# Use less as pager when needed (raw control sequences, quit if one screen)
 pager = "less -FR"
