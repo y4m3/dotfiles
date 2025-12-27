@@ -28,25 +28,17 @@ gh repo clone owner/repo      # Clone repository
 gh repo view                  # View repository info
 ```
 
-### Installation Method
+### Installation Method (Environment-specific)
 
-This dotfiles installs from the official APT repository:
-
-```bash
-# Automatically executed in run_once_300-devtools-gh.sh
-curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
-  sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | \
-  sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-sudo apt update
-sudo apt install -y gh
-```
-
-**Policy**: Using the official APT repository benefits from system-wide dependency management and security updates.
+- Managed by `run_once_300-devtools-gh.sh.tmpl`
+- Uses the official APT repository for updates and security
 
 ## ghq (Repository Manager)
 
 Tool for unified Git repository management. Clones into structures like `~/ghq/github.com/owner/repo`.
+### Configuration (Environment-specific)
+
+- `ghq.root` is set via global git config to `~/repos` for a predictable local path structure.
 
 ### Basic Usage
 
