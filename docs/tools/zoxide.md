@@ -1,53 +1,16 @@
 # zoxide
 
-Fast directory jumping tool. Used as an alternative to `cd`, intelligently guessing directories based on access frequency.
+Concise notes focused on environment-specific configuration. Refer to official docs for general usage.
 
-## Basic Usage
+## Official Documentation
 
-### Initial Setup
+https://github.com/ajeetdsouza/zoxide
 
-For first-time use, teach frequently used directories:
+## Environment-specific Configuration
 
-```bash
-j add /home/user/projects
-j add /var/log
-j add ~/.config
-```
-
-### Jump Commands
-
-After learning, jump with partial matches:
-
-```bash
-j proj      # Jump to /home/user/projects
-j log       # Jump to /var/log
-j conf      # Jump to ~/.config
-```
-
-### Query Verification
-
-Check what path zoxide will guess:
-
-```bash
-zoxide query proj
-zoxide query -l     # Display all learned paths
-```
-
-## Custom Configuration
-
-### Environment Variables
-
-- `_ZO_DATA_DIR`: Database storage location (default: `~/.local/share/zoxide`)
-- `_ZO_ECHO`: Display jump destination (enabled in this dotfiles)
-- `_ZO_EXCLUDE_DIRS`: Directories to exclude from learning (e.g., `/tmp/*`)
-
-### Auto ls After cd
-
-Set the following in `.bashrc.local` to automatically run `ls` after `cd`:
-
-```bash
-export ENABLE_CD_LS=1
-```
+- Provides `j` command instead of `z` (defined in shell initialization)
+- Optional auto `ls` enabled via `ENABLE_CD_LS=1` in `.bashrc.local`
+- Exclusion paths and display behavior controlled by environment variables (e.g., `_ZO_EXCLUDE_DIRS`, `_ZO_ECHO`)
 
 This setting is implemented in `60-utils.sh` and wraps the normal `cd` command.
 

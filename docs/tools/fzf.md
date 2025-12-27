@@ -1,53 +1,20 @@
 # fzf (Fuzzy Finder)
 
-Interactive fuzzy finder for command line. Interactively search files, command history, processes, and more.
+Concise notes focused on environment-specific configuration. Refer to official docs for general usage.
 
-## Basic Usage
+## Official Documentation
 
-### File Search
+https://github.com/junegunn/fzf
 
-```bash
-# Search files under current directory
-fzf
+## Installation
 
-# Open selected file
-vim $(fzf)
+- Managed by `run_once_200-shell-fzf.sh.tmpl`
 
-# Search with preview
-fzf --preview 'bat --color=always {}'
-```
+## Environment-specific Configuration
 
-### Command History Search
-
-```bash
-# Search history with Ctrl+R (automatically configured in bash)
-# Press Ctrl+R in terminal to launch fzf
-```
-
-### Combination with Pipes
-
-```bash
-# Select from list
-ls | fzf
-
-# Process selection
-ps aux | fzf
-
-# Git branch selection
-git branch | fzf | xargs git checkout
-```
-
-## Key Bindings (Default)
-
-- `Ctrl+R`: Command history search
-- `Ctrl+T`: File search (insert selected path)
-- `Alt+C`: Directory navigation (cd with fuzzy search)
-
-These are automatically configured when fzf is installed.
-
-## Custom Configuration
-
-### Environment Variables
+- Bash integration default keys: `Ctrl+R` (history search), `Ctrl+T` (file insert), `Alt+C` (cd)
+- No explicit custom settings for fzf itself (uses upstream defaults)
+- Other tools like bat/fd can be used together, but the single source of truth is each tool's documentation/template
 
 Recommended settings in this dotfiles (configurable in `.bashrc.local`):
 
