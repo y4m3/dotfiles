@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Install yq (mikefarah) from GitHub releases
+set -euo pipefail
+
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
+
+case "$(uname -m)" in
+x86_64 | amd64) arch="amd64" ;;
+aarch64 | arm64) arch="arm64" ;;
+*)
+  echo "Unsupported architecture: $(uname -m)" >&2
+  exit 1
+  ;;
+esac
+
+if [ -n "${YQ_VERSION:-}" ]; then
+  version="$YQ_VERSION"
+else
+  version=$(curl -fsSL https://api.github.com/repos/mikefarah/yq/releases/latest | jq -r '.tag_name')
+fi
+
+if [ -z "$version" ] || [ "$version" = "null" ]; then
+  echo "Failed to resolve yq version" >&2
+  exit 1
+fi
+
+binary_name="yq_linux_${arch}"
+url="https://github.com/mikefarah/yq/releases/download/${version}/${binary_name}"
+
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+curl -fsSL "$url" -o "$tmpdir/yq"
+install -m 0755 "$tmpdir/yq" "$INSTALL_DIR/yq"
+
+echo "==> yq version: $("$INSTALL_DIR/yq" --version)"

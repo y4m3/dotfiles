@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Install zellij from GitHub releases
+set -euo pipefail
+
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
+
+# Detect architecture
+case "$(uname -m)" in
+x86_64 | amd64) target="x86_64-unknown-linux-musl" ;;
+aarch64 | arm64) target="aarch64-unknown-linux-musl" ;;
+*)
+  echo "Unsupported architecture: $(uname -m)" >&2
+  exit 1
+  ;;
+esac
+
+# Resolve version
+if [ -n "${ZELLIJ_VERSION:-}" ]; then
+  version="$ZELLIJ_VERSION"
+else
+  version=$(curl -fsSL https://api.github.com/repos/zellij-org/zellij/releases/latest | jq -r '.tag_name')
+fi
+
+if [ -z "$version" ] || [ "$version" = "null" ]; then
+  echo "Failed to resolve zellij version" >&2
+  exit 1
+fi
+
+asset="zellij-${target}.tar.gz"
+url="https://github.com/zellij-org/zellij/releases/download/${version}/${asset}"
+
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+curl -fsSL "$url" -o "$tmpdir/zellij.tar.gz"
+tar -xzf "$tmpdir/zellij.tar.gz" -C "$tmpdir"
+
+binary_path=$(find "$tmpdir" -maxdepth 3 -type f -name zellij | head -n 1)
+if [ -z "$binary_path" ]; then
+  echo "zellij binary not found in archive" >&2
+  exit 1
+fi
+
+install -m 0755 "$binary_path" "$INSTALL_DIR/zellij"
+
+echo "==> zellij version: $("$INSTALL_DIR/zellij" --version)"
