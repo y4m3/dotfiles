@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Install uv (Python package and project manager)
+# uv installs Python itself and manages Python environments
+set -euo pipefail
+
+echo "==> Installing uv..."
+
+# Check if uv is already installed
+if command -v uv >/dev/null 2>&1; then
+  echo "✓ uv already installed: $(uv --version)"
+  exit 0
+fi
+
+# Install uv using official installer
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Add uv to PATH for current session
+export PATH="$HOME/.local/bin:$PATH"
+
+# Verify installation
+if command -v uv >/dev/null 2>&1; then
+  echo "✓ uv installed successfully: $(uv --version)"
+  echo "  Location: $(command -v uv)"
+else
+  echo "Error: uv installation failed" >&2
+  exit 1
+fi
+
+# Optional: Install a Python version via uv (can be done later)
+# echo "==> Installing Python via uv..."
+# uv python install 3.12

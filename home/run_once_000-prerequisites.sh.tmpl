@@ -15,7 +15,9 @@ echo "==> Checking prerequisite system tools..."
 # Check if essential tools are already installed
 if command -v git &>/dev/null &&
   command -v curl &>/dev/null &&
-  command -v gcc &>/dev/null; then
+  command -v gcc &>/dev/null &&
+  command -v jq &>/dev/null &&
+  command -v tmux &>/dev/null; then
   echo "✓ Prerequisites already installed"
 else
   echo "==> Installing prerequisite packages..."
@@ -32,10 +34,12 @@ else
     git \
     gnupg \
     golang-go \
+    jq \
     locales \
     openssh-client \
     pkg-config \
     python3-dev \
+    tmux \
     tzdata \
     vim
 
