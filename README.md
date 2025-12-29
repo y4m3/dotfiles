@@ -39,101 +39,60 @@ chezmoi update
 
 ## Optional: Docker for testing
 
-Use only when you need a throwaway validation environment.
+Use only when you need a throwaway validation environment. For detailed testing information, see [Testing Guide](docs/testing-guide.md).
 
 ```bash
-make build     # Build Docker image
-make dev       # chezmoi apply in container + login shell
-make test      # Run all tests
-make lint      # shellcheck in lint image
-make format    # shfmt in lint image
+make build              # Build Docker image
+make dev                # chezmoi apply in container + login shell
+make test               # Change detection test (runs tests for changed files only)
+make test-all           # Run all tests (creates snapshot on success)
+make test-all BASELINE=1 # Run all tests and save baseline
+make clean              # Remove persistent volumes
+make clean REBUILD=1    # Remove volumes and rebuild environment
+make reset              # Reset manual installations, return to state A
+make lint               # shellcheck in lint image
+make format             # shfmt in lint image
 ```
-- Manual inside container: `bash scripts/apply-container.sh`
-- Reset persistent volumes: `make clean-state`
+
+### Environment Management Workflow
+
+This repository supports efficient tool testing with snapshot-based environment management:
+
+1. **Initial setup (State A)**: Run `make test-all` to build environment A and create a snapshot
+2. **Try new tools (State B = A + X)**: Use `make dev` to enter container, manually install tools
+3. **Continue testing**: Run `make dev` again to maintain state B
+4. **Reset to State A**: Run `make reset` to remove manually installed tools
+5. **Complete reset**: Run `make clean REBUILD=1` to rebuild everything from scratch
+
+The snapshot system automatically tracks run_once-installed tools, so you don't need to maintain tool lists manually.
 
 ## Directory quick reference
 
 - `home/`: dotfiles sources (e.g., dot_bashrc, dot_bashrc.d/*)
 - `tests/`: tool smoke tests
-- `docs/`: policy and templates (e.g., docs/templates/envrc-examples.md)
+- `docs/`: policy and templates (e.g., docs/templates/envrc-examples.md, docs/testing-guide.md)
 - `Dockerfile`, `Makefile`: container validation & automation
+
+## Verification
+
+For comprehensive verification of installation and configuration, see [docs/testing-guide.md](docs/testing-guide.md).
 
 ## Tips
 
 - `create_*.tmpl` are "create-if-missing" templates; existing files are preserved.
 - Host application is the source of truth; Docker is for safe verification.
 
-# Bash Configuration Testing Workflow for Ubuntu 24.04
+### Main Targets
 
-This directory contains a minimal setup for testing chezmoi-managed bash configurations on Ubuntu 24.04 containers
+- **`make dev`**: Launch interactive shell with chezmoi applied (most common for development)
+- **`make test`**: Change detection test - runs tests for changed files only (default, frequently used)
+- **`make test-all`**: Runs all tests and creates environment snapshot on success
+- **`make test-all BASELINE=1`**: Runs all tests and saves results as baseline for comparison
+- **`make clean`**: Remove persistent volumes (next `make dev` or `make test` will rebuild)
+- **`make clean REBUILD=1`**: Remove volumes and rebuild environment (complete reset)
+- **`make reset`**: Remove manually installed tools by comparing with snapshot (preserves chezmoi state)
 
-## Usage
-
-```bash
-# Run Makefile commands on the host system (execute in this directory)
-make build   # Build the Docker image
-make shell   # Launch a shell session inside the container
-make test    # Execute chezmoi apply followed by smoke tests (used for change verification)
-```
-
-### Simplified Application Inside Container
-
-Once inside the container, run the following single command to execute both chezmoi init and apply operations together:
-
-```bash
-bash scripts/apply-container.sh
-```
-
-You can customize paths via arguments if needed (defaults: source=/workspace, destination=/root).
-
-For manual execution, refer to the following commands:
-
-```bash
-docker build -t dotfiles-test:ubuntu24.04 .
-docker run --rm -it -v "$(pwd):/workspace" -w /workspace dotfiles-test:ubuntu24.04 bash
-
-chezmoi init \
- --source=/workspace \
- --destination=/root
-
-# chezmoi setup (host-first)
-
-Minimal steps on your host (Linux/WSL/macOS). Docker is only for validation.
-
-## Quick start (host)
-
-Install and apply (replace `$GITHUB_USERNAME`):
-```bash
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply $GITHUB_USERNAME
-```
-Update later:
-```bash
-chezmoi update
-```
-
-## Managed scope
-
-- `home/`: dotfiles (`dot_*`, `create_*`)
-- `run_once_*.sh.tmpl`: one-time installers (numbered)
-- themed configs: delta, lazygit, zellij, yazi
-
-Run-once numbering: 0xx=base, 1xx=lang, 2xx=CLI, 3xx=dev tools.
-
-## Docker (optional)
-
-```bash
-make build   # build image
-make dev     # apply + login shell
-make test    # run tests
-make lint    # shellcheck
-make format  # shfmt
-```
-Manual: `bash scripts/apply-container.sh`; reset volumes: `make clean-state`.
-
-## Notes
-- `create_*.tmpl` only creates missing files.
-- Host setup is the source of truth; use Docker just to verify.
-- `clean-state`: Clear Docker persistent volumes (re-run run_once scripts)
+For detailed testing workflow and test types, see [Testing Guide](docs/testing-guide.md).
 
 ## Installed Tools
 

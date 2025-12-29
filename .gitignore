@@ -125,4 +125,10 @@ zsdoc/data
 /tests/_output/*
 !/tests/_output/.gitkeep
 
+# Test results (Git管理外)
+.test-results/
+
+# Development notes (not for public repository)
+dev_memo/
+
 # End of https://www.toptal.com/developers/gitignore/api/lua,vim,zsh,powershell,visualstudiocode
