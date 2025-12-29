@@ -14,7 +14,7 @@ sudo apt update; sudo apt install -y curl git
 
 1) Install chezmoi and apply this repo:
 ```bash
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply y4m3
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" init --apply y4m3
 ```
 
 2) Update later:

@@ -7,7 +7,7 @@ This guide explains the configuration policy and customization methods for this 
 Install chezmoi and apply (replace `$GITHUB_USERNAME`):
 
 ```bash
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply $GITHUB_USERNAME
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" init --apply $GITHUB_USERNAME
 ```
 
 Update later:

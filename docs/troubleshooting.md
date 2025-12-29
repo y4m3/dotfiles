@@ -6,7 +6,7 @@ Common issues and solutions for this dotfiles.
 
 ```bash
 # Initial apply (host)
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply $GITHUB_USERNAME
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" init --apply $GITHUB_USERNAME
 
 # Update later
 chezmoi update
