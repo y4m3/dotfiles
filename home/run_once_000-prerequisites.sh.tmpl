@@ -1,8 +1,8 @@
-#!/bin/bash
-# run_once_00-prerequisites.sh.tmpl
+#!/usr/bin/env bash
+# run_once_000-prerequisites.sh.tmpl
 # Install prerequisite system tools (skipped in Docker containers)
 
-set -e
+set -euo pipefail
 
 # Skip in Docker containers (packages are pre-installed in Dockerfile)
 if [ -f /.dockerenv ]; then
