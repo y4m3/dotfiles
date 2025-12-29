@@ -1,5 +1,6 @@
 // Zellij config with Vim-style keybinds and Tokyo Night theme
 // Reference: https://zellij.dev/documentation/configuration.html
+// Updated for zellij 0.43+
 
 // === UI & Behavior ===
 pane_frames true                      // Display pane borders
@@ -27,78 +28,99 @@ color_palette {
 theme "tokyo-night"
 
 // === Vim-Style Keybindings ===
+// Based on zellij 0.43+ syntax
+// See: https://zellij.dev/documentation/keybindings-possible-actions.html
 keybinds {
     normal {
         // --- Pane Navigation (h/j/k/l = left/down/up/right) ---
-        bind "h" { MoveFocusLeft }
-        bind "j" { MoveFocusDown }
-        bind "k" { MoveFocusUp }
-        bind "l" { MoveFocusRight }
+        bind "h" { MoveFocus "Left"; }
+        bind "j" { MoveFocus "Down"; }
+        bind "k" { MoveFocus "Up"; }
+        bind "l" { MoveFocus "Right"; }
 
         // --- Pane Creation & Layout ---
-        bind "n" { NewPane }                            // New pane (vertical split)
-        bind "s" { NewPane "Down" }                     // Split horizontal
-        bind "v" { NewPane "Right" }                    // Split vertical
-        bind "x" { CloseFocus }                         // Close current pane
-        bind "Enter" { ToggleFocusFullscreen }          // Fullscreen pane
+        bind "n" { NewPane; }                           // New pane (default direction)
+        bind "s" { NewPane "Down"; }                    // Split horizontal
+        bind "v" { NewPane "Right"; }                   // Split vertical
+        bind "x" { CloseFocus; }                        // Close current pane
+        bind "Enter" { ToggleFocusFullscreen; }          // Fullscreen pane
 
         // --- Pane Resizing (Ctrl + h/j/k/l) ---
-        bind "Ctrl h" { Resize "Increase Left" }
-        bind "Ctrl j" { Resize "Increase Down" }
-        bind "Ctrl k" { Resize "Increase Up" }
-        bind "Ctrl l" { Resize "Increase Right" }
+        // Resize action: Left | Right | Up | Down | Increase | Decrease
+        // See: https://zellij.dev/documentation/keybindings-possible-actions.html#resize
+        bind "Ctrl h" { Resize "Left"; }
+        bind "Ctrl j" { Resize "Down"; }
+        bind "Ctrl k" { Resize "Up"; }
+        bind "Ctrl l" { Resize "Right"; }
 
-        // --- Tab/Session Management ---
-        bind "Ctrl t" { NewTab }                        // New tab
-        bind "Ctrl s" { NewSession }                    // New session
-        bind "Ctrl a" { SwitchToNextSession }           // Next session
-        bind "Ctrl e" { SwitchToPreviousSession }       // Previous session
-        bind "1" { GoToTab 1 }
-        bind "2" { GoToTab 2 }
-        bind "3" { GoToTab 3 }
-        bind "4" { GoToTab 4 }
-        bind "5" { GoToTab 5 }
+        // --- Tab Management ---
+        bind "Ctrl t" { NewTab; }                        // New tab
+        bind "1" { GoToTab 1; }
+        bind "2" { GoToTab 2; }
+        bind "3" { GoToTab 3; }
+        bind "4" { GoToTab 4; }
+        bind "5" { GoToTab 5; }
+        bind "6" { GoToTab 6; }
+        bind "7" { GoToTab 7; }
+        bind "8" { GoToTab 8; }
+        bind "9" { GoToTab 9; }
 
         // --- Scrolling & Navigation ---
-        bind "PageUp" { ScrollUp }
-        bind "PageDown" { ScrollDown }
+        bind "PageUp" { PageScrollUp; }
+        bind "PageDown" { PageScrollDown; }
+        bind "Ctrl u" { HalfPageScrollUp; }
+        bind "Ctrl d" { HalfPageScrollDown; }
 
         // --- Utility ---
-        bind "q" { Quit }                               // Quit zellij
-        bind "d" { Detach }                             // Detach session
+        bind "q" { Quit; }                               // Quit zellij
+        bind "d" { Detach; }                             // Detach session
     }
 
     locked {
         // Locked mode: disable most keys (useful for reading output)
         // Press Ctrl-g to exit locked mode
-        bind "Ctrl g" { SwitchToMode "Normal" }
+        bind "Ctrl g" { SwitchToMode "Normal"; }
     }
 
     pane {
-        // --- Pane-specific mode (if needed) ---
-        bind "Ctrl p" { SwitchToMode "Normal" }
+        // --- Pane mode: fine-grained pane control ---
+        bind "h" "Left" { MoveFocus "Left"; }
+        bind "j" "Down" { MoveFocus "Down"; }
+        bind "k" "Up" { MoveFocus "Up"; }
+        bind "l" "Right" { MoveFocus "Right"; }
+        bind "p" { SwitchFocus; }
+        bind "Esc" { SwitchToMode "Normal"; }
     }
 
     tab {
-        // --- Tab-specific mode ---
-        bind "Ctrl Tab" { SwitchToMode "Normal" }
+        // --- Tab mode: tab management ---
+        bind "h" "Left" { MoveTab "Left"; }
+        bind "l" "Right" { MoveTab "Right"; }
+        bind "n" { NewTab; }
+        bind "x" { CloseTab; }
+        bind "Esc" { SwitchToMode "Normal"; }
     }
 
     resize {
-        // --- Resize mode (for fine-grained pane adjustment) ---
-        bind "h" { Resize "Increase Left" }
-        bind "j" { Resize "Increase Down" }
-        bind "k" { Resize "Increase Up" }
-        bind "l" { Resize "Increase Right" }
-        bind "Escape" { SwitchToMode "Normal" }
+        // --- Resize mode: fine-grained pane resizing ---
+        // Resize action: Left | Right | Up | Down | Increase | Decrease
+        bind "h" { Resize "Left"; }
+        bind "j" { Resize "Down"; }
+        bind "k" { Resize "Up"; }
+        bind "l" { Resize "Right"; }
+        bind "=" { Resize "Increase"; }
+        bind "-" { Resize "Decrease"; }
+        bind "Esc" { SwitchToMode "Normal"; }
     }
 
     search {
-        // --- Search mode (Ctrl-f to activate) ---
-        bind "c" { SearchToggleOption "CaseSensitivity" }
-        bind "w" { SearchToggleOption "WholeWord" }
-        bind "o" { SearchToggleOption "WrapAround" }
-        bind "Escape" { SwitchToMode "Normal" }
+        // --- Search mode: text search in scrollback ---
+        // SearchToggleOption: "CaseSensitivity" | "Wrap" | "WholeWord"
+        // See: https://zellij.dev/documentation/keybindings-possible-actions.html#searchtoggleoption
+        bind "c" { SearchToggleOption "CaseSensitivity"; }
+        bind "w" { SearchToggleOption "WholeWord"; }
+        bind "o" { SearchToggleOption "Wrap"; }
+        bind "Esc" { SwitchToMode "Normal"; }
     }
 }
 
