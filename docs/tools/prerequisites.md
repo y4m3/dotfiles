@@ -20,11 +20,9 @@ Concise notes focused on environment-specific behavior. See official docs for us
 
 ## Verification
 
-Basic checks:
-```bash
-git --version
-jq --version
-tmux -V
-curl --version
-tree --version
-```
+For verification and usage of each tool, refer to their official documentation:
+- Git: https://git-scm.com/doc
+- jq: https://jqlang.github.io/jq/
+- tmux: https://github.com/tmux/tmux
+- curl: https://curl.se/docs/
+- tree: https://github.com/Old-Man-Programmer/tree

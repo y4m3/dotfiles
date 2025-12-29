@@ -72,26 +72,22 @@ export PATH="/my/custom/path:$PATH"
 Write in `.bashrc.local`:
 
 ```bash
-alias gst='git status'
-alias dc='docker compose'
-alias k='kubectl'
+alias myalias='command'
 ```
+
+See your shell's documentation for alias syntax and best practices.
 
 ### Adding Functions
 
 Write in `.bashrc.local`:
 
 ```bash
-# Useful function examples
-mkcd() {
-    mkdir -p "$1" && cd "$1"
-}
-
-# Select Git branch with fzf
-gb() {
-    git branch | fzf | xargs git checkout
+myfunction() {
+    # function body
 }
 ```
+
+See your shell's documentation for function syntax.
 
 ### Tool-specific Configuration
 
@@ -133,38 +129,34 @@ export PATH="$PATH:/my/optional/path"
 ### Default Configuration
 
 - `LANG=en_US.UTF-8`: System messages in English
-- `LC_COLLATE=ja_JP.UTF-8`: Japanese-compatible sort order
+- `LC_COLLATE=en_US.UTF-8`: Locale-specific sort order
 
 ### Customization
 
 Change in `.bashrc.local`:
 
 ```bash
-# Use Japanese for everything
-export LANG=ja_JP.UTF-8
+# Use a different locale for everything
+export LANG=fr_FR.UTF-8
+export LC_COLLATE=fr_FR.UTF-8
 
 # Use English for everything
-unset LC_COLLATE
+export LANG=en_US.UTF-8
+export LC_COLLATE=en_US.UTF-8
 ```
 
 ## Shell Prompt Customization
 
 ### Starship (Default)
 
-This dotfiles uses starship by default. Customize in `~/.config/starship.toml`:
+This dotfiles uses starship by default. The configuration file is at `~/.config/starship.toml`.
 
-```toml
-# Switch to simple prompt
-[character]
-success_symbol = "[➜](bold green)"
-error_symbol = "[✗](bold red)"
+**Repository-specific customization:**
+- Tokyo Night theme applied
+- Git integration enabled
+- Command duration display enabled
 
-# Customize Git display
-[git_branch]
-symbol = "🌱 "
-```
-
-For details, refer to [starship documentation](https://starship.rs/config/).
+For configuration options and syntax, refer to the [Starship documentation](https://starship.rs/config/).
 
 ### Alternative Prompts
 
@@ -207,25 +199,22 @@ bash -x ~/.bashrc.d/20-paths.sh
 
 ## Cheat Sheet
 
-Summary of commonly used settings:
+Summary of repository-specific customizations:
 
 ```bash
 # ~/.bashrc.local
 
-# zoxide: Auto ls after cd
+# zoxide: Auto ls after cd (repository-specific feature)
 export ENABLE_CD_LS=1
 
-# fzf: Enable preview
+# fzf: Repository-recommended settings
+# See https://github.com/junegunn/fzf#environment-variables for all options
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
 export FZF_CTRL_T_OPTS="--preview 'bat --color=always --line-range :500 {}'"
 
 # fd: Default command for fzf
+# See https://github.com/sharkdp/fd#configuration for fd configuration
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
-
-# Aliases
-alias repo='cd $(ghq list -p | fzf)'
-alias gst='git status'
-alias dc='docker compose'
 
 # Custom PATH
 export PATH="$HOME/.local/bin:$HOME/go/bin:$PATH"

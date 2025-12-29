@@ -26,7 +26,7 @@ ChezMoi tracks executed run_once scripts. To re-run:
 
 - **Docker reset (optional for validation):**
 	```bash
-	make clean-state
+	make clean
 	make build
 	make test
 	```
@@ -288,10 +288,32 @@ make dev
 ### Reset test environment (Docker)
 
 ```bash
-make clean-state
+make clean
 make build
 make test
 ```
+
+### Docker Test Timeout Issues
+
+**Symptoms**: `make test` or `make test-all` hangs and doesn't return.
+
+**Common Causes**:
+
+1. **Existing Docker containers holding locks**:
+   ```bash
+   # Stop all running containers
+   docker ps -q | xargs -r docker stop
+   ```
+
+2. **Chezmoi lock contention**:
+   - Previous containers may hold locks on shared volumes
+   - Solution: Stop all containers before running tests
+
+3. **GitHub API rate limit**:
+   - Unauthenticated: 60 requests/hour
+   - Authenticated: 5000 requests/hour (if `gh` is logged in)
+   - Check rate limit: `curl -s https://api.github.com/rate_limit | jq '.rate'`
+   - Use authenticated requests if `gh` is logged in on host
 
 ## Debugging Techniques
 
@@ -375,13 +397,13 @@ chezmoi managed
 
 ### Q: Persist data in Docker container
 
-A: `make dev` and `make test-shell` use persistent volumes:
+A: `make dev` uses persistent volumes:
 
 - `dotfiles-state`: chezmoi state
 - `cargo-data`: Cargo cache
 - `rustup-data`: Rustup data
 
-These are retained until deleted with `make clean-state`.
+These are retained until deleted with `make clean`.
 
 ## Support
 

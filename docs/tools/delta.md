@@ -34,25 +34,10 @@ Custom color scheme matching the overall dotfiles theme:
 
 ## Usage
 
-Delta automatically activates when using git commands:
+Delta automatically activates when using git commands. For usage examples and navigation keys, refer to the [Delta documentation](https://github.com/dandavison/delta#usage).
 
-```bash
-git diff              # View unstaged changes
-git diff --cached     # View staged changes
-git log -p            # View commit history with diffs
-git show <commit>     # View specific commit
-```
-
-### Navigation
-
-- `n` / `N`: Jump to next/previous file
-- `Ctrl+F` / `Ctrl+B`: Page forward/backward
-- `q`: Quit
-
-## Features
-
-- **Side-by-side view**: Compare changes visually
-- **Line numbers**: Easy reference
-- **Syntax highlighting**: Language-aware colors
-- **Git integration**: Works with all git commands
-- **Navigate mode**: Jump between files easily
+**Repository-specific features:**
+- Tokyo Night theme applied
+- Side-by-side view enabled
+- Navigate mode enabled
+- Line numbers displayed

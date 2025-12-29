@@ -4,44 +4,9 @@ chezmoi is a dotfiles manager written in Go. It manages dotfiles across multiple
 
 ## Installation
 
-This repository includes automated installation via `run_once_010-chezmoi.sh.tmpl`:
+This repository includes automated installation via `run_once_010-chezmoi.sh.tmpl`.
 
-### Automatic Installation
-
-chezmoi is automatically installed as part of the dotfiles initialization:
-
-```bash
-# On a new machine:
-curl -fsSL https://get.chezmoi.io | bash
-chezmoi init <your-repo-url>
-chezmoi apply
-```
-
-The installer will:
-- Detect your platform (macOS/Linux)
-- Use Homebrew on macOS if available
-- Use the official installer script on Linux
-- Verify the installation and print the version
-
-### Manual Installation
-
-If you prefer to install manually:
-
-#### macOS
-
-```bash
-brew install chezmoi
-```
-
-#### Linux (Debian/Ubuntu/Fedora/etc.)
-
-```bash
-curl -fsSL https://get.chezmoi.io | bash
-```
-
-#### Other Platforms
-
-Visit [chezmoi.io](https://www.chezmoi.io/install/) for installation instructions.
+For installation instructions, see the [official chezmoi installation guide](https://www.chezmoi.io/install/).
 
 ## Configuration
 
@@ -57,29 +22,7 @@ This dotfiles repository is configured with chezmoi. Configuration files are sto
 
 ## Common Commands
 
-```bash
-# Initialize chezmoi with this repository
-chezmoi init https://github.com/y4m3/dotfiles.git
-
-# Apply all dotfiles to your system
-chezmoi apply
-
-# See what changes would be applied (diff)
-chezmoi diff
-
-# Edit a dotfile
-chezmoi edit ~/.bashrc
-
-# Manage specific files
-chezmoi add ~/.bashrc
-chezmoi remove ~/.bashrc
-
-# Check your system status
-chezmoi status
-
-# Update from the source repository
-chezmoi update
-```
+For all chezmoi commands and usage, refer to the [official chezmoi documentation](https://www.chezmoi.io/user-guide/command-overview/).
 
 ## Testing
 

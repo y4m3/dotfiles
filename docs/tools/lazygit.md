@@ -15,4 +15,5 @@ https://github.com/jesseduffield/lazygit
 
 - Theme/UI: Tokyo Night color scheme, Nerd Fonts v3 icons, side panel width ~35%, mouse enabled
 - Git integration: delta as pager (tokyo-night feature), pull mode ffOnly, autoFetch disabled
-- Keybindings: `q`/`Ctrl+c` to quit, `Esc` to return, `e` for `$EDITOR`, `Ctrl+f` to toggle filter
+
+For keybindings and general usage, refer to the [lazygit documentation](https://github.com/jesseduffield/lazygit).

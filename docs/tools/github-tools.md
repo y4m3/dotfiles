@@ -6,27 +6,7 @@ Development tools for GitHub integration.
 
 Official GitHub command-line tool. Execute PR, Issue, and repository operations from the terminal.
 
-### Basic Usage
-
-```bash
-# Authentication (first time only)
-gh auth login
-
-# PR operations
-gh pr list                    # List PRs
-gh pr view 123                # View PR details
-gh pr create                  # Create PR
-gh pr checkout 123            # Checkout PR locally
-
-# Issue operations
-gh issue list                 # List issues
-gh issue create               # Create issue
-gh issue view 456             # View issue details
-
-# Repository operations
-gh repo clone owner/repo      # Clone repository
-gh repo view                  # View repository info
-```
+**Official Documentation**: https://cli.github.com/manual/
 
 ### Installation Method (Environment-specific)
 
@@ -36,24 +16,12 @@ gh repo view                  # View repository info
 ## ghq (Repository Manager)
 
 Tool for unified Git repository management. Clones into structures like `~/ghq/github.com/owner/repo`.
+
+**Official Documentation**: https://github.com/x-motemen/ghq
+
 ### Configuration (Environment-specific)
 
 - `ghq.root` is set via global git config to `~/repos` for a predictable local path structure.
-
-### Basic Usage
-
-```bash
-# Clone repository (automatically placed in appropriate directory)
-ghq get https://github.com/owner/repo
-ghq get owner/repo                      # Short form
-
-# List local repositories
-ghq list
-
-# Get repository path
-ghq root                                # Root directory (default: ~/ghq)
-ghq list -p owner/repo                  # Full path of specific repository
-```
 
 ### Integration with fzf
 

@@ -18,7 +18,7 @@ This setting is implemented in `60-utils.sh` and wraps the normal `cd` command.
 
 ### j Command Not Found
 
-The `j` function is not defined in non-interactive shells. Use in interactive shells:
+The `j` function is not defined in non-interactive shells. This is repository-specific behavior (zoxide normally uses `z`). Use in interactive shells:
 
 ```bash
 # Reload in login shell
@@ -28,13 +28,7 @@ exec bash -l
 source ~/.bashrc.d/60-utils.sh
 ```
 
-### Database Corrupted
-
-```bash
-# Delete database and rebuild
-rm -rf ~/.local/share/zoxide
-j add /path/to/important/dir
-```
+For general troubleshooting, refer to the [zoxide documentation](https://github.com/ajeetdsouza/zoxide).
 
 ## Implementation Details
 

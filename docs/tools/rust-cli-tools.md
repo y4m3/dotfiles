@@ -16,6 +16,8 @@ Cat clone with syntax highlighting and git integration.
 - Theme set to OneHalfDark
 - Style includes header, grid, numbers
 
+For usage and configuration options, refer to the [bat documentation](https://github.com/sharkdp/bat).
+
 ## eza
 
 Modern ls replacement with git integration and icons.
@@ -27,6 +29,8 @@ Modern ls replacement with git integration and icons.
 - Time style: long-iso
 - Custom colors applied via shell env
 
+For usage and configuration options, refer to the [eza documentation](https://github.com/eza-community/eza).
+
 ## fd
 
 Fast, user-friendly alternative to find.
@@ -35,6 +39,8 @@ Fast, user-friendly alternative to find.
 
 **Environment-specific**:
 - `.fdignore` includes common dev directories (git/node/target/pycache)
+
+For usage and configuration options, refer to the [fd documentation](https://github.com/sharkdp/fd).
 
 ## ripgrep (rg)
 
@@ -46,6 +52,8 @@ Fast grep alternative with smart defaults.
 - Smart-case search and hidden files enabled
 - Max columns tuned; excludes aligned with `.fdignore`
 
+For usage and configuration options, refer to the [ripgrep documentation](https://github.com/BurntSushi/ripgrep).
+
 ## starship
 
 Fast, customizable cross-shell prompt.
@@ -55,6 +63,8 @@ Fast, customizable cross-shell prompt.
 **Environment-specific**:
 - Prompt shows git status, python venv, command duration, jobs
 - Enable via `PROMPT_STYLE=starship` in local bash config
+
+For configuration options, refer to the [starship documentation](https://starship.rs/config/).
 
 ## zoxide
 
@@ -66,3 +76,5 @@ Smarter cd command that learns your habits.
 - Command alias is `j` (not `z`)
 - Optional auto-ls via `ENABLE_CD_LS=1`
 - Excludes common temp/cache directories
+
+For usage and configuration options, refer to the [zoxide documentation](https://github.com/ajeetdsouza/zoxide).

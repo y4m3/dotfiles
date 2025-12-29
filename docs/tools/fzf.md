@@ -14,9 +14,8 @@ https://github.com/junegunn/fzf
 
 - Bash integration default keys: `Ctrl+R` (history search), `Ctrl+T` (file insert), `Alt+C` (cd)
 - No explicit custom settings for fzf itself (uses upstream defaults)
-- Other tools like bat/fd can be used together, but the single source of truth is each tool's documentation/template
 
-Recommended settings in this dotfiles (configurable in `.bashrc.local`):
+**Repository-recommended settings** (configurable in `.bashrc.local`):
 
 ```bash
 # Default command (when using fd)
@@ -29,18 +28,7 @@ export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
 export FZF_CTRL_T_OPTS="--preview 'bat --color=always --line-range :500 {}'"
 ```
 
-### Example Aliases
-
-```bash
-# Navigate to repository (ghq + fzf)
-alias repo='cd $(ghq list -p | fzf)'
-
-# Kill process
-alias fkill='ps aux | fzf | awk "{print \$2}" | xargs kill'
-
-# Git branch switching
-alias gb='git branch | fzf | xargs git checkout'
-```
+For all configuration options, see the [fzf documentation](https://github.com/junegunn/fzf#environment-variables).
 
 ## Installation Method
 
@@ -75,47 +63,14 @@ exec bash -l
 
 ### Combining with fd
 
-Setting `FZF_DEFAULT_COMMAND` to use fd improves search speed and filtering:
-
-```bash
-# Add to .bashrc.local
-export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
-export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-```
+Setting `FZF_DEFAULT_COMMAND` to use fd improves search speed and filtering. See the [fd documentation](https://github.com/sharkdp/fd#configuration) for fd configuration options.
 
 ### Update
 
-```bash
-cd ~/.fzf
-git pull
-./install --all
-```
+See the [fzf installation guide](https://github.com/junegunn/fzf#upgrading-fzf) for update instructions.
 
 ## Integration with Other Tools
 
-### Integration with ghq
-
-Fast repository search and navigation:
-
-```bash
-cd $(ghq list -p | fzf)
-```
-
-### Integration with zoxide
-
-Select directory jump candidates with fzf:
-
-```bash
-zi() {
-  local dir
-  dir=$(zoxide query -l | fzf) && cd "$dir"
-}
-```
-
-### Integration with bat
-
-Speed up preview display:
-
-```bash
-fzf --preview 'bat --color=always --style=numbers {}'
-```
+This dotfiles integrates fzf with other tools. For integration examples and patterns, refer to:
+- [fzf documentation](https://github.com/junegunn/fzf#examples) for general integration patterns
+- Each tool's documentation for tool-specific integration options
