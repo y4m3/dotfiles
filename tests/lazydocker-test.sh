@@ -18,4 +18,7 @@ esac
 assert_executable "lazydocker" "lazydocker installed"
 assert_command "lazydocker --version" "lazydocker version prints"
 
+# Test 3: lazydocker config file exists (deployed by chezmoi)
+assert_file_exists "$HOME/.config/lazydocker/config.yml" "lazydocker config file deployed"
+
 print_summary

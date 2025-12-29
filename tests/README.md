@@ -6,15 +6,10 @@ This document explains the test suite structure and execution methods.
 
 ```
 tests/
-├── bash-config-test.sh         # bash configuration validation
-├── cargo-test.sh               # Rust/Cargo installation test
-├── github-tools-test.sh        # gh, ghq availability test
-├── node-test.sh                # Node.js installation test
-├── zoxide-test.sh              # zoxide functionality test
+├── *-test.sh                   # Individual test files for each tool/component
 ├── lib/
 │   └── helpers.sh              # Common test functions and utilities
-├── README.md                   # This file
-└── integration-test.sh          # (Future) Integration tests
+└── README.md                   # This file
 ```
 
 ## Test Execution Methods
@@ -45,10 +40,11 @@ for test in tests/*-test.sh; do bash "$test"; done
 ### 3. Running Tests from Host (Makefile)
 
 ```bash
-# (Future) Individual test targets may be added to Makefile
-make test-cargo
-make test-bash
+# Run change detection test (runs tests for changed files only)
 make test
+
+# Run all tests
+make test-all
 ```
 
 ## Common Test Functions (helpers.sh)
@@ -98,8 +94,9 @@ When adding new test scripts:
 - **Idempotent**: Can run multiple times without side effects
 - **Fast**: Minimize execution time (especially important for CI)
 
-## Future Tests
+## Future Enhancements
 
-- [ ] `integration-test.sh`: Integration tests across multiple tools
-- [ ] `performance-test.sh`: Startup time, PATH building performance
-- [ ] `security-test.sh`: File permission checks, secure configuration verification
+Potential future test additions:
+- Integration tests across multiple tools
+- Performance tests (startup time, PATH building performance)
+- Security tests (file permission checks, secure configuration verification)

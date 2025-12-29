@@ -23,7 +23,7 @@ assert_executable "shellcheck" "shellcheck installed"
 assert_executable "shfmt" "shfmt installed"
 
 # Test 3: shellcheck version can be retrieved
-assert_command "shellcheck --version | grep -q 'version:'" "shellcheck version check successful"
+assert_command "shellcheck --version | command grep -q 'version:'" "shellcheck version check successful"
 
 # Test 4: shfmt version can be retrieved
 assert_command "shfmt --version" "shfmt version check successful"

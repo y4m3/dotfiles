@@ -16,6 +16,9 @@ case ":$PATH:" in
   *) PATH="$HOME/.local/bin:$PATH" ;;
 esac
 
+# Note: direnv is pre-installed in Docker (via apt-get in Dockerfile)
+# On host systems, it's installed via run_once_240-shell-direnv.sh.tmpl
+# The run_once script skips installation in Docker, so we rely on the pre-installed version
 assert_executable "direnv" "direnv installed"
 assert_command "direnv version" "direnv version check"
 assert_command "direnv hook bash >/dev/null" "direnv hook generates bash code"

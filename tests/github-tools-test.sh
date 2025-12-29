@@ -18,7 +18,7 @@ esac
 
 # gh installed
 assert_executable "gh" "GitHub CLI (gh) installed"
-assert_command "gh --version | grep -q 'gh version'" "gh version prints"
+assert_command "gh --version | command grep -q 'gh version'" "gh version prints"
 
 # ghq installed (from Go install)
 assert_executable "ghq" "ghq installed"

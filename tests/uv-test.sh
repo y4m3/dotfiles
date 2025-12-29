@@ -23,7 +23,7 @@ assert_executable "uv" "uv installed"
 assert_command "uv --version" "uv version check successful"
 
 # Test 3: uv help works
-assert_command "uv --help | grep -q 'Usage:'" "uv help command works"
+assert_command "uv --help | command grep -q 'Usage:'" "uv help command works"
 
 # Test 4: uv can list Python versions
 assert_command "uv python list" "uv can list Python versions"

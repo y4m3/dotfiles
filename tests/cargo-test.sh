@@ -52,6 +52,8 @@ assert_command "rustc --version | command grep -q 'rustc'" "rustc version check 
 # Test 7: cargo-installed CLI tools are available
 for tool in bat eza fd rg starship zoxide; do
   assert_executable "$tool" "cargo tool available: $tool"
+  # Level 1 smoke test: verify version command works
+  assert_command "$tool --version" "$tool version prints"
 done
 
 # Test 8: cargo version can be retrieved

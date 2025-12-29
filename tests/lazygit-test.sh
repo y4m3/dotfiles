@@ -19,4 +19,7 @@ esac
 assert_executable "lazygit" "lazygit installed"
 assert_command "lazygit --version" "lazygit version prints"
 
+# Test 3: lazygit config file exists (deployed by chezmoi)
+assert_file_exists "$HOME/.config/lazygit/config.yml" "lazygit config file deployed"
+
 print_summary
