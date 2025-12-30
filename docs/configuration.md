@@ -97,9 +97,13 @@ Configuration files for each tool:
 - `~/.config/starship.toml`: starship configuration
 - `~/.fdignore`: fd-find exclusion patterns
 - `~/.ripgreprc`: ripgrep configuration
-- `~/.gitconfig`: Git and ghq configuration
+- `~/.gitconfig`: Git and ghq configuration (includes credential helper with configurable timeout)
 
 These are all managed by chezmoi and generated from `home/dot_config/` or `home/create_*`.
+
+**Git Credential Helper:**
+
+Git credential helper is automatically configured with `cache` helper. The timeout is configured in `~/.bashrc.local` (default: 1800 seconds / 30 minutes). To customize, edit `GIT_CREDENTIAL_CACHE_TIMEOUT` in `~/.bashrc.local` and run `chezmoi apply`. See [Security Best Practices](tools/security.md#git-credential-helper) for details.
 
 ## PATH Management
 

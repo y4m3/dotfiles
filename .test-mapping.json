@@ -144,6 +144,11 @@
       "tests": ["tests/bash-config-test.sh"],
       "affects_all": true,
       "description": "bashrc.d changes affect all tools (PATH impact)"
+    },
+    {
+      "pattern": "home/dot_bashrc.d/75-security-permissions.sh",
+      "tests": ["tests/security-permissions-test.sh"],
+      "description": "security permissions script"
     }
   ],
   "dependencies": {
