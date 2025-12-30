@@ -7,18 +7,25 @@ DEST=${2:-/root}
 # Apply dotfiles configuration
 # Clean up any stale lock files
 if [ -d "$HOME/.config/chezmoi" ]; then
-  if ! find "$HOME/.config/chezmoi" -name "*.lock" -type f -delete 2>&1; then
-    echo "Warning: Some lock files could not be deleted" >&2
+  if ! lock_delete_err=$(find "$HOME/.config/chezmoi" -name "*.lock" -type f -delete 2>&1); then
+    if [ -n "$lock_delete_err" ]; then
+      echo "Warning: Some lock files could not be deleted:" >&2
+      printf '%s\n' "$lock_delete_err" >&2
+    else
+      echo "Warning: Some lock files could not be deleted" >&2
+    fi
   fi
 fi
 
 # Apply configuration with retry logic
 apply_success=0
+apply_errors=()
 for retry in {1..3}; do
-  if chezmoi apply --source="$SRC" --destination="$DEST" --force 2>&1; then
+  if apply_output=$(chezmoi apply --source="$SRC" --destination="$DEST" --force 2>&1); then
     apply_success=1
     break
   else
+    apply_errors+=("Attempt $retry/3: $apply_output")
     if [ "$retry" -lt 3 ]; then
       echo "Waiting for chezmoi lock to be released (attempt $retry/3)..." >&2
       sleep 2
@@ -28,6 +35,9 @@ done
 
 if [ $apply_success -eq 0 ]; then
   echo "Error: Failed to apply chezmoi configuration after retries" >&2
+  for error in "${apply_errors[@]}"; do
+    echo "  $error" >&2
+  done
   exit 1
 fi
 
@@ -128,8 +138,9 @@ for script in "$SRC"/home/run_once_[0-9]*.sh.tmpl; do
         fi
         ;;
       *-shell-cargo-tools.sh)
-        # Check for individual cargo-installed tools
-        # These tools are installed via cargo install
+        # Check for individual cargo-installed tools (by binary name)
+        # These tools are installed via cargo install/cargo-binstall
+        # Binary names: bat, eza, fd (from fd-find), rg (from ripgrep), starship, zoxide
         cargo_tools=("bat" "eza" "fd" "rg" "starship" "zoxide")
         all_installed=1
         for tool in "${cargo_tools[@]}"; do
@@ -174,8 +185,11 @@ for script in "$SRC"/home/run_once_[0-9]*.sh.tmpl; do
     elif [ -n "$tool_name" ]; then
       echo "  Note: $script_name marked as executed but tool not found ($tool_name), re-running installation..."
       sleep 0.5
-      if ! chezmoi state delete --bucket=scriptState --key="$script_key" --source="$SRC" --destination="$DEST" 2>&1; then
+      if ! state_delete_err=$(chezmoi state delete --bucket=scriptState --key="$script_key" --source="$SRC" --destination="$DEST" 2>&1); then
         echo "Warning: Failed to delete chezmoi state for $script_key" >&2
+        if [ -n "$state_delete_err" ]; then
+          printf '%s\n' "$state_delete_err" >&2
+        fi
       fi
     else
       echo "  Skipping $script_name (already executed)"
@@ -190,10 +204,12 @@ for script in "$SRC"/home/run_once_[0-9]*.sh.tmpl; do
   # Execute the script using chezmoi's template execution
   echo "  Executing $script_name..."
   script_output=$(chezmoi execute-template --source="$SRC" --destination="$DEST" < "$script" 2>&1)
-  if echo "$script_output" | bash; then
+  script_exit_code=0
+  echo "$script_output" | bash || script_exit_code=$?
+  if [ $script_exit_code -eq 0 ]; then
     echo "  ✓ $script_name completed successfully"
   else
-    echo "  Error: Failed to execute $script_name" >&2
+    echo "  Error: Failed to execute $script_name (exit code: $script_exit_code)" >&2
     echo "$script_output" >&2
     # Check if the error is due to GitHub API rate limit
     if echo "$script_output" | grep -qiE "(rate limit|403|429)"; then
