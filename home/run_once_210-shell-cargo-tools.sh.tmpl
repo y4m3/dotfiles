@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
-# Install common CLI tools via Cargo
+# Install common CLI tools via Cargo (prefer prebuilt binaries)
 set -euo pipefail
 
-echo "==> Installing cargo-installed CLI tools..."
+log() { printf '%s\n' "==> $*"; }
+err() { printf '%s\n' "Error: $*" >&2; }
+
+CARGO_BIN="$HOME/.cargo/bin"
+CARGO="$CARGO_BIN/cargo"
+CARGO_BINSTALL="$CARGO_BIN/cargo-binstall"
 
 # Load cargo env to ensure PATH/vars are set (handles non-interactive shells)
 if [ -f "$HOME/.cargo/env" ]; then
@@ -10,26 +15,82 @@ if [ -f "$HOME/.cargo/env" ]; then
   source "$HOME/.cargo/env"
 fi
 
-# Ensure build tools present (needed for compiling eza and others)
-if ! command -v gcc >/dev/null 2>&1; then
-  echo "==> Installing build tools (gcc, make, etc.)..."
-  sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
-  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential pkg-config
-fi
-
-# Ensure cargo is available (rustup must have been installed by run_once_10)
-if ! command -v cargo >/dev/null 2>&1; then
-  echo "Error: cargo not found. Install Rust first (run_once_10-install-rust.sh)." >&2
+# Require cargo under ~/.cargo/bin (not just in PATH)
+if [ ! -x "$CARGO" ]; then
+  err "cargo not found at $CARGO. Install Rust first."
   exit 1
 fi
 
-# Install tools (idempotent; cargo skips if already installed)
-cargo install --locked \
-  bat \
-  eza \
-  fd-find \
-  ripgrep \
-  starship \
-  zoxide
+# Map: package name -> binary name (installed under ~/.cargo/bin)
+declare -A PKG2BIN=(
+  [bat]=bat
+  [eza]=eza
+  [fd - find]=fd
+  [ripgrep]=rg
+  [starship]=starship
+  [zoxide]=zoxide
+)
 
-echo "✓ Cargo tools installed"
+# Preserve install order
+TOOLS_PACKAGES=(bat eza fd-find ripgrep starship zoxide)
+
+# Detect already-installed tools (ONLY ~/.cargo/bin), check by binary name
+to_install=()
+for pkg in "${TOOLS_PACKAGES[@]}"; do
+  bin="${PKG2BIN[$pkg]:-$pkg}"
+  if [ -x "$CARGO_BIN/$bin" ]; then
+    log "skip (exists): $CARGO_BIN/$bin"
+  else
+    to_install+=("$pkg")
+  fi
+done
+
+if [ "${#to_install[@]}" -eq 0 ]; then
+  log "all tools already installed in ~/.cargo/bin"
+  exit 0
+fi
+
+# Ensure cargo-binstall is available (under ~/.cargo/bin)
+if [ ! -x "$CARGO_BINSTALL" ]; then
+  log "installing cargo-binstall..."
+  "$CARGO" install --locked cargo-binstall
+fi
+
+# Try binstall first
+log "install via cargo-binstall: ${to_install[*]}"
+if ! "$CARGO" binstall --no-confirm "${to_install[@]}"; then
+  log "cargo-binstall failed for some items; will fallback to cargo install"
+fi
+
+# Check what is still missing
+missing=()
+for pkg in "${to_install[@]}"; do
+  bin="${PKG2BIN[$pkg]:-$pkg}"
+  if [ ! -x "$CARGO_BIN/$bin" ]; then
+    missing+=("$pkg")
+  fi
+done
+
+if [ "${#missing[@]}" -eq 0 ]; then
+  log "done (binstall succeeded)"
+  exit 0
+fi
+
+# If we need to compile, ensure we can sudo non-interactively
+if ! sudo -n true >/dev/null 2>&1; then
+  err "need non-interactive sudo to install build tools (build-essential, pkg-config) for: ${missing[*]}"
+  err "either grant sudo without password for apt, preinstall build tools, or ensure binstall succeeds for all targets."
+  exit 1
+fi
+
+# Install build tools only if we really need to compile
+if ! command -v gcc >/dev/null 2>&1; then
+  log "installing build tools for source builds..."
+  sudo -n DEBIAN_FRONTEND=noninteractive apt-get update -y
+  sudo -n DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential pkg-config
+fi
+
+log "fallback via cargo install --locked: ${missing[*]}"
+"$CARGO" install --locked "${missing[@]}"
+
+log "done"
