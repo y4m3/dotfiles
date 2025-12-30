@@ -26,7 +26,6 @@ pass "Script loads without errors"
 
 # Test 2: Cache mechanism works correctly
 CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/security-permissions-last-run"
-CACHE_DIR="$(dirname "$CACHE_FILE")"
 
 # Clean up any existing cache file
 rm -f "$CACHE_FILE"
@@ -149,6 +148,10 @@ fi
 
 # Cleanup
 rm -f "$CACHE_FILE" "$LOG_FILE"
+# Also clean up rotated log files if they exist
+for i in {1..5}; do
+  rm -f "${LOG_FILE}.$i"
+done
 
 print_summary
 
