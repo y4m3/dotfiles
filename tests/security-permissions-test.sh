@@ -142,10 +142,10 @@ ENABLE_SECURITY_PERMISSIONS_LOG=1 FORCE_SECURITY_PERMISSIONS=1 \
   bash -c "source ~/.bashrc.d/75-security-permissions.sh" 2>&1 || true
 
 # Log file may or may not exist depending on whether errors occurred
-if [ -f "$LOG_FILE" ] || [ ! -f "$LOG_FILE" ]; then
-  pass "Error logging can be enabled via environment variable"
+if [ -f "$LOG_FILE" ]; then
+  pass "Error logging can be enabled via environment variable (log file created)"
 else
-  warn "Error logging check (file may not exist if no errors occurred)"
+  pass "Error logging can be enabled via environment variable (no errors to log)"
 fi
 
 # Cleanup

@@ -5,25 +5,54 @@
 # Performance optimization: skip if run recently
 CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/security-permissions-last-run"
 CACHE_INTERVAL="${SECURITY_PERMISSIONS_CACHE_INTERVAL:-300}"  # 5 minutes default
+CACHE_LOCK_DIR="${CACHE_FILE}.lock.d"
 
-if [ -z "${FORCE_SECURITY_PERMISSIONS:-}" ] && [ -f "$CACHE_FILE" ]; then
-  # Check if cache is still valid
-  if command -v stat >/dev/null 2>&1; then
-    # Try Linux format first, then macOS format
-    last_run=$(stat -c %Y "$CACHE_FILE" 2>/dev/null || stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0)
-  else
-    # Fallback to date command (BSD)
-    last_run=$(date -r "$CACHE_FILE" +%s 2>/dev/null || echo 0)
+# Simple lock mechanism to avoid race conditions on the cache file
+acquire_cache_lock() {
+  # Try to acquire the lock a limited number of times to avoid hanging indefinitely
+  local i
+  for i in 1 2 3 4 5; do
+    if mkdir "$CACHE_LOCK_DIR" 2>/dev/null; then
+      return 0
+    fi
+    sleep 0.1
+  done
+  # If we can't acquire the lock, proceed without caching guarantees
+  return 1
+}
+
+release_cache_lock() {
+  rmdir "$CACHE_LOCK_DIR" 2>/dev/null || true
+}
+
+# Acquire lock and check cache
+if acquire_cache_lock; then
+  if [ -z "${FORCE_SECURITY_PERMISSIONS:-}" ] && [ -f "$CACHE_FILE" ]; then
+    # Check if cache is still valid
+    if command -v stat >/dev/null 2>&1; then
+      # Try Linux format first, then macOS format
+      last_run=$(stat -c %Y "$CACHE_FILE" 2>/dev/null || stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0)
+    else
+      # Fallback to date command (BSD)
+      last_run=$(date -r "$CACHE_FILE" +%s 2>/dev/null || echo 0)
+    fi
+    current_time=$(date +%s)
+    if [ $((current_time - last_run)) -lt "$CACHE_INTERVAL" ]; then
+      release_cache_lock
+      return 0  # Skip execution
+    fi
   fi
-  current_time=$(date +%s)
-  if [ $((current_time - last_run)) -lt "$CACHE_INTERVAL" ]; then
-    return 0  # Skip execution
-  fi
+
+  # Create/update cache file while holding the lock to prevent race conditions
+  mkdir -p "$(dirname "$CACHE_FILE")"
+  touch "$CACHE_FILE" 2>/dev/null || true
+  release_cache_lock
+else
+  # Fallback: if lock cannot be acquired, still ensure cache directory exists
+  # and proceed with execution (better to run twice than skip security checks)
+  mkdir -p "$(dirname "$CACHE_FILE")"
+  touch "$CACHE_FILE" 2>/dev/null || true
 fi
-
-# Create/update cache file immediately after cache check to prevent race conditions
-mkdir -p "$(dirname "$CACHE_FILE")"
-touch "$CACHE_FILE" 2>/dev/null || true
 
 # Helper function: log error (optional)
 log_error() {
