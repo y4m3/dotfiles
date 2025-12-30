@@ -26,7 +26,6 @@ pass "Script loads without errors"
 
 # Test 2: Cache mechanism works correctly
 CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/security-permissions-last-run"
-CACHE_DIR="$(dirname "$CACHE_FILE")"
 
 # Clean up any existing cache file
 rm -f "$CACHE_FILE"
@@ -44,15 +43,15 @@ fi
 # Test cache skipping (should skip if cache is recent)
 # Update cache file timestamp to make it recent
 touch "$CACHE_FILE"
-sleep 1  # Small delay to ensure timestamp is set
+sleep 1 # Small delay to ensure timestamp is set
 
 # Test that script skips when cache is recent (within interval)
 # We verify by checking that the cache file timestamp doesn't change
 # (if script runs, it would update the timestamp)
-old_timestamp=$(stat -c %Y "$CACHE_FILE" 2>/dev/null || stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0)
+old_timestamp=$(stat -c %Y "$CACHE_FILE" 2> /dev/null || stat -f %m "$CACHE_FILE" 2> /dev/null || echo 0)
 SECURITY_PERMISSIONS_CACHE_INTERVAL=300 \
   bash -c "source ~/.bashrc.d/75-security-permissions.sh" 2>&1 || true
-new_timestamp=$(stat -c %Y "$CACHE_FILE" 2>/dev/null || stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0)
+new_timestamp=$(stat -c %Y "$CACHE_FILE" 2> /dev/null || stat -f %m "$CACHE_FILE" 2> /dev/null || echo 0)
 
 # If timestamps are the same (or very close), script was skipped
 if [ "$old_timestamp" -eq "$new_timestamp" ] || [ $((new_timestamp - old_timestamp)) -lt 2 ]; then
@@ -79,14 +78,20 @@ chmod 644 "$test_file"
 
 # Source script and check if it sets permissions
 # Use absolute path to ensure file is accessible in subshell
+# Functions are defined before cache check, so they are available even if script returns early
 bash -c "
-  source ~/.bashrc.d/75-security-permissions.sh
-  set_file_permission '$test_file' 600
+  . ~/.bashrc.d/75-security-permissions.sh
+  if type set_file_permission > /dev/null 2>&1; then
+    set_file_permission '$test_file' 600
+  else
+    echo 'Error: set_file_permission function not found after sourcing script' >&2
+    exit 1
+  fi
 " 2>&1 || true
 
 # Check if permissions were set
 if [ -f "$test_file" ]; then
-  perms=$(stat -c "%a" "$test_file" 2>/dev/null || stat -f "%OLp" "$test_file" 2>/dev/null || echo "unknown")
+  perms=$(stat -c "%a" "$test_file" 2> /dev/null || stat -f "%OLp" "$test_file" 2> /dev/null || echo "unknown")
   if [ "$perms" = "600" ]; then
     pass "File permissions are set correctly (600)"
   else
@@ -102,13 +107,19 @@ mkdir -p "$test_dir"
 chmod 755 "$test_dir"
 
 # Use absolute path to ensure directory is accessible in subshell
+# Functions are defined before cache check, so they are available even if script returns early
 bash -c "
-  source ~/.bashrc.d/75-security-permissions.sh
-  set_dir_permission '$test_dir' 700
+  . ~/.bashrc.d/75-security-permissions.sh
+  if type set_dir_permission > /dev/null 2>&1; then
+    set_dir_permission '$test_dir' 700
+  else
+    echo 'Error: set_dir_permission function not found after sourcing script' >&2
+    exit 1
+  fi
 " 2>&1 || true
 
 if [ -d "$test_dir" ]; then
-  perms=$(stat -c "%a" "$test_dir" 2>/dev/null || stat -f "%OLp" "$test_dir" 2>/dev/null || echo "unknown")
+  perms=$(stat -c "%a" "$test_dir" 2> /dev/null || stat -f "%OLp" "$test_dir" 2> /dev/null || echo "unknown")
   if [ "$perms" = "700" ]; then
     pass "Directory permissions are set correctly (700)"
   else
@@ -151,4 +162,3 @@ fi
 rm -f "$CACHE_FILE" "$LOG_FILE"
 
 print_summary
-

@@ -20,7 +20,8 @@ assert_executable "delta" "delta installed"
 assert_command "delta --version" "delta version prints"
 
 # Check git config integration
-core_pager=$(git config --global core.pager || true)
+# Work around git worktree issue: unset GIT_DIR to avoid worktree path confusion
+core_pager=$(GIT_DIR="" git config --global core.pager 2>&1 || echo "")
 assert_string_contains "$core_pager" "delta" "git core.pager is delta"
 
 tmprepo="$(setup_tmpdir)"

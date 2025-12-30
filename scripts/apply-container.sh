@@ -5,7 +5,12 @@ SRC=${1:-/workspace}
 DEST=${2:-/root}
 
 # Apply dotfiles configuration
-find "$HOME/.config/chezmoi" -name "*.lock" -type f -delete 2> /dev/null || true
+# Clean up any stale lock files
+if [ -d "$HOME/.config/chezmoi" ]; then
+  if ! find "$HOME/.config/chezmoi" -name "*.lock" -type f -delete 2>&1; then
+    echo "Warning: Some lock files could not be deleted" >&2
+  fi
+fi
 
 # Apply configuration with retry logic
 apply_success=0
@@ -29,6 +34,20 @@ fi
 # Source bash profile to ensure PATH is set correctly
 if [ -f "$HOME/.bash_profile" ]; then
   source "$HOME/.bash_profile"
+fi
+
+# Load cargo environment to ensure cargo/rustup are in PATH
+# This is critical for checking if Rust/Cargo tools are installed
+if [ -f "$HOME/.cargo/env" ]; then
+  # shellcheck disable=SC1091
+  source "$HOME/.cargo/env"
+fi
+
+# Source .bashrc to ensure PATH includes ~/.local/bin and ~/.cargo/bin
+# This is needed for tool existence checks
+if [ -f "$HOME/.bashrc" ]; then
+  # shellcheck disable=SC1091
+  source "$HOME/.bashrc"
 fi
 
 # Execute run_once_* scripts that haven't been executed yet
@@ -76,42 +95,78 @@ for script in "$SRC"/home/run_once_[0-9]*.sh.tmpl; do
   # If state check succeeded, verify the tool is actually installed
   if [ $state_check_success -eq 1 ]; then
     # Extract tool name from script name (e.g., "run_once_275-utils-yq.sh" -> "yq")
+    # Special cases:
+    # - run_once_210-shell-cargo-tools.sh: multiple tools, handled separately
+    # - run_once_100-runtimes-rust.sh: rustup/rustc/cargo, handled separately
     tool_name=""
     if [[ "$script_name" =~ run_once_[0-9]+-.*-([^\.]+)\.sh$ ]]; then
       tool_name="${BASH_REMATCH[1]}"
+      # Special case: cargo-tools script contains multiple tools
+      if [ "$tool_name" = "tools" ] && [[ "$script_name" =~ cargo-tools ]]; then
+        tool_name="cargo-tools" # Mark as special case for case statement
+      fi
     fi
 
     # Check if tool is actually installed (location depends on tool type)
     tool_installed=0
-    if [ -n "$tool_name" ]; then
-      case "$script_name" in
-        *-fzf.sh)
-          if [ -f "$HOME/.fzf/bin/fzf" ] || command -v fzf > /dev/null 2>&1; then
-            tool_installed=1
+    # Check by script name first (for special cases like cargo-tools)
+    case "$script_name" in
+      *-fzf.sh)
+        if [ -f "$HOME/.fzf/bin/fzf" ] || command -v fzf > /dev/null 2>&1; then
+          tool_installed=1
+        fi
+        ;;
+      *-runtimes-rust.sh)
+        # Rust is installed if rustup, rustc, or cargo is available
+        # Also check for .rustup and .cargo directories
+        if command -v rustup > /dev/null 2>&1 ||
+          command -v rustc > /dev/null 2>&1 ||
+          command -v cargo > /dev/null 2>&1 ||
+          [ -d "$HOME/.rustup" ] ||
+          [ -d "$HOME/.cargo" ]; then
+          tool_installed=1
+        fi
+        ;;
+      *-shell-cargo-tools.sh)
+        # Check for individual cargo-installed tools
+        # These tools are installed via cargo install
+        cargo_tools=("bat" "eza" "fd" "rg" "starship" "zoxide")
+        all_installed=1
+        for tool in "${cargo_tools[@]}"; do
+          if ! command -v "$tool" > /dev/null 2>&1 &&
+            ! [ -f "$HOME/.cargo/bin/$tool" ]; then
+            all_installed=0
+            break
           fi
-          ;;
-        *-runtimes-nodejs.sh | *-nodejs.sh)
-          if command -v node > /dev/null 2>&1; then
-            tool_installed=1
-          fi
-          ;;
-        *-runtimes-python-uv.sh | *-python-uv.sh)
-          if [ -f "$HOME/.local/bin/uv" ] || command -v uv > /dev/null 2>&1; then
-            tool_installed=1
-          fi
-          ;;
-        *-devtools-gh.sh)
-          if command -v gh > /dev/null 2>&1; then
-            tool_installed=1
-          fi
-          ;;
-        *)
+        done
+        if [ $all_installed -eq 1 ]; then
+          tool_installed=1
+        fi
+        ;;
+      *-runtimes-nodejs.sh | *-nodejs.sh)
+        if command -v node > /dev/null 2>&1; then
+          tool_installed=1
+        fi
+        ;;
+      *-runtimes-python-uv.sh | *-python-uv.sh)
+        if [ -f "$HOME/.local/bin/uv" ] || command -v uv > /dev/null 2>&1; then
+          tool_installed=1
+        fi
+        ;;
+      *-devtools-gh.sh)
+        if command -v gh > /dev/null 2>&1; then
+          tool_installed=1
+        fi
+        ;;
+      *)
+        # Fallback to tool name check if script name doesn't match special cases
+        if [ -n "$tool_name" ]; then
           if [ -f "$HOME/.local/bin/$tool_name" ] || command -v "$tool_name" > /dev/null 2>&1; then
             tool_installed=1
           fi
-          ;;
-      esac
-    fi
+        fi
+        ;;
+    esac
 
     if [ $tool_installed -eq 1 ]; then
       echo "  Skipping $script_name (already executed and installed)"
@@ -119,7 +174,9 @@ for script in "$SRC"/home/run_once_[0-9]*.sh.tmpl; do
     elif [ -n "$tool_name" ]; then
       echo "  Note: $script_name marked as executed but tool not found ($tool_name), re-running installation..."
       sleep 0.5
-      chezmoi state delete --bucket=scriptState --key="$script_key" --source="$SRC" --destination="$DEST" 2> /dev/null || true
+      if ! chezmoi state delete --bucket=scriptState --key="$script_key" --source="$SRC" --destination="$DEST" 2>&1; then
+        echo "Warning: Failed to delete chezmoi state for $script_key" >&2
+      fi
     else
       echo "  Skipping $script_name (already executed)"
       already_executed=1

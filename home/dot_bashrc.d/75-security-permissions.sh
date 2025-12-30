@@ -4,7 +4,7 @@
 
 # Performance optimization: skip if run recently
 CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/security-permissions-last-run"
-CACHE_INTERVAL="${SECURITY_PERMISSIONS_CACHE_INTERVAL:-300}"  # 5 minutes default
+CACHE_INTERVAL="${SECURITY_PERMISSIONS_CACHE_INTERVAL:-300}" # 5 minutes default
 CACHE_LOCK_DIR="${CACHE_FILE}.lock.d"
 
 # Simple lock mechanism to avoid race conditions on the cache file
@@ -12,7 +12,7 @@ acquire_cache_lock() {
   # Try to acquire the lock a limited number of times to avoid hanging indefinitely
   local i
   for i in 1 2 3 4 5; do
-    if mkdir "$CACHE_LOCK_DIR" 2>/dev/null; then
+    if mkdir "$CACHE_LOCK_DIR" 2> /dev/null; then
       return 0
     fi
     sleep 0.1
@@ -22,50 +22,8 @@ acquire_cache_lock() {
 }
 
 release_cache_lock() {
-  rmdir "$CACHE_LOCK_DIR" 2>/dev/null || true
+  rmdir "$CACHE_LOCK_DIR" 2> /dev/null || true
 }
-
-# Acquire lock and check cache
-if acquire_cache_lock; then
-  if [ -z "${FORCE_SECURITY_PERMISSIONS:-}" ] && [ -f "$CACHE_FILE" ]; then
-    # Check if cache is still valid
-    if command -v stat >/dev/null 2>&1; then
-      # Try Linux format first, then macOS format
-      last_run=$(stat -c %Y "$CACHE_FILE" 2>/dev/null || stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0)
-    else
-      # Fallback to date command (BSD)
-      last_run=$(date -r "$CACHE_FILE" +%s 2>/dev/null || echo 0)
-    fi
-    current_time=$(date +%s)
-    if [ $((current_time - last_run)) -lt "$CACHE_INTERVAL" ]; then
-      release_cache_lock
-      return 0  # Skip execution
-    fi
-  fi
-
-  # Create/update cache file while holding the lock to prevent race conditions
-  mkdir -p "$(dirname "$CACHE_FILE")"
-  touch "$CACHE_FILE" 2>/dev/null || true
-  release_cache_lock
-else
-  # Fallback: if lock cannot be acquired, still ensure cache directory exists
-  # and proceed with execution (better to run twice than skip security checks)
-  # Avoid unnecessary timestamp updates if another process recently refreshed the cache
-  mkdir -p "$(dirname "$CACHE_FILE")"
-  if [ -f "$CACHE_FILE" ]; then
-    if command -v stat >/dev/null 2>&1; then
-      cache_mtime=$(stat -c %Y "$CACHE_FILE" 2>/dev/null || stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0)
-    else
-      cache_mtime=$(date -r "$CACHE_FILE" +%s 2>/dev/null || echo 0)
-    fi
-    current_time=$(date +%s)
-    if [ $((current_time - cache_mtime)) -ge "$CACHE_INTERVAL" ]; then
-      touch "$CACHE_FILE" 2>/dev/null || true
-    fi
-  else
-    touch "$CACHE_FILE" 2>/dev/null || true
-  fi
-fi
 
 # Helper function: log error (optional)
 LOG_ROTATION_CHECKED=0
@@ -73,23 +31,27 @@ log_error() {
   if [ "${ENABLE_SECURITY_PERMISSIONS_LOG:-0}" -eq 1 ]; then
     local log_file="${XDG_CACHE_HOME:-$HOME/.cache}/security-permissions-errors.log"
     mkdir -p "$(dirname "$log_file")"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$log_file" 2>/dev/null || true
-    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$log_file" 2> /dev/null || true
+
     # Simple log rotation (keep last 5 files, max 10KB each)
     # Only check once per script execution to avoid performance issues
     if [ "$LOG_ROTATION_CHECKED" -eq 0 ] && [ -f "$log_file" ]; then
       LOG_ROTATION_CHECKED=1
       local file_size
-      if command -v stat >/dev/null 2>&1; then
-        file_size=$(stat -c %s "$log_file" 2>/dev/null || stat -f %z "$log_file" 2>/dev/null || echo 0)
+      if command -v stat > /dev/null 2>&1; then
+        file_size=$(stat -c %s "$log_file" 2> /dev/null || stat -f %z "$log_file" 2> /dev/null || echo 0)
       else
-        file_size=$(wc -c < "$log_file" 2>/dev/null || echo 0)
+        file_size=$(wc -c < "$log_file" 2> /dev/null || echo 0)
       fi
       if [ "$file_size" -gt 10240 ]; then
-        for ((i=4; i>=1; i--)); do
-          [ -f "${log_file}.$i" ] && mv "${log_file}.$i" "${log_file}.$((i+1))" 2>/dev/null || true
+        for ((i = 4; i >= 1; i--)); do
+          if [ -f "${log_file}.$i" ]; then
+            mv "${log_file}.$i" "${log_file}.$((i + 1))" 2> /dev/null || true
+          fi
         done
-        mv "$log_file" "${log_file}.1" 2>/dev/null || true
+        if [ -f "$log_file" ]; then
+          mv "$log_file" "${log_file}.1" 2> /dev/null || true
+        fi
       fi
     fi
   fi
@@ -100,7 +62,7 @@ set_file_permission() {
   local file="$1"
   local perm="${2:-600}"
   if [ -f "$file" ]; then
-    if ! chmod "$perm" "$file" 2>/dev/null; then
+    if ! chmod "$perm" "$file" 2> /dev/null; then
       log_error "Failed to set permissions on $file"
       if [ "${DEBUG_SECURITY_PERMISSIONS:-0}" -eq 1 ]; then
         echo "Error setting permissions on $file" >&2
@@ -108,13 +70,14 @@ set_file_permission() {
     fi
   fi
 }
+export -f set_file_permission
 
 # Helper function: set directory permission
 set_dir_permission() {
   local dir="$1"
   local perm="${2:-700}"
   if [ -d "$dir" ]; then
-    if ! chmod "$perm" "$dir" 2>/dev/null; then
+    if ! chmod "$perm" "$dir" 2> /dev/null; then
       log_error "Failed to set permissions on $dir"
       if [ "${DEBUG_SECURITY_PERMISSIONS:-0}" -eq 1 ]; then
         echo "Error setting permissions on $dir" >&2
@@ -122,6 +85,49 @@ set_dir_permission() {
     fi
   fi
 }
+export -f set_dir_permission
+
+# Acquire lock and check cache
+if acquire_cache_lock; then
+  if [ -z "${FORCE_SECURITY_PERMISSIONS:-}" ] && [ -f "$CACHE_FILE" ]; then
+    # Check if cache is still valid
+    if command -v stat > /dev/null 2>&1; then
+      # Try Linux format first, then macOS format
+      last_run=$(stat -c %Y "$CACHE_FILE" 2> /dev/null || stat -f %m "$CACHE_FILE" 2> /dev/null || echo 0)
+    else
+      # Fallback to date command (BSD)
+      last_run=$(date -r "$CACHE_FILE" +%s 2> /dev/null || echo 0)
+    fi
+    current_time=$(date +%s)
+    if [ $((current_time - last_run)) -lt "$CACHE_INTERVAL" ]; then
+      release_cache_lock
+      return 0 # Skip execution
+    fi
+  fi
+
+  # Create/update cache file while holding the lock to prevent race conditions
+  mkdir -p "$(dirname "$CACHE_FILE")"
+  touch "$CACHE_FILE" 2> /dev/null || true
+  release_cache_lock
+else
+  # Fallback: if lock cannot be acquired, still ensure cache directory exists
+  # and proceed with execution (better to run twice than skip security checks)
+  # Avoid unnecessary timestamp updates if another process recently refreshed the cache
+  mkdir -p "$(dirname "$CACHE_FILE")"
+  if [ -f "$CACHE_FILE" ]; then
+    if command -v stat > /dev/null 2>&1; then
+      cache_mtime=$(stat -c %Y "$CACHE_FILE" 2> /dev/null || stat -f %m "$CACHE_FILE" 2> /dev/null || echo 0)
+    else
+      cache_mtime=$(date -r "$CACHE_FILE" +%s 2> /dev/null || echo 0)
+    fi
+    current_time=$(date +%s)
+    if [ $((current_time - cache_mtime)) -ge "$CACHE_INTERVAL" ]; then
+      touch "$CACHE_FILE" 2> /dev/null || true
+    fi
+  else
+    touch "$CACHE_FILE" 2> /dev/null || true
+  fi
+fi
 
 # GitHub CLI
 set_dir_permission "$HOME/.config/gh" 700
@@ -167,4 +173,3 @@ for gpg_file in "$HOME/.gnupg"/secring.gpg "$HOME/.gnupg"/private-keys-v1.d; do
     fi
   fi
 done
-
