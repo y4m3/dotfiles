@@ -50,11 +50,25 @@ if acquire_cache_lock; then
 else
   # Fallback: if lock cannot be acquired, still ensure cache directory exists
   # and proceed with execution (better to run twice than skip security checks)
+  # Avoid unnecessary timestamp updates if another process recently refreshed the cache
   mkdir -p "$(dirname "$CACHE_FILE")"
-  touch "$CACHE_FILE" 2>/dev/null || true
+  if [ -f "$CACHE_FILE" ]; then
+    if command -v stat >/dev/null 2>&1; then
+      cache_mtime=$(stat -c %Y "$CACHE_FILE" 2>/dev/null || stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0)
+    else
+      cache_mtime=$(date -r "$CACHE_FILE" +%s 2>/dev/null || echo 0)
+    fi
+    current_time=$(date +%s)
+    if [ $((current_time - cache_mtime)) -ge "$CACHE_INTERVAL" ]; then
+      touch "$CACHE_FILE" 2>/dev/null || true
+    fi
+  else
+    touch "$CACHE_FILE" 2>/dev/null || true
+  fi
 fi
 
 # Helper function: log error (optional)
+LOG_ROTATION_CHECKED=0
 log_error() {
   if [ "${ENABLE_SECURITY_PERMISSIONS_LOG:-0}" -eq 1 ]; then
     local log_file="${XDG_CACHE_HOME:-$HOME/.cache}/security-permissions-errors.log"
@@ -62,15 +76,17 @@ log_error() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$log_file" 2>/dev/null || true
     
     # Simple log rotation (keep last 5 files, max 10KB each)
-    if [ -f "$log_file" ]; then
+    # Only check once per script execution to avoid performance issues
+    if [ "$LOG_ROTATION_CHECKED" -eq 0 ] && [ -f "$log_file" ]; then
+      LOG_ROTATION_CHECKED=1
       local file_size
       if command -v stat >/dev/null 2>&1; then
-        file_size=$(stat -c%s "$log_file" 2>/dev/null || stat -f%z "$log_file" 2>/dev/null || echo 0)
+        file_size=$(stat -c %s "$log_file" 2>/dev/null || stat -f %z "$log_file" 2>/dev/null || echo 0)
       else
         file_size=$(wc -c < "$log_file" 2>/dev/null || echo 0)
       fi
       if [ "$file_size" -gt 10240 ]; then
-        for i in {4..1}; do
+        for ((i=4; i>=1; i--)); do
           [ -f "${log_file}.$i" ] && mv "${log_file}.$i" "${log_file}.$((i+1))" 2>/dev/null || true
         done
         mv "$log_file" "${log_file}.1" 2>/dev/null || true

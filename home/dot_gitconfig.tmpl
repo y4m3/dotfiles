@@ -15,6 +15,14 @@
     root = ~/repos
 
 [credential]
+    # NOTE: git-credential-cache uses Unix domain sockets and is only available
+    # on Linux/Unix systems. On other platforms, configure an appropriate helper
+    # in ~/.gitconfig.local, for example:
+    #   helper = osxkeychain      # macOS
+    #   helper = manager-core     # Windows
+    #   helper = cache --timeout=1800  # Linux/Unix
+    #
+    # The following cross-platform default can be overridden in ~/.gitconfig.local.
     helper = cache --timeout={{ if env "GIT_CREDENTIAL_CACHE_TIMEOUT" }}{{ env "GIT_CREDENTIAL_CACHE_TIMEOUT" }}{{ else }}1800{{ end }}
 
 [fetch]

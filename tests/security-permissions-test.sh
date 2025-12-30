@@ -12,7 +12,8 @@ echo "=========================================="
 
 # Create temporary directory for test files
 workdir=$(setup_tmpdir)
-trap 'rm -rf "$workdir"' EXIT
+CACHE_LOCK_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/security-permissions-last-run.lock.d"
+trap 'rm -rf "$workdir" "$CACHE_LOCK_DIR"' EXIT
 
 # Test 1: Script loads without errors
 if [ ! -f ~/.bashrc.d/75-security-permissions.sh ]; then
@@ -20,9 +21,7 @@ if [ ! -f ~/.bashrc.d/75-security-permissions.sh ]; then
 fi
 
 # Source the script in a subshell to avoid affecting current environment
-set +u
 bash -c "source ~/.bashrc.d/75-security-permissions.sh" 2>&1 || fail "Script failed to load"
-set -u
 pass "Script loads without errors"
 
 # Test 2: Cache mechanism works correctly

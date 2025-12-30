@@ -47,6 +47,21 @@ This dotfiles automatically configures Git credential helper via `~/.gitconfig`:
 
 **Note:** The `cache` helper stores credentials in memory and does not use `~/.git-credentials`. The `~/.git-credentials` file is only used when the `store` helper is explicitly enabled (see "Avoid `store` helper" section below).
 
+**Platform compatibility:** The `cache` helper is only available on Linux/Unix systems because it relies on Unix domain sockets. On other platforms you should use a platform-specific credential helper instead:
+- **macOS:** `osxkeychain`
+- **Windows:** `manager-core` (recommended) or `wincred`
+
+To override the default helper on non-Linux systems, add the appropriate configuration to `~/.gitconfig.local`:
+```bash
+# macOS example
+[credential]
+    helper = osxkeychain
+
+# Windows example
+[credential]
+    helper = manager-core
+```
+
 **Customizing Timeout:**
 
 The timeout is configured in `~/.bashrc.local` (created on first `chezmoi apply`). Simply edit the value:
