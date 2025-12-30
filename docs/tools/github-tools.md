@@ -13,6 +13,45 @@ Official GitHub command-line tool. Execute PR, Issue, and repository operations 
 - Managed by `run_once_300-devtools-gh.sh.tmpl`
 - Uses the official APT repository for updates and security
 
+### Authentication and Security
+
+After installing `gh`, authenticate with GitHub:
+
+```bash
+gh auth login
+```
+
+**Security Best Practices:**
+
+1. **File Permissions**: This dotfiles automatically sets strict permissions on GitHub CLI configuration:
+   - `~/.config/gh` directory: 700 (owner only access)
+   - `~/.config/gh/hosts.yml` file: 600 (owner read/write only)
+   - Permissions are automatically enforced on each shell startup via `75-security-permissions.sh`
+
+2. **Fine-grained Personal Access Tokens (PAT)**: When authenticating, prefer fine-grained PATs over classic tokens:
+   - Fine-grained PATs allow minimal required permissions
+   - Set expiration dates for additional security
+   - Limit access to specific repositories when possible
+
+3. **Token Rotation**: Regularly rotate your tokens:
+   - Review active tokens in GitHub Settings → Developer settings → Personal access tokens
+   - Revoke unused or compromised tokens immediately
+   - Update authentication when rotating tokens: `gh auth refresh`
+
+4. **Verify Permissions**: Check current file permissions:
+
+```bash
+# Check directory permissions
+ls -ld ~/.config/gh
+
+# Check file permissions
+ls -l ~/.config/gh/hosts.yml
+```
+
+Expected output:
+- Directory: `drwx------` (700)
+- File: `-rw-------` (600)
+
 ## ghq (Repository Manager)
 
 Tool for unified Git repository management. Clones into structures like `~/ghq/github.com/owner/repo`.

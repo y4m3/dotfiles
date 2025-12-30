@@ -108,6 +108,7 @@ For detailed usage and customization methods, refer to:
 - **[Configuration Guide](docs/configuration.md)** - Configuration policy and customization methods
 - **[Post-Setup Tasks](docs/post-setup.md)** - Manual tasks after initial setup (fonts, etc.)
 - **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
+- **[Security Best Practices](docs/tools/security.md)** - Credential management and file permissions
 - **Tool-specific details**:
   - [fzf](docs/tools/fzf.md) - Fuzzy finder
   - [Cargo Tools](docs/tools/cargo-tools.md) - bat, eza, fd, ripgrep, starship
