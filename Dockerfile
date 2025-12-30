@@ -36,7 +36,12 @@ ENV LC_ALL=en_US.UTF-8
 RUN ln -snf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && echo Asia/Tokyo > /etc/timezone
 
 # Install chezmoi (only tool pre-installed)
-RUN sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
+# Install to $HOME/.local/bin to match host environment behavior
+RUN mkdir -p /root/.local/bin && \
+    sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /root/.local/bin
+
+# Add /root/.local/bin to PATH so chezmoi is available immediately
+ENV PATH="/root/.local/bin:${PATH}"
 
 # Workspace mount point
 WORKDIR /workspace
