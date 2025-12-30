@@ -58,7 +58,7 @@ fi
 
 # Try binstall first
 log "install via cargo-binstall: ${to_install[*]}"
-if ! "$CARGO" binstall --no-confirm "${to_install[@]}"; then
+if ! "$CARGO_BINSTALL" --no-confirm "${to_install[@]}"; then
   log "cargo-binstall failed for some items; will fallback to cargo install"
 fi
 
@@ -77,8 +77,11 @@ if [ "${#missing[@]}" -eq 0 ]; then
 fi
 
 # If we need to compile, ensure we can sudo non-interactively
-if ! sudo -n true >/dev/null 2>&1; then
+if ! sudo_check_err=$(sudo -n true 2>&1); then
   err "need non-interactive sudo to install build tools (build-essential, pkg-config) for: ${missing[*]}"
+  if [ -n "$sudo_check_err" ]; then
+    err "sudo check failed: $sudo_check_err"
+  fi
   err "either grant sudo without password for apt, preinstall build tools, or ensure binstall succeeds for all targets."
   exit 1
 fi
