@@ -62,7 +62,7 @@ chart = alt.Chart(data).configure(
 chart = alt.Chart(data).mark_text(
     font='Noto Sans JP'
 ).encode(
-    text='japanese_column:Q'
+    text='japanese_column:N'
 )
 ```
 
