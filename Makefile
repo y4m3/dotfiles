@@ -31,6 +31,8 @@ DOCKER_RUN_BASE_USER := $(DOCKER_RUN_BASE) -u $(shell id -u):$(shell id -g)
 # build: Construct Docker image from Dockerfile
 # Creates a Docker image containing Ubuntu 24.04, essential tools (git, curl),
 # bash-completion, locales, and pre-installed chezmoi.
+# Note: Currently only Ubuntu 24.04 is supported. Platform-specific changes
+# may be needed if support for other platforms is added in the future.
 # This is a prerequisite for all other targets.
 build: Dockerfile
 	docker build -t $(IMAGE) .
@@ -43,25 +45,53 @@ dev: build
 # test: Change detection test (default, frequently used)
 # Runs tests for changed files only. If no changes detected, runs all tests.
 test: build
+	@echo "=== Performance Measurement ==="
 	@$(DOCKER_RUN_BASE) $(VOLUMES_FULL) $(IMAGE) \
 	  bash -lc 'export TEST_TYPE=changed; \
-	           bash scripts/apply-container.sh > /dev/null 2>&1 && \
+	           echo "[$$(date +%H:%M:%S)] Starting apply-container.sh..."; \
+	           APPLY_START=$$(date +%s); \
+	           bash scripts/apply-container.sh > /dev/null 2>&1; \
+	           APPLY_STATUS=$$?; \
+	           APPLY_END=$$(date +%s); \
+	           APPLY_DURATION=$$((APPLY_END - APPLY_START)); \
+	           if [ "$$APPLY_STATUS" -eq 0 ]; then \
+	             echo "[$$(date +%H:%M:%S)] apply-container.sh completed in $$APPLY_DURATION seconds"; \
+	           else \
+	             echo "[$$(date +%H:%M:%S)] apply-container.sh failed after $$APPLY_DURATION seconds (exit $$APPLY_STATUS)" >&2; \
+	             exit $$APPLY_STATUS; \
+	           fi; \
+	           [ -f ~/.bashrc ] && source ~/.bashrc; \
+	           TESTS_START=$$(date +%s); \
 	           tests_to_run=$$(bash scripts/detect-changes.sh); \
 	           if [ -z "$$tests_to_run" ]; then \
 	             echo "No changes detected, running all tests..."; \
 	             failed=0; \
 	             for test in tests/*-test.sh; do \
 	                 echo ""; \
+	                 TEST_START=$$(date +%s); \
 	                 if ! bash "$$test"; then failed=1; fi; \
+	                 TEST_END=$$(date +%s); \
+	                 TEST_DURATION=$$((TEST_END - TEST_START)); \
+	                 echo "[$$(date +%H:%M:%S)] $$(basename $$test) completed in $$TEST_DURATION seconds"; \
 	             done; \
+	             TESTS_END=$$(date +%s); \
+	             TESTS_DURATION=$$((TESTS_END - TESTS_START)); \
+	             echo "[$$(date +%H:%M:%S)] All tests completed in $$TESTS_DURATION seconds"; \
 	             exit $$failed; \
 	           else \
 	             echo "Running affected tests: $$tests_to_run"; \
 	             failed=0; \
 	             for test in $$tests_to_run; do \
 	                 echo ""; \
+	                 TEST_START=$$(date +%s); \
 	                 if ! bash "$$test"; then failed=1; fi; \
+	                 TEST_END=$$(date +%s); \
+	                 TEST_DURATION=$$((TEST_END - TEST_START)); \
+	                 echo "[$$(date +%H:%M:%S)] $$(basename $$test) completed in $$TEST_DURATION seconds"; \
 	             done; \
+	             TESTS_END=$$(date +%s); \
+	             TESTS_DURATION=$$((TESTS_END - TESTS_START)); \
+	             echo "[$$(date +%H:%M:%S)] Affected tests completed in $$TESTS_DURATION seconds"; \
 	             exit $$failed; \
 	           fi'
 
@@ -101,7 +131,16 @@ clean:
 		read -p "Are you sure? [y/N] " -n 1 -r; \
 		echo; \
 		if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
-			docker volume rm dotfiles-state cargo-data rustup-data env-snapshot || true; \
+			for vol in dotfiles-state cargo-data rustup-data env-snapshot; do \
+				if docker volume inspect "$$vol" >/dev/null 2>&1; then \
+					if ! vol_err=$$(docker volume rm "$$vol" 2>&1); then \
+						echo "Warning: Failed to remove volume $$vol" >&2; \
+						if [ -n "$$vol_err" ]; then \
+							echo "  $$vol_err" >&2; \
+						fi; \
+					fi; \
+				fi; \
+			done; \
 			echo "✓ Volumes cleared. Rebuilding environment A..."; \
 			$(MAKE) test-all; \
 		else \
@@ -109,7 +148,16 @@ clean:
 		fi; \
 	else \
 		echo "==> Removing persistent volumes..."; \
-		docker volume rm dotfiles-state cargo-data rustup-data env-snapshot || true; \
+		for vol in dotfiles-state cargo-data rustup-data env-snapshot; do \
+			if docker volume inspect "$$vol" >/dev/null 2>&1; then \
+				if ! vol_err=$$(docker volume rm "$$vol" 2>&1); then \
+					echo "Warning: Failed to remove volume $$vol" >&2; \
+					if [ -n "$$vol_err" ]; then \
+						echo "  $$vol_err" >&2; \
+					fi; \
+				fi; \
+			fi; \
+		done; \
 		echo "✓ Persistent state cleared (dotfiles-state, cargo-data, rustup-data, env-snapshot)."; \
 		echo "  Next 'make dev' or 'make test' will rebuild the environment."; \
 	fi

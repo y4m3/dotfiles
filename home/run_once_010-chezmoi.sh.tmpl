@@ -11,28 +11,30 @@ CORRECT_LOCATION="$HOME/.local/bin/chezmoi"
 
 # Check correct location first (highest priority)
 if [ -x "$CORRECT_LOCATION" ]; then
-  CURRENT_VERSION=$("$CORRECT_LOCATION" --version 2>/dev/null | head -1 || echo "unknown")
-  echo "✓ chezmoi already installed: $CURRENT_VERSION"
+  if CURRENT_VERSION=$("$CORRECT_LOCATION" --version 2>&1 | head -1); then
+    echo "✓ chezmoi already installed: $CURRENT_VERSION"
+  else
+    echo "Warning: Failed to get chezmoi version" >&2
+    echo "✓ chezmoi already installed (version unknown)"
+  fi
   exit 0
 fi
 
 # If not in correct location, check other locations
+# Note: We don't move existing binaries to avoid breaking the environment.
+# Instead, we'll install to the correct location, which may result in
+# multiple chezmoi installations, but the one in $HOME/.local/bin will
+# take precedence in PATH if configured correctly.
 FOUND_LOCATION=""
 
 # Check PATH
 if command -v chezmoi &>/dev/null; then
   FOUND_LOCATION=$(command -v chezmoi)
-fi
-
-# If found in wrong location, show error and exit
-if [ -n "$FOUND_LOCATION" ]; then
-  echo "❌ chezmoi found in wrong location: $FOUND_LOCATION"
-  echo "   Expected location: $CORRECT_LOCATION"
-  echo ""
-  echo "   Please fix this by either:"
-  echo "   1. Moving the binary: mv \"$FOUND_LOCATION\" \"$CORRECT_LOCATION\""
-  echo "   2. Reinstalling with: curl -fsSL https://get.chezmoi.io | bash -s -- -b \"$HOME/.local/bin\""
-  exit 1
+  if [ "$FOUND_LOCATION" != "$CORRECT_LOCATION" ]; then
+    echo "⚠️  chezmoi found in different location: $FOUND_LOCATION"
+    echo "   Will install to expected location: $CORRECT_LOCATION"
+    echo "   (Existing installation will remain, but $CORRECT_LOCATION takes precedence)"
+  fi
 fi
 
 echo "==> Installing chezmoi..."
@@ -40,31 +42,18 @@ echo "==> Installing chezmoi..."
 # Ensure ~/.local/bin exists
 mkdir -p "$HOME/.local/bin"
 
-# Detect platform and install
-case "$(uname -s)" in
-Darwin)
-  # macOS
-  if command -v brew &>/dev/null; then
-    brew install chezmoi
-  else
-    # Fallback: use official installer with explicit path
-    curl -fsSL https://get.chezmoi.io | bash -s -- -b "$HOME/.local/bin"
-  fi
-  ;;
-Linux)
-  # Linux - use official installer with explicit path
-  curl -fsSL https://get.chezmoi.io | bash -s -- -b "$HOME/.local/bin"
-  ;;
-*)
-  echo "❌ Unsupported platform: $(uname -s)"
-  exit 1
-  ;;
-esac
+# Install chezmoi to $HOME/.local/bin
+# Using official installer with explicit install path
+curl -fsSL https://get.chezmoi.io | bash -s -- -b "$HOME/.local/bin"
 
 # Post-installation verification - check correct location only
 if [ -x "$CORRECT_LOCATION" ]; then
-  INSTALLED_VERSION=$("$CORRECT_LOCATION" --version 2>/dev/null | head -1)
-  echo "✓ chezmoi installed successfully: $INSTALLED_VERSION"
+  if INSTALLED_VERSION=$("$CORRECT_LOCATION" --version 2>&1 | head -1); then
+    echo "✓ chezmoi installed successfully: $INSTALLED_VERSION"
+  else
+    echo "Warning: Failed to get chezmoi version after installation" >&2
+    echo "✓ chezmoi installed successfully (version unknown)"
+  fi
   echo "  Location: $CORRECT_LOCATION"
 else
   echo "❌ chezmoi installation failed"
