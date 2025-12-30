@@ -106,6 +106,7 @@ For detailed testing workflow and test types, see [Testing Guide](docs/testing-g
 For detailed usage and customization methods, refer to:
 
 - **[Configuration Guide](docs/configuration.md)** - Configuration policy and customization methods
+- **[Post-Setup Tasks](docs/post-setup.md)** - Manual tasks after initial setup (fonts, etc.)
 - **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
 - **Tool-specific details**:
   - [fzf](docs/tools/fzf.md) - Fuzzy finder
