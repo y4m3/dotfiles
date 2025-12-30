@@ -21,12 +21,42 @@ if [ -z "${FORCE_SECURITY_PERMISSIONS:-}" ] && [ -f "$CACHE_FILE" ]; then
   fi
 fi
 
+# Create/update cache file immediately after cache check to prevent race conditions
+mkdir -p "$(dirname "$CACHE_FILE")"
+touch "$CACHE_FILE" 2>/dev/null || true
+
+# Helper function: log error (optional)
+log_error() {
+  if [ "${ENABLE_SECURITY_PERMISSIONS_LOG:-0}" -eq 1 ]; then
+    local log_file="${XDG_CACHE_HOME:-$HOME/.cache}/security-permissions-errors.log"
+    mkdir -p "$(dirname "$log_file")"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$log_file" 2>/dev/null || true
+    
+    # Simple log rotation (keep last 5 files, max 10KB each)
+    if [ -f "$log_file" ]; then
+      local file_size
+      if command -v stat >/dev/null 2>&1; then
+        file_size=$(stat -c%s "$log_file" 2>/dev/null || stat -f%z "$log_file" 2>/dev/null || echo 0)
+      else
+        file_size=$(wc -c < "$log_file" 2>/dev/null || echo 0)
+      fi
+      if [ "$file_size" -gt 10240 ]; then
+        for i in {4..1}; do
+          [ -f "${log_file}.$i" ] && mv "${log_file}.$i" "${log_file}.$((i+1))" 2>/dev/null || true
+        done
+        mv "$log_file" "${log_file}.1" 2>/dev/null || true
+      fi
+    fi
+  fi
+}
+
 # Helper function: set file permission
 set_file_permission() {
   local file="$1"
   local perm="${2:-600}"
   if [ -f "$file" ]; then
     if ! chmod "$perm" "$file" 2>/dev/null; then
+      log_error "Failed to set permissions on $file"
       if [ "${DEBUG_SECURITY_PERMISSIONS:-0}" -eq 1 ]; then
         echo "Error setting permissions on $file" >&2
       fi
@@ -40,6 +70,7 @@ set_dir_permission() {
   local perm="${2:-700}"
   if [ -d "$dir" ]; then
     if ! chmod "$perm" "$dir" 2>/dev/null; then
+      log_error "Failed to set permissions on $dir"
       if [ "${DEBUG_SECURITY_PERMISSIONS:-0}" -eq 1 ]; then
         echo "Error setting permissions on $dir" >&2
       fi
@@ -76,9 +107,7 @@ set_file_permission "$HOME/.pypirc" 600
 set_file_permission "$HOME/.pip/pip.conf" 600
 
 # Rust
-if [ -f "$HOME/.cargo/credentials" ] || [ -f "$HOME/.cargo/credentials.toml" ]; then
-  set_dir_permission "$HOME/.cargo" 700
-fi
+set_dir_permission "$HOME/.cargo" 700
 set_file_permission "$HOME/.cargo/credentials" 600
 set_file_permission "$HOME/.cargo/credentials.toml" 600
 
@@ -94,6 +123,3 @@ for gpg_file in "$HOME/.gnupg"/secring.gpg "$HOME/.gnupg"/private-keys-v1.d; do
   fi
 done
 
-# Update timestamp
-mkdir -p "$(dirname "$CACHE_FILE")"
-touch "$CACHE_FILE" 2>/dev/null || true

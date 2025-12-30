@@ -36,14 +36,16 @@ This dotfiles automatically enforces strict file permissions on credential files
 
 ### Git Credential Helper
 
-- **File**: `~/.git-credentials` → 600 (owner read/write only)
+- **File**: `~/.git-credentials` → 600 (owner read/write only, used by the `store` helper when enabled)
 
 **Automatic Configuration:**
 
 This dotfiles automatically configures Git credential helper via `~/.gitconfig`:
-- Uses `cache` helper (credentials stored in memory, not on disk)
+- Uses `cache` helper (credentials are cached in memory by a daemon and are not written to `~/.git-credentials`)
 - Default timeout: 1800 seconds (30 minutes) - configured in `~/.bashrc.local`
 - Configurable via `GIT_CREDENTIAL_CACHE_TIMEOUT` environment variable
+
+**Note:** The `cache` helper stores credentials in memory and does not use `~/.git-credentials`. The `~/.git-credentials` file is only used when the `store` helper is explicitly enabled (see "Avoid `store` helper" section below).
 
 **Customizing Timeout:**
 
@@ -60,7 +62,7 @@ export GIT_CREDENTIAL_CACHE_TIMEOUT=900   # 15 minutes
 
 After editing `~/.bashrc.local`, run `chezmoi apply` to update the Git configuration. The new timeout will be applied to the credential helper.
 
-**Note:** The environment variable must be set before running `chezmoi apply`. If you edit `~/.bashrc.local` in a new shell session, make sure to source it or restart your shell before running `chezmoi apply`.
+**Note:** The environment variable must be set before running `chezmoi apply`. If you edit `~/.bashrc.local` in your current shell session, source it (`source ~/.bashrc.local`) before running `chezmoi apply` to use the new value. Alternatively, run `chezmoi apply` in a new shell session where the updated value will be automatically loaded.
 
 **Best Practices:**
 
@@ -110,7 +112,7 @@ git config --global credential.helper store
 
 ### Rust Credentials
 
-- **Directory**: `~/.cargo` → 700 (only if credentials file exists)
+- **Directory**: `~/.cargo` → 700 (owner only)
 - **File**: `~/.cargo/credentials` → 600 (owner read/write only)
 - **File**: `~/.cargo/credentials.toml` → 600 (owner read/write only)
 
