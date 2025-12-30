@@ -133,7 +133,12 @@ clean:
 		if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
 			for vol in dotfiles-state cargo-data rustup-data env-snapshot; do \
 				if docker volume inspect "$$vol" >/dev/null 2>&1; then \
-					docker volume rm "$$vol" 2>&1 || echo "Warning: Failed to remove volume $$vol" >&2; \
+					if ! vol_err=$$(docker volume rm "$$vol" 2>&1); then \
+						echo "Warning: Failed to remove volume $$vol" >&2; \
+						if [ -n "$$vol_err" ]; then \
+							echo "  $$vol_err" >&2; \
+						fi; \
+					fi; \
 				fi; \
 			done; \
 			echo "✓ Volumes cleared. Rebuilding environment A..."; \
@@ -145,7 +150,12 @@ clean:
 		echo "==> Removing persistent volumes..."; \
 		for vol in dotfiles-state cargo-data rustup-data env-snapshot; do \
 			if docker volume inspect "$$vol" >/dev/null 2>&1; then \
-				docker volume rm "$$vol" 2>&1 || echo "Warning: Failed to remove volume $$vol" >&2; \
+				if ! vol_err=$$(docker volume rm "$$vol" 2>&1); then \
+					echo "Warning: Failed to remove volume $$vol" >&2; \
+					if [ -n "$$vol_err" ]; then \
+						echo "  $$vol_err" >&2; \
+					fi; \
+				fi; \
 			fi; \
 		done; \
 		echo "✓ Persistent state cleared (dotfiles-state, cargo-data, rustup-data, env-snapshot)."; \
