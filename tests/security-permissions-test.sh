@@ -160,5 +160,9 @@ fi
 
 # Cleanup
 rm -f "$CACHE_FILE" "$LOG_FILE"
+# Also clean up rotated log files if they exist
+for i in {1..5}; do
+  rm -f "${LOG_FILE}.$i"
+done
 
 print_summary

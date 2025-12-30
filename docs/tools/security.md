@@ -52,7 +52,7 @@ This dotfiles automatically configures Git credential helper via `~/.gitconfig`:
 - **Windows:** `manager-core` (recommended) or `wincred`
 
 To override the default helper on non-Linux systems, add the appropriate configuration to `~/.gitconfig.local`:
-```bash
+```gitconfig
 # macOS example
 [credential]
     helper = osxkeychain

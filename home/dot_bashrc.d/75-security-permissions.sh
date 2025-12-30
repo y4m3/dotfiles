@@ -107,7 +107,9 @@ if acquire_cache_lock; then
 
   # Create/update cache file while holding the lock to prevent race conditions
   mkdir -p "$(dirname "$CACHE_FILE")"
-  touch "$CACHE_FILE" 2> /dev/null || true
+  if touch "$CACHE_FILE" 2> /dev/null; then
+    chmod 600 "$CACHE_FILE" 2> /dev/null || log_error "Failed to set permissions on cache file $CACHE_FILE"
+  fi
   release_cache_lock
 else
   # Fallback: if lock cannot be acquired, still ensure cache directory exists
@@ -122,10 +124,14 @@ else
     fi
     current_time=$(date +%s)
     if [ $((current_time - cache_mtime)) -ge "$CACHE_INTERVAL" ]; then
-      touch "$CACHE_FILE" 2> /dev/null || true
+      if touch "$CACHE_FILE" 2> /dev/null; then
+        chmod 600 "$CACHE_FILE" 2> /dev/null || log_error "Failed to set permissions on cache file $CACHE_FILE"
+      fi
     fi
   else
-    touch "$CACHE_FILE" 2> /dev/null || true
+    if touch "$CACHE_FILE" 2> /dev/null; then
+      chmod 600 "$CACHE_FILE" 2> /dev/null || log_error "Failed to set permissions on cache file $CACHE_FILE"
+    fi
   fi
 fi
 
