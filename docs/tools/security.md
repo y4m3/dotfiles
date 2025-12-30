@@ -64,7 +64,7 @@ After editing `~/.bashrc.local`, run `chezmoi apply` to update the Git configura
 
 **Best Practices:**
 
-- Default timeout (3600 seconds / 1 hour) is suitable for most development workflows
+- Default timeout (1800 seconds / 30 minutes) is suitable for most development workflows
 - For shared machines or high-security environments, consider shorter timeouts (e.g., 900 seconds / 15 minutes)
 - For personal development machines, longer timeouts (e.g., 7200 seconds / 2 hours) may be more convenient
 
