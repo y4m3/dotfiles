@@ -1,4 +1,6 @@
 # Ubuntu 24.04 base for dotfiles testing
+# Note: Currently only Ubuntu 24.04 is supported. Platform-specific changes
+# may be needed if support for other platforms is added in the future.
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive

@@ -31,6 +31,8 @@ DOCKER_RUN_BASE_USER := $(DOCKER_RUN_BASE) -u $(shell id -u):$(shell id -g)
 # build: Construct Docker image from Dockerfile
 # Creates a Docker image containing Ubuntu 24.04, essential tools (git, curl),
 # bash-completion, locales, and pre-installed chezmoi.
+# Note: Currently only Ubuntu 24.04 is supported. Platform-specific changes
+# may be needed if support for other platforms is added in the future.
 # This is a prerequisite for all other targets.
 build: Dockerfile
 	docker build -t $(IMAGE) .
@@ -48,10 +50,16 @@ test: build
 	  bash -lc 'export TEST_TYPE=changed; \
 	           echo "[$$(date +%H:%M:%S)] Starting apply-container.sh..."; \
 	           APPLY_START=$$(date +%s); \
-	           bash scripts/apply-container.sh > /dev/null 2>&1 && \
+	           bash scripts/apply-container.sh > /dev/null 2>&1; \
+	           APPLY_STATUS=$$?; \
 	           APPLY_END=$$(date +%s); \
 	           APPLY_DURATION=$$((APPLY_END - APPLY_START)); \
-	           echo "[$$(date +%H:%M:%S)] apply-container.sh completed in $$APPLY_DURATION seconds"; \
+	           if [ "$$APPLY_STATUS" -eq 0 ]; then \
+	             echo "[$$(date +%H:%M:%S)] apply-container.sh completed in $$APPLY_DURATION seconds"; \
+	           else \
+	             echo "[$$(date +%H:%M:%S)] apply-container.sh failed after $$APPLY_DURATION seconds (exit $$APPLY_STATUS)" >&2; \
+	             exit $$APPLY_STATUS; \
+	           fi; \
 	           [ -f ~/.bashrc ] && source ~/.bashrc; \
 	           TESTS_START=$$(date +%s); \
 	           tests_to_run=$$(bash scripts/detect-changes.sh); \
