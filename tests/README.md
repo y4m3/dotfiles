@@ -94,6 +94,218 @@ When adding new test scripts:
 - **Idempotent**: Can run multiple times without side effects
 - **Fast**: Minimize execution time (especially important for CI)
 
+## Test Standards
+
+For personal chezmoi dotfiles management, we use a 3-level testing standard to balance thoroughness with maintainability:
+
+### Level 1: Basic Verification (Minimum)
+
+**Required for all tools:**
+- Installation check: `assert_executable "tool"`
+- Version check: `assert_command "tool --version"`
+- Config file existence check (if managed by chezmoi): `assert_file_exists "$HOME/.config/tool/config"`
+
+**Target tools**: Simple tools (btop, lazygit, lazydocker, yq, chezmoi, prerequisites, node, uv, github-tools, yazi, etc.)
+
+**Example:**
+```bash
+assert_executable "btop" "btop installed"
+assert_command "btop --version" "btop version prints"
+assert_file_exists "$HOME/.config/btop/btop.conf" "btop config file deployed"
+```
+
+### Level 2: Functionality Verification (Recommended)
+
+**Level 1 + add:**
+- Basic functionality test (one): Test one main feature of the tool
+- Config file validation (if managed by chezmoi): Verify config file is valid
+
+**Target tools**: Tools where config files are important (zellij, starship, direnv, shellcheck, fzf, zoxide, bash-config, etc.)
+
+**Note**: Each tool should have its own test file. For example:
+- `tests/zellij-test.sh` - Tests zellij installation and config validation
+- `tests/starship-test.sh` - Tests starship installation and config validation
+- `tests/bash-config-test.sh` - Tests bash configuration files only (not individual tools)
+
+**Example:**
+```bash
+# Level 1 tests
+assert_executable "zellij" "zellij installed"
+assert_command "zellij --version" "zellij version prints"
+assert_file_exists "$HOME/.config/zellij/config.kdl" "zellij config file exists"
+
+# Level 2: Config validation
+zellij setup --check < /dev/null && pass "zellij config syntax is valid" || fail "zellij config has errors"
+```
+
+### Level 3: Detailed Verification (Only when needed)
+
+**Level 2 + add:**
+- Integration test (e.g., git integration)
+- Error handling test (verify it doesn't crash)
+
+**Target tools**: Tools requiring complex integration (delta, etc.)
+
+**Example:**
+```bash
+# Level 1 & 2 tests
+# ...
+
+# Level 3: Integration test
+git init -q
+echo "test" > file.txt
+git add file.txt
+git commit -q -m "test"
+assert_command "git diff | delta --color-only" "delta works with git"
+```
+
+### Tests to Exclude
+
+For personal environments, the following tests are excessive:
+- Multiple functionality tests (one is enough)
+- Detailed error handling tests (only verify it doesn't crash)
+- Project creation/build tests (except for development environment tools)
+- Multiple edge case tests
+
+### Guidelines for Adding New Tools
+
+When adding a new tool:
+1. Start with Level 1 (basic verification)
+2. Expand to Level 2 if config files are important
+3. Expand to Level 3 only if special integration is needed
+
+This keeps test maintenance overhead minimal while ensuring necessary verification.
+
+## Test Templates
+
+### Level 1 Template
+
+```bash
+#!/usr/bin/env bash
+# Test [tool name] installation
+# Usage: bash tests/[tool]-test.sh
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/helpers.sh"
+
+echo "=========================================="
+echo "Testing [tool name]"
+echo "=========================================="
+
+# Ensure PATH includes tool location
+case ":$PATH:" in
+  *":$HOME/.local/bin:") : ;;
+  *) PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
+# Level 1: Basic verification
+assert_executable "[tool]" "[tool] installed"
+assert_command "[tool] --version" "[tool] version prints"
+
+# Config file check (if managed by chezmoi)
+assert_file_exists "$HOME/.config/[tool]/config" "[tool] config file deployed"
+
+print_summary
+```
+
+### Level 2 Template
+
+```bash
+#!/usr/bin/env bash
+# Test [tool name] installation and functionality
+# Usage: bash tests/[tool]-test.sh
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/helpers.sh"
+
+echo "=========================================="
+echo "Testing [tool name]"
+echo "=========================================="
+
+# Ensure PATH includes tool location
+case ":$PATH:" in
+  *":$HOME/.local/bin:") : ;;
+  *) PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
+# Level 1: Basic verification
+assert_executable "[tool]" "[tool] installed"
+assert_command "[tool] --version" "[tool] version prints"
+assert_file_exists "$HOME/.config/[tool]/config" "[tool] config file exists"
+
+# Level 2: Config validation
+# Validate config using tool's built-in validation
+if command -v "[tool]" >/dev/null 2>&1; then
+  if [tool] --check-config 2>&1; then
+    pass "[tool] config is valid"
+  else
+    fail "[tool] config has errors"
+  fi
+fi
+
+# Level 2: Basic functionality test (one main feature)
+# Example: Test that tool can perform its main function
+assert_command "[tool] [basic-operation]" "[tool] can perform basic operation"
+
+print_summary
+```
+
+### Level 3 Template
+
+```bash
+#!/usr/bin/env bash
+# Test [tool name] installation, functionality, and integration
+# Usage: bash tests/[tool]-test.sh
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/helpers.sh"
+
+echo "=========================================="
+echo "Testing [tool name]"
+echo "=========================================="
+
+# Ensure PATH includes tool location
+case ":$PATH:" in
+  *":$HOME/.local/bin:") : ;;
+  *) PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
+# Level 1: Basic verification
+assert_executable "[tool]" "[tool] installed"
+assert_command "[tool] --version" "[tool] version prints"
+
+# Level 2: Config validation (if applicable)
+# ...
+
+# Level 3: Integration test
+# Example: Test integration with another tool
+tmprepo="$(setup_tmpdir)"
+trap 'rm -rf "$tmprepo"' EXIT
+cd "$tmprepo"
+
+# Setup integration environment
+# ...
+
+# Test integration
+assert_command "[tool] [integration-operation]" "[tool] works with integration"
+
+# Level 3: Error handling (verify it doesn't crash)
+set +e
+output=$([tool] --invalid-option 2>&1)
+exit_code=$?
+set -e
+if [ $exit_code -gt 1 ]; then
+  fail "[tool] crashed on invalid input (exit code: $exit_code)"
+else
+  pass "[tool] handles invalid input gracefully"
+fi
+
+print_summary
+```
+
 ## Future Enhancements
 
 Potential future test additions:
