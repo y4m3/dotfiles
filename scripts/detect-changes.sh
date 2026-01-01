@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Detect which tests to run based on git diff
 # Usage: bash scripts/detect-changes.sh [base_commit]
+#   base_commit: Optional. If specified, compares between commits.
+#                If not specified (default), detects uncommitted changes (HEAD vs working directory).
 # Returns: space-separated list of test files to run, or empty string for all tests
 
 set -euo pipefail
@@ -9,8 +11,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 MAPPING_FILE="$REPO_ROOT/.test-mapping.json"
 
-# Default to HEAD if no base commit specified
-BASE_COMMIT="${1:-HEAD}"
+# Default: detect uncommitted changes (HEAD vs working directory)
+# If base commit is specified, compare between commits
+BASE_COMMIT="${1:-}"
 
 # Check if mapping file exists
 if [ ! -f "$MAPPING_FILE" ]; then
@@ -25,7 +28,19 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
 fi
 
 # Get changed files
-changed_files=$(git diff --name-only "$BASE_COMMIT" HEAD 2> /dev/null || echo "")
+# If BASE_COMMIT is specified, compare between commits
+# Otherwise, compare HEAD with working directory (uncommitted changes)
+if [ -n "$BASE_COMMIT" ]; then
+  changed_files=$(git diff --name-only "$BASE_COMMIT" HEAD 2> /dev/null || echo "")
+else
+  # Detect uncommitted changes (staged + unstaged)
+  changed_files=$(git diff --name-only HEAD 2> /dev/null || echo "")
+  # Also include staged changes
+  staged_files=$(git diff --cached --name-only 2> /dev/null || echo "")
+  if [ -n "$staged_files" ]; then
+    changed_files=$(printf "%s\n%s" "$changed_files" "$staged_files" | sort -u)
+  fi
+fi
 
 # If no changes detected, return empty (will run all tests)
 if [ -z "$changed_files" ]; then
