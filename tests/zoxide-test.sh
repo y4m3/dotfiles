@@ -23,6 +23,7 @@ assert_executable "zoxide" "zoxide binary installed"
 assert_command "zoxide query -l" "zoxide query command works"
 
 # Test 3: Verify 60-utils.sh sets environment variables
+# Tests 3.1-3.4: File check, source, and verify 2 environment variables
 # 60-utils.sh should set _ZO_RESOLVE_SYMLINKS and _ZO_ECHO when zoxide is available
 # We need to source it and verify the variables are set
 if [ ! -f ~/.bashrc.d/60-utils.sh ]; then
@@ -32,7 +33,11 @@ fi
 # Source the script to set environment variables
 # Temporarily disable set -u to avoid errors during sourcing
 set +u
-source ~/.bashrc.d/60-utils.sh 2> /dev/null || true
+if [ -f ~/.bashrc.d/60-utils.sh ]; then
+  source ~/.bashrc.d/60-utils.sh
+else
+  fail "60-utils.sh file not found (should be deployed by chezmoi)"
+fi
 set -u
 
 # Verify environment variables are set
@@ -48,5 +53,27 @@ fi
 # Verify the values are correct
 assert_command "[ \"\$_ZO_RESOLVE_SYMLINKS\" = \"1\" ]" "_ZO_RESOLVE_SYMLINKS environment variable set to 1"
 assert_command "[ \"\$_ZO_ECHO\" = \"1\" ]" "_ZO_ECHO environment variable set to 1"
+
+# Test 4: zoxide can add and query directories (basic functionality)
+# Tests 4.1-4.2: Add directory and verify query (conditional: 1-2 tests depending on success)
+test_dir=$(mktemp -d)
+cd "$test_dir"
+# zoxide add should add current directory to database
+if zoxide add . 2>&1; then
+  pass "zoxide can add directories to database"
+  # Verify directory was added by querying
+  if zoxide query "$(basename "$test_dir")" 2>&1 | grep -q "$test_dir"; then
+    pass "zoxide can query added directories"
+  else
+    warn "zoxide directory query (directory may not be immediately queryable, but add succeeded)"
+  fi
+else
+  fail "zoxide add test failed (zoxide add should succeed in test environment)"
+fi
+cd - > /dev/null 2>&1
+rm -rf "$test_dir"
+
+# Test 5: zoxide version can be retrieved
+assert_command "zoxide --version" "zoxide version prints"
 
 print_summary

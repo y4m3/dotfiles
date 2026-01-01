@@ -29,8 +29,15 @@ else
   fail "fzf directory exists (directory not found: $HOME/.fzf)"
 fi
 
-# Test 4: fzf can filter input (non-interactive mode)
-output=$(echo -e "test1\ntest2\ntest3" | fzf -f test2 2> /dev/null || true)
+# Test 4: fzf can filter input (basic functionality test)
+set +e
+output=$(echo -e "test1\ntest2\ntest3" | fzf -f test2 2>&1)
+fzf_exit=$?
+set -e
+# Exit code 1 means no match (acceptable for this test), other codes are errors
+if [ $fzf_exit -ne 0 ] && [ $fzf_exit -ne 1 ]; then
+  fail "fzf failed with exit code $fzf_exit: $output"
+fi
 assert_string_contains "$output" "test2" "fzf can filter input"
 
 print_summary
