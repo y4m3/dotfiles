@@ -78,7 +78,7 @@ make test-all BASELINE=1
 
 ### How It Works
 
-1. **Git Diff**: Compares current HEAD with specified base commit (default: HEAD)
+1. **Git Diff**: Detects uncommitted changes (HEAD vs working directory) by default, or compares between commits if base commit is specified
 2. **Pattern Matching**: Matches changed files against patterns in `.test-mapping.json`
 3. **Dependency Resolution**: If a file affects all tests (e.g., `bashrc` changes), runs all tests
 4. **Test Execution**: Runs only the affected tests
@@ -98,6 +98,10 @@ The `.test-mapping.json` file defines:
   "tests": ["tests/zellij-test.sh"]
 },
 {
+  "pattern": "home/dot_config/starship.toml.tmpl",
+  "tests": ["tests/starship-test.sh"]
+},
+{
   "pattern": "home/dot_bashrc*",
   "tests": ["tests/bash-config-test.sh"],
   "affects_all": true
@@ -111,6 +115,8 @@ The `.test-mapping.json` file defines:
   - Reason: PATH changes affect all tools
 
 - **No changes detected**: Runs all tests (safe default)
+
+- **Uncommitted changes**: By default, detects uncommitted changes (staged + unstaged). This is useful for testing changes before committing, especially during tool trial periods in `make dev`.
 
 - **Pattern matching**: Uses glob patterns (`*`, `**`) converted to regex
 
