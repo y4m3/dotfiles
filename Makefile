@@ -1,4 +1,10 @@
 # Use bash as the shell for Makefile recipes (required for bash-specific features)
+# This Makefile uses bash-specific features like:
+# - `read -n` for non-blocking input
+# - `[[` for conditional expressions
+# - `PIPESTATUS` array for pipeline exit codes
+# Note: This Makefile assumes bash is available at /bin/bash.
+# If your system uses a different path, adjust accordingly.
 SHELL := /bin/bash
 
 # Docker image name and tag (customizable via: make IMAGE=custom-tag build)

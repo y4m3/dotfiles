@@ -57,6 +57,8 @@ assert_command "[ \"\$_ZO_ECHO\" = \"1\" ]" "_ZO_ECHO environment variable set t
 # Test 4: zoxide can add and query directories (basic functionality)
 # Tests 4.1-4.2: Add directory and verify query (conditional: 1-2 tests depending on success)
 test_dir=$(mktemp -d)
+# Ensure cleanup on exit (including early exit from fail)
+trap 'cd - >/dev/null 2>&1 || true; rm -rf "$test_dir"' EXIT
 cd "$test_dir"
 # zoxide add should add current directory to database
 if zoxide add . 2>&1; then
@@ -70,7 +72,9 @@ if zoxide add . 2>&1; then
 else
   fail "zoxide add test failed (zoxide add should succeed in test environment)"
 fi
-cd - > /dev/null 2>&1
+# Cleanup trap will handle directory removal
+trap - EXIT
+cd - > /dev/null 2>&1 || true
 rm -rf "$test_dir"
 
 # Test 5: zoxide version can be retrieved

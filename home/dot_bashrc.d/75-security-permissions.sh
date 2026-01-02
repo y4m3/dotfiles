@@ -148,7 +148,7 @@ set_file_permission() {
   local file="$1"
   local perm="${2:-600}"
   if [ -f "$file" ]; then
-    if ! chmod "$perm" "$file" 2>&1; then
+    if ! chmod "$perm" "$file" 2>&1 >/dev/null; then
       log_error "Failed to set permissions on $file"
       if [ "${DEBUG_SECURITY_PERMISSIONS:-0}" -eq 1 ]; then
         echo "Error setting permissions on $file" >&2
@@ -163,7 +163,7 @@ set_dir_permission() {
   local dir="$1"
   local perm="${2:-700}"
   if [ -d "$dir" ]; then
-    if ! chmod "$perm" "$dir" 2>&1; then
+    if ! chmod "$perm" "$dir" 2>&1 >/dev/null; then
       log_error "Failed to set permissions on $dir"
       if [ "${DEBUG_SECURITY_PERMISSIONS:-0}" -eq 1 ]; then
         echo "Error setting permissions on $dir" >&2

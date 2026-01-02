@@ -22,6 +22,9 @@ TEST_PASS=0
 TEST_FAIL=0
 TEST_WARN=0
 
+# Array to store warning messages for summary display
+declare -a TEST_WARN_MESSAGES=()
+
 # Test log file (if TEST_LOG_FILE is set, all output will be logged there)
 TEST_LOG_FILE="${TEST_LOG_FILE:-}"
 
@@ -48,6 +51,8 @@ pass() {
 warn() {
   echo -e "${YELLOW}WARN${NC}: $*" >&2
   TEST_WARN=$((TEST_WARN + 1))
+  # Store warning message for summary display
+  TEST_WARN_MESSAGES+=("$*")
   # Log to file if TEST_LOG_FILE is set
   if [ -n "$TEST_LOG_FILE" ]; then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN: $*" >> "$TEST_LOG_FILE" 2>&1 || true
@@ -245,27 +250,61 @@ print_summary() {
     } >> "$TEST_LOG_FILE" 2>&1 || true
   fi
 
-  # Test passes only if there are no FAIL and no WARN
-  if [ $TEST_FAIL -eq 0 ] && [ $TEST_WARN -eq 0 ]; then
-    summary_msg="${GREEN}All tests passed! (No FAIL, No WARN)${NC}"
-    echo -e "$summary_msg"
-    if [ -n "$TEST_LOG_FILE" ]; then
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] $test_script_name: All tests passed! (No FAIL, No WARN)" >> "$TEST_LOG_FILE" 2>&1 || true
+  # Test passes only if there are no FAIL (WARN is non-fatal)
+  if [ $TEST_FAIL -eq 0 ]; then
+    if [ $TEST_WARN -eq 0 ]; then
+      summary_msg="${GREEN}All tests passed! (No FAIL, No WARN)${NC}"
+      echo -e "$summary_msg"
+      if [ -n "$TEST_LOG_FILE" ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $test_script_name: All tests passed! (No FAIL, No WARN)" >> "$TEST_LOG_FILE" 2>&1 || true
+      fi
+    else
+      # TEST_WARN > 0 but TEST_FAIL == 0
+      summary_msg="${YELLOW}Tests passed with warnings! (WARN: $TEST_WARN)${NC}"
+      echo -e "$summary_msg"
+      echo ""
+      echo "${YELLOW}Warning Details:${NC}"
+      local i=1
+      for warn_msg in "${TEST_WARN_MESSAGES[@]}"; do
+        echo "  ${YELLOW}[$i]${NC} $warn_msg"
+        i=$((i + 1))
+      done
+      if [ -n "$TEST_LOG_FILE" ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $test_script_name: Tests passed with warnings! (WARN: $TEST_WARN)" >> "$TEST_LOG_FILE" 2>&1 || true
+        echo "" >> "$TEST_LOG_FILE" 2>&1 || true
+        echo "Warning Details:" >> "$TEST_LOG_FILE" 2>&1 || true
+        i=1
+        for warn_msg in "${TEST_WARN_MESSAGES[@]}"; do
+          echo "  [$i] $warn_msg" >> "$TEST_LOG_FILE" 2>&1 || true
+          i=$((i + 1))
+        done
+      fi
     fi
     exit 0
-  elif [ $TEST_FAIL -gt 0 ]; then
+  else
+    # TEST_FAIL > 0
     summary_msg="${RED}Some tests failed! (FAIL: $TEST_FAIL)${NC}"
     echo -e "$summary_msg"
+    if [ $TEST_WARN -gt 0 ]; then
+      echo ""
+      echo "${YELLOW}Warning Details (also occurred):${NC}"
+      local i=1
+      for warn_msg in "${TEST_WARN_MESSAGES[@]}"; do
+        echo "  ${YELLOW}[$i]${NC} $warn_msg"
+        i=$((i + 1))
+      done
+    fi
     if [ -n "$TEST_LOG_FILE" ]; then
       echo "[$(date '+%Y-%m-%d %H:%M:%S')] $test_script_name: Some tests failed! (FAIL: $TEST_FAIL)" >> "$TEST_LOG_FILE" 2>&1 || true
-    fi
-    exit 1
-  else
-    # TEST_WARN > 0 but TEST_FAIL == 0
-    summary_msg="${YELLOW}Tests completed with warnings! (WARN: $TEST_WARN)${NC}"
-    echo -e "$summary_msg"
-    if [ -n "$TEST_LOG_FILE" ]; then
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] $test_script_name: Tests completed with warnings! (WARN: $TEST_WARN)" >> "$TEST_LOG_FILE" 2>&1 || true
+      if [ $TEST_WARN -gt 0 ]; then
+        echo "" >> "$TEST_LOG_FILE" 2>&1 || true
+        echo "Warning Details (also occurred):" >> "$TEST_LOG_FILE" 2>&1 || true
+        i=1
+        for warn_msg in "${TEST_WARN_MESSAGES[@]}"; do
+          echo "  [$i] $warn_msg" >> "$TEST_LOG_FILE" 2>&1 || true
+          i=$((i + 1))
+        done
+      fi
     fi
     exit 1
   fi

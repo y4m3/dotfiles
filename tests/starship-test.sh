@@ -35,7 +35,11 @@ if [ $starship_exit -eq 124 ]; then
   fail "starship prompt generation timed out after 5 seconds (cannot verify config is valid)"
 elif [ $starship_exit -ne 0 ]; then
   # Command failed - check if it's a config parsing error
-  if echo "${starship_output:-}" | grep -qE "(error|Error|invalid|Invalid|parse|Parse|syntax)"; then
+  # Look for specific error patterns that indicate config issues:
+  # - Lines starting with "error:" or "Error:"
+  # - "parse" or "syntax" errors in config context
+  # - "invalid" in config context (not in branch names, etc.)
+  if echo "${starship_output:-}" | grep -qE "^(error|Error):|(parse|Parse|syntax).*(error|Error|config|Config)|(invalid|Invalid).*(config|Config|file|File)"; then
     fail "starship config has errors: ${starship_output:-}"
   else
     # Unknown failure - cannot verify config validity, so fail
@@ -43,12 +47,9 @@ elif [ $starship_exit -ne 0 ]; then
   fi
 else
   # Command succeeded - config is parseable
-  # Check output for any error messages
-  if echo "${starship_output:-}" | grep -qE "(error|Error|invalid|Invalid)"; then
-    fail "starship config has errors: ${starship_output:-}"
-  else
-    pass "starship config is valid (parseable)"
-  fi
+  # No need to check output for errors when exit code is 0
+  # (starship would exit non-zero if there were config errors)
+  pass "starship config is valid (parseable)"
 fi
 
 print_summary

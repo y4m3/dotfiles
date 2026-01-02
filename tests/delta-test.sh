@@ -59,7 +59,7 @@ fi
 
 # Test 3: delta works with git diff (actual functionality test)
 tmprepo="$(setup_tmpdir)"
-trap 'cd - >/dev/null 2>&1; rm -rf "$tmprepo"' EXIT
+trap 'cd - >/dev/null 2>&1 || true; rm -rf "$tmprepo"' EXIT
 cd "$tmprepo"
 
 git init -q
