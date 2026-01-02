@@ -5,10 +5,19 @@ set -euo pipefail
 echo "==> Installing fzf..."
 
 FZF_DIR="$HOME/.fzf"
+FZF_BIN="$FZF_DIR/bin/fzf"
 
 # Check if fzf is already installed
-if [ -d "$FZF_DIR" ] && command -v fzf >/dev/null 2>&1; then
-  echo "✓ fzf already installed: $(fzf --version)"
+# Check both file existence and command availability (PATH may not be set correctly)
+if [ -f "$FZF_BIN" ] || command -v fzf >/dev/null 2>&1; then
+  # Try to get version from binary if available
+  if [ -f "$FZF_BIN" ] && [ -x "$FZF_BIN" ]; then
+    echo "✓ fzf already installed: $("$FZF_BIN" --version 2>/dev/null || echo "version unknown")"
+  elif command -v fzf >/dev/null 2>&1; then
+    echo "✓ fzf already installed: $(fzf --version 2>/dev/null || echo "version unknown")"
+  else
+    echo "✓ fzf already installed (binary found)"
+  fi
   exit 0
 fi
 
