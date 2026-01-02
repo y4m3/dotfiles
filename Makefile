@@ -60,7 +60,11 @@ test: build
 	           TEST_LOG_DIR="$${XDG_CACHE_HOME:-$$HOME/.cache}/test-logs"; \
 	           mkdir -p "$$TEST_LOG_DIR"; \
 	           TEST_LOG_FILE="$$TEST_LOG_DIR/test-$$(date +%Y%m%d-%H%M%S).log"; \
+	           TEST_RESULTS_JSONL="$$TEST_LOG_DIR/results-$$(date +%Y%m%d-%H%M%S).jsonl"; \
+	           export TEST_RESULTS_JSONL; \
+	           : > "$$TEST_RESULTS_JSONL"; \
 	           echo "Test log file: $$TEST_LOG_FILE"; \
+	           echo "Test results file: $$TEST_RESULTS_JSONL"; \
 	           echo "[$$(date +%H:%M:%S)] Starting apply-container.sh..." | tee -a "$$TEST_LOG_FILE"; \
 	           APPLY_START=$$(date +%s); \
 	           bash scripts/apply-container.sh >> "$$TEST_LOG_FILE" 2>&1; \
@@ -93,24 +97,22 @@ test: build
 	                 TEST_END=$$(date +%s); \
 	                 TEST_DURATION=$$((TEST_END - TEST_START)); \
 	                 echo "[$$(date +%H:%M:%S)] $$test_name completed in $$TEST_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
+	                 status="pass"; \
 	                 if [ $$test_exit -ne 0 ]; then \
 	                     failed=1; \
+	                     fail_count=$$((fail_count + 1)); \
+	                     status="fail"; \
 	                 fi; \
-	                 # Count WARN and FAIL in log file \
+	                 # Count WARN in log file (WARN is non-fatal) \
 	                 test_warn=0; \
-	                 test_fail=0; \
 	                 if [ -f "$$test_log" ]; then \
-	                     # Use awk to count lines (more reliable than grep -c with newlines) \
-	                     test_warn=$$(awk "/^\\[.*\\] WARN:/ {count++} END {print count+0}" "$$test_log" 2>/dev/null || echo "0" | tr -d '\n'); \
-	                     test_fail=$$(awk "/^\\[.*\\] FAIL:/ {count++} END {print count+0}" "$$test_log" 2>/dev/null || echo "0" | tr -d '\n'); \
-	                     # Ensure numeric values and remove any newlines \
-	                     test_warn=$$(echo "$$test_warn" | tr -d '\n'); \
-	                     test_fail=$$(echo "$$test_fail" | tr -d '\n'); \
-	                     if [ -z "$$test_warn" ] || ! [ "$$test_warn" -ge 0 ] 2>/dev/null; then test_warn=0; fi; \
-	                     if [ -z "$$test_fail" ] || ! [ "$$test_fail" -ge 0 ] 2>/dev/null; then test_fail=0; fi; \
+	                     test_warn=$$(awk "/^\\[TEST\\] WARN:/ {count++} END {print count+0}" "$$test_log" 2>/dev/null | tr -d "\n\r"); \
+	                     test_warn=$$(echo "$$test_warn" | tr -d "\n\r" | grep -E "^[0-9]+$$" || echo "0"); \
 	                 fi; \
 	                 warn_count=$$((warn_count + test_warn)); \
-	                 fail_count=$$((fail_count + test_fail)); \
+	                 jq -n --arg name "$$test_name" --arg status "$$status" --arg log_file "$$test_log" \
+	                   --argjson duration_seconds "$$TEST_DURATION" --argjson warn_count "$$test_warn" \
+	                   '\''{name:$$name,status:$$status,duration_seconds:$$duration_seconds,warn_count:$$warn_count,log_file:$$log_file}'\'' >> "$$TEST_RESULTS_JSONL"; \
 	             done; \
 	             TESTS_END=$$(date +%s); \
 	             TESTS_DURATION=$$((TESTS_END - TESTS_START)); \
@@ -121,11 +123,8 @@ test: build
 	             echo "  Total WARN: $$warn_count" | tee -a "$$TEST_LOG_FILE"; \
 	             echo "  Total FAIL: $$fail_count" | tee -a "$$TEST_LOG_FILE"; \
 	             echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
-	             if [ $$fail_count -gt 0 ] || [ $$warn_count -gt 0 ]; then \
-	                 exit 1; \
-	             else \
-	                 exit 0; \
-	             fi; \
+	             bash scripts/record-test-results.sh; \
+	             if [ $$failed -ne 0 ]; then exit 1; else exit 0; fi; \
 	           else \
 	             echo "Running affected tests: $$tests_to_run" | tee -a "$$TEST_LOG_FILE"; \
 	             failed=0; \
@@ -143,24 +142,21 @@ test: build
 	                 TEST_END=$$(date +%s); \
 	                 TEST_DURATION=$$((TEST_END - TEST_START)); \
 	                 echo "[$$(date +%H:%M:%S)] $$test_name completed in $$TEST_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
+	                 status="pass"; \
 	                 if [ $$test_exit -ne 0 ]; then \
 	                     failed=1; \
+	                     fail_count=$$((fail_count + 1)); \
+	                     status="fail"; \
 	                 fi; \
-	                 # Count WARN and FAIL in log file \
 	                 test_warn=0; \
-	                 test_fail=0; \
 	                 if [ -f "$$test_log" ]; then \
-	                     # Use awk to count lines (more reliable than grep -c with newlines) \
-	                     test_warn=$$(awk "/^\\[.*\\] WARN:/ {count++} END {print count+0}" "$$test_log" 2>/dev/null || echo "0" | tr -d '\n'); \
-	                     test_fail=$$(awk "/^\\[.*\\] FAIL:/ {count++} END {print count+0}" "$$test_log" 2>/dev/null || echo "0" | tr -d '\n'); \
-	                     # Ensure numeric values and remove any newlines \
-	                     test_warn=$$(echo "$$test_warn" | tr -d '\n'); \
-	                     test_fail=$$(echo "$$test_fail" | tr -d '\n'); \
-	                     if [ -z "$$test_warn" ] || ! [ "$$test_warn" -ge 0 ] 2>/dev/null; then test_warn=0; fi; \
-	                     if [ -z "$$test_fail" ] || ! [ "$$test_fail" -ge 0 ] 2>/dev/null; then test_fail=0; fi; \
+	                     test_warn=$$(awk "/^\\[TEST\\] WARN:/ {count++} END {print count+0}" "$$test_log" 2>/dev/null | tr -d "\n\r"); \
+	                     test_warn=$$(echo "$$test_warn" | tr -d "\n\r" | grep -E "^[0-9]+$$" || echo "0"); \
 	                 fi; \
 	                 warn_count=$$((warn_count + test_warn)); \
-	                 fail_count=$$((fail_count + test_fail)); \
+	                 jq -n --arg name "$$test_name" --arg status "$$status" --arg log_file "$$test_log" \
+	                   --argjson duration_seconds "$$TEST_DURATION" --argjson warn_count "$$test_warn" \
+	                   '\''{name:$$name,status:$$status,duration_seconds:$$duration_seconds,warn_count:$$warn_count,log_file:$$log_file}'\'' >> "$$TEST_RESULTS_JSONL"; \
 	             done; \
 	             TESTS_END=$$(date +%s); \
 	             TESTS_DURATION=$$((TESTS_END - TESTS_START)); \
@@ -171,11 +167,8 @@ test: build
 	             echo "  Total WARN: $$warn_count" | tee -a "$$TEST_LOG_FILE"; \
 	             echo "  Total FAIL: $$fail_count" | tee -a "$$TEST_LOG_FILE"; \
 	             echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
-	             if [ $$fail_count -gt 0 ] || [ $$warn_count -gt 0 ]; then \
-	                 exit 1; \
-	             else \
-	                 exit 0; \
-	             fi; \
+	             bash scripts/record-test-results.sh; \
+	             if [ $$failed -ne 0 ]; then exit 1; else exit 0; fi; \
 	           fi'
 
 # test-all: Run all test suites and create snapshot on success
@@ -188,7 +181,11 @@ test-all: build
 	           TEST_LOG_DIR="$${XDG_CACHE_HOME:-$$HOME/.cache}/test-logs"; \
 	           mkdir -p "$$TEST_LOG_DIR"; \
 	           TEST_LOG_FILE="$$TEST_LOG_DIR/test-all-$$(date +%Y%m%d-%H%M%S).log"; \
+	           TEST_RESULTS_JSONL="$$TEST_LOG_DIR/results-all-$$(date +%Y%m%d-%H%M%S).jsonl"; \
+	           export TEST_RESULTS_JSONL; \
+	           : > "$$TEST_RESULTS_JSONL"; \
 	           echo "Test log file: $$TEST_LOG_FILE"; \
+	           echo "Test results file: $$TEST_RESULTS_JSONL"; \
 	           bash scripts/apply-container.sh && \
 	           echo "Running all tests..." && \
 	           failed=0; \
@@ -200,22 +197,26 @@ test-all: build
 	               test_log="$$TEST_LOG_DIR/$$test_name-$$(date +%Y%m%d-%H%M%S).log"; \
 	               export TEST_LOG_FILE="$$test_log"; \
 	               echo "Running $$test_name (log: $$test_log)..." | tee -a "$$TEST_LOG_FILE"; \
+	               TEST_START=$$(date +%s); \
 	               bash "$$test" 2>&1 | tee -a "$$TEST_LOG_FILE"; \
 	               test_exit=$${PIPESTATUS[0]}; \
+	               TEST_END=$$(date +%s); \
+	               TEST_DURATION=$$((TEST_END - TEST_START)); \
 	               if [ $$test_exit -ne 0 ]; then \
 	                   failed=1; \
+	                   fail_count=$$((fail_count + 1)); \
 	               fi; \
-	               # Count WARN and FAIL in log file \
-	               test_warn=$$(grep -c "^\[.*\] WARN:" "$$test_log" 2>/dev/null || echo "0"); \
-	               test_fail=$$(grep -c "^\[.*\] FAIL:" "$$test_log" 2>/dev/null || echo "0"); \
-	               # Remove any newlines and ensure numeric values before arithmetic \
-	               test_warn=$$(echo "$$test_warn" | tr -d '\n\r' | grep -E '^[0-9]+$$' || echo "0"); \
-	               test_fail=$$(echo "$$test_fail" | tr -d '\n\r' | grep -E '^[0-9]+$$' || echo "0"); \
-	               # Ensure values are numeric (default to 0 if empty or invalid) \
-	               if [ -z "$$test_warn" ] || ! [ "$$test_warn" -ge 0 ] 2>/dev/null; then test_warn=0; fi; \
-	               if [ -z "$$test_fail" ] || ! [ "$$test_fail" -ge 0 ] 2>/dev/null; then test_fail=0; fi; \
+	               status="pass"; \
+	               if [ $$test_exit -ne 0 ]; then status="fail"; fi; \
+	               test_warn=0; \
+	               if [ -f "$$test_log" ]; then \
+	                   test_warn=$$(awk "/^\\[TEST\\] WARN:/ {count++} END {print count+0}" "$$test_log" 2>/dev/null | tr -d "\n\r"); \
+	                   test_warn=$$(echo "$$test_warn" | tr -d "\n\r" | grep -E "^[0-9]+$$" || echo "0"); \
+	               fi; \
 	               warn_count=$$((warn_count + test_warn)); \
-	               fail_count=$$((fail_count + test_fail)); \
+	               jq -n --arg name "$$test_name" --arg status "$$status" --arg log_file "$$test_log" \
+	                 --argjson duration_seconds "$$TEST_DURATION" --argjson warn_count "$$test_warn" \
+	                 '\''{name:$$name,status:$$status,duration_seconds:$$duration_seconds,warn_count:$$warn_count,log_file:$$log_file}'\'' >> "$$TEST_RESULTS_JSONL"; \
 	           done; \
 	           echo ""; \
 	           echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
@@ -223,24 +224,23 @@ test-all: build
 	           echo "  Total WARN: $$warn_count" | tee -a "$$TEST_LOG_FILE"; \
 	           echo "  Total FAIL: $$fail_count" | tee -a "$$TEST_LOG_FILE"; \
 	           echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
-	           if [ $$fail_count -eq 0 ] && [ $$warn_count -eq 0 ]; then \
+	           if [ $$failed -eq 0 ]; then \
 	               echo ""; \
-	               echo "==> All tests passed (No FAIL, No WARN). Creating environment snapshot..." | tee -a "$$TEST_LOG_FILE"; \
+	               echo "==> All tests passed (No FAIL). Creating environment snapshot..." | tee -a "$$TEST_LOG_FILE"; \
 	               bash scripts/create-snapshot.sh; \
 	               if [ "$(BASELINE)" = "1" ]; then \
 	                   echo ""; \
 	                   echo "==> Saving baseline test results..." | tee -a "$$TEST_LOG_FILE"; \
 	                   bash scripts/record-test-results.sh --baseline; \
+	               else \
+	                   bash scripts/record-test-results.sh; \
 	               fi; \
 	           else \
 	               echo "==> Tests completed with issues (WARN: $$warn_count, FAIL: $$fail_count)" | tee -a "$$TEST_LOG_FILE"; \
 	               echo "==> Check log files in $$TEST_LOG_DIR for details" | tee -a "$$TEST_LOG_FILE"; \
+	               bash scripts/record-test-results.sh; \
 	           fi; \
-	           if [ $$fail_count -gt 0 ] || [ $$warn_count -gt 0 ]; then \
-	               exit 1; \
-	           else \
-	               exit 0; \
-	           fi'
+	           if [ $$failed -ne 0 ]; then exit 1; else exit 0; fi'
 
 # clean: Remove persistent Docker volumes
 # Usage: make clean [REBUILD=1]
