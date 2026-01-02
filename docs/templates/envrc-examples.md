@@ -29,7 +29,8 @@ if command -v uv >/dev/null 2>&1; then
   # Optional: sync dependencies when pyproject is present
   # Note: If sync fails, you may want to handle the error explicitly
   if [[ -f pyproject.toml ]]; then
-    uv sync --frozen || echo "Warning: uv sync failed" >&2
+    # Keep direnv load non-fatal even if dependency sync fails.
+    uv sync --frozen || { echo "Warning: uv sync failed" >&2; true; }
   fi
 
   # Avoid usersite interference
