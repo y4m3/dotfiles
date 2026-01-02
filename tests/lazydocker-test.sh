@@ -11,7 +11,7 @@ echo "Testing lazydocker"
 echo "=========================================="
 
 case ":$PATH:" in
-  *":$HOME/.local/bin:") : ;;
+  *":$HOME/.local/bin:"*) : ;;
   *) PATH="$HOME/.local/bin:$PATH" ;;
 esac
 

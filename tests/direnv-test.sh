@@ -12,7 +12,7 @@ echo "=========================================="
 
 # Ensure ~/.local/bin is on PATH
 case ":$PATH:" in
-  *":$HOME/.local/bin:") : ;;
+  *":$HOME/.local/bin:"*) : ;;
   *) PATH="$HOME/.local/bin:$PATH" ;;
 esac
 

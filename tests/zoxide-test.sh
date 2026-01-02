@@ -36,6 +36,7 @@ set +u
 if [ -f ~/.bashrc.d/60-utils.sh ]; then
   source ~/.bashrc.d/60-utils.sh
 else
+  set -u # Re-enable set -u before calling fail() to ensure proper error detection
   fail "60-utils.sh file not found (should be deployed by chezmoi)"
 fi
 set -u
@@ -55,7 +56,7 @@ assert_command "[ \"\$_ZO_RESOLVE_SYMLINKS\" = \"1\" ]" "_ZO_RESOLVE_SYMLINKS en
 assert_command "[ \"\$_ZO_ECHO\" = \"1\" ]" "_ZO_ECHO environment variable set to 1"
 
 # Test 4: zoxide can add and query directories (basic functionality)
-# Tests 4.1-4.2: Add directory and verify query (conditional: 1-2 tests depending on success)
+# Tests 4.1-4.2: Add directory and verify query (2 results on success, 1 on failure)
 test_dir=$(mktemp -d)
 # Ensure cleanup on exit (including early exit from fail)
 trap 'cd - >/dev/null 2>&1 || true; rm -rf "$test_dir"' EXIT
@@ -72,10 +73,10 @@ if zoxide add . 2>&1; then
 else
   fail "zoxide add test failed (zoxide add should succeed in test environment)"
 fi
-# Cleanup trap will handle directory removal
-trap - EXIT
+# Cleanup manually, then remove trap
 cd - > /dev/null 2>&1 || true
 rm -rf "$test_dir"
+trap - EXIT
 
 # Test 5: zoxide version can be retrieved
 assert_command "zoxide --version" "zoxide version prints"

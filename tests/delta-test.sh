@@ -12,7 +12,7 @@ echo "=========================================="
 
 # Ensure ~/.local/bin is in PATH
 case ":$PATH:" in
-  *":$HOME/.local/bin:") : ;;
+  *":$HOME/.local/bin:"*) : ;;
   *) PATH="$HOME/.local/bin:$PATH" ;;
 esac
 
@@ -21,14 +21,16 @@ assert_executable "delta" "delta installed"
 assert_command "delta --version" "delta version prints"
 
 # Test 2: delta can process input directly (not just through git)
-echo -e "line1\nline2\nline3" | delta --color-only > /dev/null 2>&1 || fail "delta failed to process input directly"
+assert_command "echo -e 'line1\nline2\nline3' | delta --color-only > /dev/null 2>&1" "delta can process input directly"
 
 # Test 2.1: Check git config integration (conditional: 1 test depending on git config state)
 # Note: git config is set by chezmoi via dot_gitconfig.tmpl
 # If not set, it means chezmoi apply didn't deploy the config file
 # Note: git config --global should work outside git repositories, but some environments may have issues
+set +e
 core_pager_output=$(git config --global core.pager 2>&1)
 core_pager_exit=$?
+set -e
 if [ $core_pager_exit -ne 0 ]; then
   # Check if it's a git repository error (not a config issue)
   # In some test environments, git config may fail with repository-related errors
