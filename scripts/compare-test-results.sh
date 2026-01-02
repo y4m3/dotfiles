@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Compare current test results with baseline
 # Usage: bash scripts/compare-test-results.sh
+# Environment variables:
+#   STRICT_COMPARE=1: Treat missing tests in latest results as an error (exit 1)
+#                     Default: missing tests are warnings only (exit 0)
 
 set -euo pipefail
 
@@ -103,6 +106,11 @@ fi
 if [ $missing_tests -gt 0 ]; then
   echo ""
   echo "WARNING: $missing_tests test(s) missing from latest results"
+  if [ "${STRICT_COMPARE:-0}" = "1" ]; then
+    echo ""
+    echo "ERROR: STRICT_COMPARE=1 is set and missing tests were detected."
+    exit 1
+  fi
 fi
 
 exit 0

@@ -4,6 +4,9 @@
 #   base_commit: Optional. If specified, compares between commits.
 #                If not specified (default), detects uncommitted changes (HEAD vs working directory).
 # Returns: space-separated list of test files to run, or empty string for all tests
+# Environment variables:
+#   DEBUG_DETECT_CHANGES=1: Print debug messages explaining why change detection falls back to running all tests
+#                          Default: silent fallback (no debug output)
 
 set -euo pipefail
 
@@ -23,7 +26,12 @@ fi
 
 # Check if we're in a git repository
 if ! git rev-parse --git-dir > /dev/null 2>&1; then
-  echo "Warning: Not in a git repository, running all tests" >&2
+  # In Docker with git worktrees, the working tree may be mounted without the actual gitdir.
+  # In that case, change detection is unavailable and we should simply fall back to "run all tests"
+  # without producing noisy output.
+  if [ "${DEBUG_DETECT_CHANGES:-0}" = "1" ]; then
+    echo "Debug: change detection unavailable (not a git repo). Falling back to running all tests." >&2
+  fi
   exit 0
 fi
 
@@ -49,7 +57,10 @@ fi
 
 # Check if jq is available (required for JSON parsing)
 if ! command -v jq > /dev/null 2>&1; then
-  echo "Warning: jq not found, running all tests" >&2
+  # Change detection requires jq. If unavailable, fall back to running all tests.
+  if [ "${DEBUG_DETECT_CHANGES:-0}" = "1" ]; then
+    echo "Debug: change detection unavailable (jq not found). Falling back to running all tests." >&2
+  fi
   exit 0
 fi
 
@@ -66,6 +77,9 @@ while IFS= read -r changed_file; do
 
   # Check each mapping pattern
   mapping_count=$(jq '.mappings | length' "$MAPPING_FILE")
+  if [ "$mapping_count" -le 0 ] 2>/dev/null; then
+    continue
+  fi
 
   for i in $(seq 0 $((mapping_count - 1))); do
     pattern=$(jq -r ".mappings[$i].pattern" "$MAPPING_FILE")
