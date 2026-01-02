@@ -1,0 +1,134 @@
+" ~/.vimrc — vim configuration
+" Minimal but useful settings for terminal editing and Japanese text
+
+" ============================================================================
+" Basic Settings
+" ============================================================================
+
+" Encoding (Japanese support)
+set encoding=utf-8
+set fileencodings=utf-8,iso-2022-jp,euc-jp,cp932
+set fileformats=unix,dos,mac
+
+" ============================================================================
+" Display
+" ============================================================================
+
+set number                " Show line numbers
+set showcmd               " Show command in status line
+set cursorline            " Highlight current line
+set wrap                  " Wrap long lines
+set display=lastline      " Show as much as possible of the last line
+set laststatus=2          " Always show status line
+set scrolloff=3            " Keep 3 lines above/below cursor when scrolling
+set sidescrolloff=5        " Keep 5 columns left/right when horizontal scrolling
+
+" Invisible characters
+set list                  " Show invisible characters
+set listchars=tab:»·,trail:·,nbsp:·
+
+" ============================================================================
+" Clipboard Integration
+" ============================================================================
+
+" Use system clipboard (works with WSL2 and SSH with X11 forwarding)
+if has('clipboard')
+  set clipboard=unnamedplus  " Use system clipboard for yank/put
+endif
+
+" ============================================================================
+" Editing
+" ============================================================================
+
+" Indentation (EditorConfig compatible: 2 spaces)
+set autoindent            " Auto-indent new lines
+set smartindent           " Smart indenting
+set expandtab             " Use spaces instead of tabs
+set shiftwidth=2          " Indent width: 2 spaces
+set tabstop=2             " Tab width: 2 spaces
+set softtabstop=2         " Soft tab width: 2 spaces
+
+" Backspace behavior
+set backspace=indent,eol,start
+
+" ============================================================================
+" Search
+" ============================================================================
+
+set ignorecase            " Case-insensitive search
+set smartcase             " Case-sensitive if pattern contains uppercase
+set hlsearch              " Highlight search results
+set incsearch             " Incremental search
+set showmatch              " Highlight matching brackets/parentheses
+set matchtime=1            " Show matching bracket for 0.1 seconds
+
+" ============================================================================
+" Mouse Support
+" ============================================================================
+
+set mouse=a               " Enable mouse in all modes
+
+" ============================================================================
+" Command Line
+" ============================================================================
+
+set wildmenu               " Enhanced command-line completion
+set wildmode=longest:full,full  " Tab completion: longest match, then list all
+
+" ============================================================================
+" Performance
+" ============================================================================
+
+set updatetime=300         " Update swap file every 300ms (faster response)
+set timeoutlen=500          " Timeout for key mappings (faster response)
+
+" ============================================================================
+" Key Mappings
+" ============================================================================
+
+" Natural movement for wrapped lines
+nnoremap j gj
+nnoremap k gk
+vnoremap j gj
+vnoremap k gk
+
+" Y yank to end of line (like D and C)
+nnoremap Y y$
+
+" Clear search highlight with Esc
+nnoremap <Esc><Esc> :nohlsearch<CR>
+
+" ============================================================================
+" File Management
+" ============================================================================
+
+" Backup and swap files
+set nobackup              " Don't create backup files
+set nowritebackup         " Don't write backup files
+set noswapfile            " Don't create swap files
+
+" ============================================================================
+" Syntax Highlighting
+" ============================================================================
+
+syntax on                 " Enable syntax highlighting
+filetype on               " Enable file type detection
+filetype plugin on         " Enable file type plugins
+filetype indent on         " Enable file type indentation
+
+" ============================================================================
+" Colorscheme (Tokyo Night Storm)
+" ============================================================================
+
+" Enable true color support (required for Tokyo Night)
+set termguicolors
+
+" Tokyo Night colorscheme (installed via run_once_220-shell-vim-tokyonight.sh)
+" See: https://github.com/ghifarit53/tokyonight-vim
+if filereadable(expand("~/.vim/colors/tokyonight.vim"))
+  let g:tokyonight_style = 'storm'
+  " Optional: Enable italic for keywords (requires italic-capable font)
+  " let g:tokyonight_enable_italic = 1
+  colorscheme tokyonight
+endif
+
