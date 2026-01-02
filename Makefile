@@ -82,7 +82,6 @@ test: build
 	           tests_to_run=$$(bash scripts/detect-changes.sh); \
 	           if [ -z "$$tests_to_run" ]; then \
 	             echo "No changes detected, running all tests..." | tee -a "$$TEST_LOG_FILE"; \
-	             failed=0; \
 	             warn_count=0; \
 	             fail_count=0; \
 	             for test in tests/*-test.sh; do \
@@ -99,7 +98,6 @@ test: build
 	                 echo "[$$(date +%H:%M:%S)] $$test_name completed in $$TEST_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
 	                 status="pass"; \
 	                 if [ $$test_exit -ne 0 ]; then \
-	                     failed=1; \
 	                     fail_count=$$((fail_count + 1)); \
 	                     status="fail"; \
 	                 fi; \
@@ -124,10 +122,9 @@ test: build
 	             echo "  Total FAIL: $$fail_count" | tee -a "$$TEST_LOG_FILE"; \
 	             echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
 	             bash scripts/record-test-results.sh; \
-	             if [ $$failed -ne 0 ]; then exit 1; else exit 0; fi; \
+	             if [ $$fail_count -ne 0 ]; then exit 1; else exit 0; fi; \
 	           else \
 	             echo "Running affected tests: $$tests_to_run" | tee -a "$$TEST_LOG_FILE"; \
-	             failed=0; \
 	             warn_count=0; \
 	             fail_count=0; \
 	             for test in $$tests_to_run; do \
@@ -144,7 +141,6 @@ test: build
 	                 echo "[$$(date +%H:%M:%S)] $$test_name completed in $$TEST_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
 	                 status="pass"; \
 	                 if [ $$test_exit -ne 0 ]; then \
-	                     failed=1; \
 	                     fail_count=$$((fail_count + 1)); \
 	                     status="fail"; \
 	                 fi; \
@@ -168,7 +164,7 @@ test: build
 	             echo "  Total FAIL: $$fail_count" | tee -a "$$TEST_LOG_FILE"; \
 	             echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
 	             bash scripts/record-test-results.sh; \
-	             if [ $$failed -ne 0 ]; then exit 1; else exit 0; fi; \
+	             if [ $$fail_count -ne 0 ]; then exit 1; else exit 0; fi; \
 	           fi'
 
 # test-all: Run all test suites and create snapshot on success
@@ -188,7 +184,6 @@ test-all: build
 	           echo "Test results file: $$TEST_RESULTS_JSONL"; \
 	           bash scripts/apply-container.sh && \
 	           echo "Running all tests..." && \
-	           failed=0; \
 	           warn_count=0; \
 	           fail_count=0; \
 	           for test in tests/*-test.sh; do \
@@ -203,7 +198,6 @@ test-all: build
 	               TEST_END=$$(date +%s); \
 	               TEST_DURATION=$$((TEST_END - TEST_START)); \
 	               if [ $$test_exit -ne 0 ]; then \
-	                   failed=1; \
 	                   fail_count=$$((fail_count + 1)); \
 	               fi; \
 	               status="pass"; \
@@ -224,7 +218,7 @@ test-all: build
 	           echo "  Total WARN: $$warn_count" | tee -a "$$TEST_LOG_FILE"; \
 	           echo "  Total FAIL: $$fail_count" | tee -a "$$TEST_LOG_FILE"; \
 	           echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
-	           if [ $$failed -eq 0 ]; then \
+	           if [ $$fail_count -eq 0 ]; then \
 	               echo ""; \
 	               echo "==> All tests passed (No FAIL). Creating environment snapshot..." | tee -a "$$TEST_LOG_FILE"; \
 	               bash scripts/create-snapshot.sh; \
@@ -240,7 +234,7 @@ test-all: build
 	               echo "==> Check log files in $$TEST_LOG_DIR for details" | tee -a "$$TEST_LOG_FILE"; \
 	               bash scripts/record-test-results.sh; \
 	           fi; \
-	           if [ $$failed -ne 0 ]; then exit 1; else exit 0; fi'
+	           if [ $$fail_count -ne 0 ]; then exit 1; else exit 0; fi'
 
 # clean: Remove persistent Docker volumes
 # Usage: make clean [REBUILD=1]

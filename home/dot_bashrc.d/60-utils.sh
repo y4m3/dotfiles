@@ -43,3 +43,6 @@ else
     cd() { builtin cd "$@" && ls; }
   fi
 fi
+
+# Ensure sourcing this file never returns a non-zero status (bashrc.d hygiene).
+true

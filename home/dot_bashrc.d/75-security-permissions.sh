@@ -89,8 +89,8 @@ acquire_cache_lock() {
   local lock_output=""
   local lock_exit_code=0
   for i in 1 2 3 4 5; do
-    # Suppress mkdir stdout (including "created directory" messages) but capture stderr for errors
-    lock_output=$(mkdir "$CACHE_LOCK_DIR" 2>&1 >/dev/null)
+    # mkdir is silent on success; capture stderr for debugging/errors
+    lock_output=$(mkdir "$CACHE_LOCK_DIR" 2>&1)
     lock_exit_code=$?
     if [ $lock_exit_code -eq 0 ]; then
       return 0
@@ -248,6 +248,9 @@ for gpg_file in "$HOME/.gnupg"/secring.gpg "$HOME/.gnupg"/private-keys-v1.d; do
     fi
   fi
 done
+
+# Always return success for sourcing contexts; this is a best-effort hardening script.
+true
 ) # end subshell
 
 _security_permissions_exit=$?
