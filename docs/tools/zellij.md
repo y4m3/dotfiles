@@ -1,6 +1,6 @@
 # zellij
 
-Concise notes focused on environment-specific behavior. See official docs for usage.
+Concise notes focused on environment-specific configuration. Refer to official docs for general usage.
 
 ## Official Documentation
 
@@ -8,15 +8,13 @@ https://github.com/zellij-org/zellij
 
 ## Installation
 
-Managed by `run_once_265-terminal-zellij.sh.tmpl`:
-- Installed via cargo
-- Configuration: `~/.config/zellij/config.kdl`
+Managed by `run_once_265-terminal-zellij.sh.tmpl`. Configuration: `~/.config/zellij/config.kdl`.
 
 ## Environment-specific Configuration
 
-- Modal keybindings customized for vim-style operation (pane/tab/resize/scroll modes)
-- Alt+h/j/k/l for fast pane navigation (no prefix)
-- Copy-on-select enabled; scrollback length increased
-- Tokyo Night theme applied across UI elements
+- **Default Mode**: `locked` (input-first, avoids conflicts with terminal input)
+- **Scroll Buffer**: 1,000,000 lines
+- **Pane Frames**: Disabled (`pane_frames false`)
+- **Theme**: Tokyo Night Storm
+- **Keybindings**: All use `Alt` modifier to avoid conflicts with vim/bash (`Alt h/j/k/l` for pane navigation, `Alt [`/`]` for tabs, `Alt t` for new tab)
 
- 

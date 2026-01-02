@@ -14,8 +14,7 @@ Managed by `run_once_285-utils-yazi.sh.tmpl`:
 
 ## Environment-specific Configuration
 
-- Keybindings (`keymap.toml.tmpl`): Vim-style navigation (h/j/k/l), visual mode, search, yank/cut/paste
-- General settings (`yazi.toml.tmpl`): Panel ratios (1:4:3), natural sort, dir-first, `$EDITOR` integration
-- Theme (`theme.toml.tmpl`): Tokyo Night color palette
+- Minimal configuration: `$EDITOR` integration for text files, directory navigation
+- Keybindings, theme, and other settings use defaults
 
  

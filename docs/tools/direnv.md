@@ -11,13 +11,13 @@ https://direnv.net/
 Managed by `run_once_240-shell-direnv.sh.tmpl`:
 - Downloads latest release from GitHub
 - Installs to `~/.local/bin/direnv`
-- Shell hook added in `~/.bashrc.d/50-direnv.sh`
+- Shell hook added in `~/.bashrc.d/105-direnv.sh`
 
 ## Configuration
 
 ### Shell Integration
 
-Automatically loaded via `~/.bashrc.d/50-direnv.sh`:
+Automatically loaded via `~/.bashrc.d/105-direnv.sh`:
 ```bash
 eval "$(direnv hook bash)"
 ```

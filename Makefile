@@ -19,11 +19,12 @@ VOLUME_DOTFILES := -v dotfiles-state:/root/.config/chezmoi
 VOLUME_CARGO := -v cargo-data:/root/.cargo
 VOLUME_RUSTUP := -v rustup-data:/root/.rustup
 VOLUME_SNAPSHOT := -v env-snapshot:/root/.local/share/env-snapshot
+VOLUME_VIM := -v vim-data:/root/.vim
 # Mount gh config from host if available (for GitHub API authentication)
 # Use $$HOME to reference shell variable, not Make variable
 VOLUME_GH := $(shell test -d ~/.config/gh && echo "-v $$HOME/.config/gh:/root/.config/gh:ro" || echo "")
 VOLUMES_MINIMAL := $(VOLUME_DOTFILES)
-VOLUMES_FULL := $(VOLUME_DOTFILES) $(VOLUME_CARGO) $(VOLUME_RUSTUP) $(VOLUME_SNAPSHOT) $(VOLUME_GH)
+VOLUMES_FULL := $(VOLUME_DOTFILES) $(VOLUME_CARGO) $(VOLUME_RUSTUP) $(VOLUME_SNAPSHOT) $(VOLUME_VIM) $(VOLUME_GH)
 
 # Get GitHub token from host if gh is available
 # This allows authenticated GitHub API requests in Docker (5000/hour vs 60/hour unauthenticated)
@@ -47,9 +48,11 @@ build: Dockerfile
 	docker build -t $(IMAGE) .
 # dev: Initialize chezmoi and launch interactive shell
 # Applies dotfiles configuration and drops into a login shell for manual testing
+# Exit code 130 (SIGINT) from exit command is treated as success
 dev: build
 	$(DOCKER_RUN_IT) $(VOLUMES_FULL) $(IMAGE) \
-	  bash -lc 'if bash scripts/apply-container.sh; then exec bash -l; else echo "Error: Failed to apply configuration" >&2; exit 1; fi'
+	  bash -lc 'if bash scripts/apply-container.sh; then exec bash -l; else echo "Error: Failed to apply configuration" >&2; exit 1; fi' || \
+	  ([ $$? -eq 130 ] && exit 0 || exit $$?)
 
 # test: Change detection test (default, frequently used)
 # Runs tests for changed files only. If no changes detected, runs all tests.
@@ -275,7 +278,7 @@ clean:
 	else \
 		echo "==> Removing persistent volumes..."; \
 		volume_errors=0; \
-		for vol in dotfiles-state cargo-data rustup-data env-snapshot; do \
+		for vol in dotfiles-state cargo-data rustup-data env-snapshot vim-data; do \
 			if docker volume inspect "$$vol" >/dev/null 2>&1; then \
 				error_msg=$$(docker volume rm "$$vol" 2>&1); \
 				exit_code=$$?; \
@@ -291,7 +294,7 @@ clean:
 			fi; \
 		done; \
 		if [ $$volume_errors -eq 0 ]; then \
-			echo "✓ Persistent state cleared (dotfiles-state, cargo-data, rustup-data, env-snapshot)."; \
+			echo "✓ Persistent state cleared (dotfiles-state, cargo-data, rustup-data, env-snapshot, vim-data)."; \
 			echo "  Next 'make dev' or 'make test' will rebuild the environment."; \
 		else \
 			echo "Error: Some volumes could not be removed. Please stop any running containers first." >&2; \

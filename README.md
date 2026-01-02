@@ -30,28 +30,21 @@ chezmoi update
 - `run_once_*.sh.tmpl`: first-run install scripts (numbered by category)
 - Themed configs (delta, lazygit, zellij, yazi)
 
-## Run-once numbering (brief)
-
-- 0xx: Foundation (prerequisites)
-- 1xx: Language runtimes (e.g., uv)
-- 2xx: CLI/Shell (direnv, yq, btop, yazi, zellij)
-- 3xx: Dev tools (delta, lazygit, lazydocker)
-
 ## Optional: Docker for testing
 
 Use only when you need a throwaway validation environment. For detailed testing information, see [Testing Guide](docs/testing-guide.md).
 
 ```bash
-make build              # Build Docker image
-make dev                # chezmoi apply in container + login shell
-make test               # Change detection test (runs tests for changed files only)
-make test-all           # Run all tests (creates snapshot on success)
+make build               # Build Docker image
+make dev                 # chezmoi apply in container + login shell
+make test                # Change detection test (runs tests for changed files only)
+make test-all            # Run all tests (creates snapshot on success)
 make test-all BASELINE=1 # Run all tests and save baseline
-make clean              # Remove persistent volumes
-make clean REBUILD=1    # Remove volumes and rebuild environment
-make reset              # Reset manual installations, return to state A
-make lint               # shellcheck in lint image
-make format             # shfmt in lint image
+make clean               # Remove persistent volumes
+make clean REBUILD=1     # Remove volumes and rebuild environment
+make reset               # Reset manual installations, return to state A
+make lint                # shellcheck in lint image
+make format              # shfmt in lint image
 ```
 
 ### Environment Management Workflow
@@ -94,23 +87,32 @@ For comprehensive verification of installation and configuration, see [docs/test
 
 For detailed testing workflow and test types, see [Testing Guide](docs/testing-guide.md).
 
-## Installed Tools
+## Manual Setup Tasks
 
-- **Rust Ecosystem**: bat, eza, fd-find, ripgrep, starship, zoxide
-- **Node.js**: NodeSource 22.x
-- **GitHub Tools**: gh (GitHub CLI), ghq (repository manager)
-- **Others**: fzf (fuzzy finder)
+After running `chezmoi apply`, complete the following manual setup tasks:
+
+**Required**:
+- [ ] **Git Configuration** - Edit `~/.gitconfig.local` with your name and email (required before making commits)
+
+**Recommended**:
+- [ ] **Alacritty Terminal (Windows Host)** - Install Alacritty on Windows host for WSL users
+- [ ] **Alacritty Configuration (Windows Host)** - Configure Alacritty on Windows host (themes, shell settings)
+- [ ] **GitHub CLI Authentication** - Run `gh auth login` for higher API rate limits
+- [ ] **Fonts** - Install UDEV Gothic font for proper icon display
+
+See [Manual Setup Tasks](docs/manual-setup-tasks.md) for detailed instructions.
 
 ## Documentation
 
 For detailed usage and customization methods, refer to:
 
-- **[Configuration Guide](docs/configuration.md)** - Configuration policy and customization methods
-- **[Post-Setup Tasks](docs/post-setup.md)** - Manual tasks after initial setup (fonts, etc.)
-- **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
+- **[Manual Setup Tasks](docs/manual-setup-tasks.md)** - Complete guide for manual setup tasks
+- **[Post-Setup Tasks](docs/post-setup.md)** - Quick checklist for manual tasks
+- **[Testing Guide](docs/testing-guide.md)** - Testing system and workflows
 - **[Security Best Practices](docs/tools/security.md)** - Credential management and file permissions
 - **Tool-specific details**:
   - [fzf](docs/tools/fzf.md) - Fuzzy finder
-  - [Cargo Tools](docs/tools/cargo-tools.md) - bat, eza, fd, ripgrep, starship
+  - [Cargo Tools](docs/tools/rust-cli-tools.md) - bat, eza, fd, ripgrep, starship
   - [zoxide](docs/tools/zoxide.md) - Directory jumping
   - [GitHub Tools](docs/tools/github-tools.md) - gh, ghq
+  - [Vim](docs/tools/vim.md) - Text editor with clipboard support

@@ -15,7 +15,7 @@ workdir=$(setup_tmpdir)
 # Use an isolated HOME for all tests to avoid touching real dotfiles in the container.
 TEST_HOME="$workdir/home"
 mkdir -p "$TEST_HOME"
-SCRIPT_PATH="$HOME/.bashrc.d/75-security-permissions.sh"
+SCRIPT_PATH="$HOME/.bashrc.d/030-security-permissions.sh"
 XDG_CACHE_HOME_TEST="$TEST_HOME/.cache"
 CACHE_FILE="$XDG_CACHE_HOME_TEST/security-permissions-last-run"
 CACHE_LOCK_DIR="${CACHE_FILE}.lock.d"
@@ -24,8 +24,8 @@ test_restricted_file=""
 trap 'if [ -n "$test_restricted_file" ] && [ -f "$test_restricted_file" ]; then chmod 644 "$test_restricted_file" 2>/dev/null || true; fi; rm -rf "$workdir" "$CACHE_LOCK_DIR"' EXIT
 
 # Test 1: Script loads without errors
-if [ ! -f ~/.bashrc.d/75-security-permissions.sh ]; then
-  fail "75-security-permissions.sh file not found (should be deployed by chezmoi)"
+if [ ! -f ~/.bashrc.d/030-security-permissions.sh ]; then
+  fail "030-security-permissions.sh file not found (should be deployed by chezmoi)"
 fi
 
 # Source the script in a subshell to avoid affecting current environment

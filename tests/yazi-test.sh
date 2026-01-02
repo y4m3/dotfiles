@@ -18,9 +18,7 @@ esac
 assert_executable "yazi" "yazi installed"
 assert_command "yazi --version" "yazi version prints"
 
-# Test 3: yazi config files exist (deployed by chezmoi)
+# Test 3: yazi config file exists (deployed by chezmoi)
 assert_file_exists "$HOME/.config/yazi/yazi.toml" "yazi config file deployed"
-assert_file_exists "$HOME/.config/yazi/keymap.toml" "yazi keymap file deployed"
-assert_file_exists "$HOME/.config/yazi/theme.toml" "yazi theme file deployed"
 
 print_summary

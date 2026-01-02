@@ -14,9 +14,8 @@ Managed by `run_once_280-utils-btop.sh.tmpl`:
 
 ## Environment-specific Configuration
 
-- Theme: Tokyo Night
-- Update interval: 2000ms (2 seconds)
-- Rounded corners enabled
-- Vim-style navigation enabled
+- Theme: Tokyo Night Storm (`tokyo-storm`)
+- Essential settings: truecolor, theme background, 2000ms update interval
+- Other settings use defaults
 
  

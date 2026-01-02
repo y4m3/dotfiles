@@ -8,12 +8,11 @@ Official GitHub command-line tool. Execute PR, Issue, and repository operations 
 
 **Official Documentation**: https://cli.github.com/manual/
 
-### Installation Method (Environment-specific)
+### Installation
 
-- Managed by `run_once_300-devtools-gh.sh.tmpl`
-- Uses the official APT repository for updates and security
+Installed via `run_once_300-devtools-gh.sh.tmpl` using official APT repository.
 
-### Authentication and Security
+### Authentication
 
 After installing `gh`, authenticate with GitHub:
 
@@ -21,36 +20,19 @@ After installing `gh`, authenticate with GitHub:
 gh auth login
 ```
 
-**Security Best Practices:**
+Verify: `gh auth status`
 
-1. **File Permissions**: This dotfiles automatically sets strict permissions on GitHub CLI configuration:
-   - `~/.config/gh` directory: 700 (owner only access)
-   - `~/.config/gh/hosts.yml` file: 600 (owner read/write only)
-   - Permissions are automatically enforced on each shell startup via `75-security-permissions.sh`
+### Security Best Practices
 
-2. **Fine-grained Personal Access Tokens (PAT)**: When authenticating, prefer fine-grained PATs over classic tokens:
-   - Fine-grained PATs allow minimal required permissions
-   - Set expiration dates for additional security
-   - Limit access to specific repositories when possible
+1. **File Permissions**: Automatically set strict permissions (`~/.config/gh`: 700, `hosts.yml`: 600) via `75-security-permissions.sh`
+2. **Fine-grained PATs**: Prefer fine-grained Personal Access Tokens over classic tokens
+3. **Token Rotation**: Regularly rotate tokens: `gh auth refresh`
 
-3. **Token Rotation**: Regularly rotate your tokens:
-   - Review active tokens in GitHub Settings → Developer settings → Personal access tokens
-   - Revoke unused or compromised tokens immediately
-   - Update authentication when rotating tokens: `gh auth refresh`
-
-4. **Verify Permissions**: Check current file permissions:
-
+Verify permissions:
 ```bash
-# Check directory permissions
-ls -ld ~/.config/gh
-
-# Check file permissions
-ls -l ~/.config/gh/hosts.yml
+ls -ld ~/.config/gh        # Should show drwx------
+ls -l ~/.config/gh/hosts.yml  # Should show -rw-------
 ```
-
-Expected output:
-- Directory: `drwx------` (700)
-- File: `-rw-------` (600)
 
 ## ghq (Repository Manager)
 
@@ -58,13 +40,22 @@ Tool for unified Git repository management. Clones into structures like `~/ghq/g
 
 **Official Documentation**: https://github.com/x-motemen/ghq
 
-### Configuration (Environment-specific)
+### Installation
 
-- `ghq.root` is set via global git config to `~/repos` for a predictable local path structure.
+Installed via `run_once_310-devtools-ghq.sh.tmpl` using `go install`.
+
+**Prerequisites**: Requires `golang-go` package (installed by `run_once_000-prerequisites.sh`)
+
+### Configuration
+
+Configure in `~/.gitconfig`:
+
+```ini
+[ghq]
+    root = ~/ghq
+```
 
 ### Integration with fzf
-
-Combining ghq with fzf enables fast repository search and navigation:
 
 ```bash
 # Interactively select repository and navigate
@@ -74,62 +65,8 @@ cd $(ghq list -p | fzf)
 alias repo='cd $(ghq list -p | fzf)'
 ```
 
-### Installation Method
-
-This dotfiles installs via Go's `go install`:
-
-```bash
-# Automatically executed in run_once_310-devtools-ghq.sh
-go install github.com/x-motemen/ghq@latest
-```
-
-**Prerequisites**: Requires `golang-go` package (installed by `run_once_000-prerequisites.sh`)
-
-**Policy**: Since ghq is a Go tool, we use `go install`. This is the most reliable method as there's no official package and binary distribution is limited.
-
-### Custom Configuration
-
-Configurable in `~/.gitconfig`:
-
-```ini
-[ghq]
-    root = ~/ghq           # Repository root directory
-    # root = ~/src         # Multiple roots can also be configured
-```
-
 ## Troubleshooting
 
-### gh Not Found
-
-Check if APT repository is correctly added:
-
-```bash
-apt policy gh
-# If reinstallation is needed
-bash home/run_once_300-devtools-gh.sh.tmpl
-```
-
-### ghq Not Found
-
-Check if Go is installed:
-
-```bash
-command -v go && go version
-
-# If Go is missing
-bash home/run_once_000-prerequisites.sh.tmpl
-
-# Reinstall ghq
-bash home/run_once_310-devtools-ghq.sh.tmpl
-```
-
-### GOPATH Configuration
-
-Binaries installed with `go install` are placed in `~/go/bin`. Check if it's in PATH:
-
-```bash
-echo "$PATH" | grep go/bin
-
-# If not included, add to .bashrc.local
-export PATH="$HOME/go/bin:$PATH"
-```
+- **gh not found**: Check APT repository: `apt policy gh`
+- **ghq not found**: Check if Go is installed: `command -v go && go version`
+- **GOPATH not in PATH**: Add `export PATH="$HOME/go/bin:$PATH"` to `.bashrc.local`

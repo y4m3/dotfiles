@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y \
     sudo \
     tzdata \
     unzip \
-    vim \
+    vim-gtk3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Generate UTF-8 locale for interactive shells

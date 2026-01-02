@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Install Tokyo Night colorscheme for vim
+# Downloads colorscheme file directly from ghifarit53/tokyonight-vim
+set -euo pipefail
+
+log() { printf '%s\n' "==> $*"; }
+err() { printf '%s\n' "Error: $*" >&2; }
+
+# Vim colors directory
+VIM_COLORS_DIR="$HOME/.vim/colors"
+TOKYONIGHT_COLOR_FILE="$VIM_COLORS_DIR/tokyonight.vim"
+REPO_URL="https://raw.githubusercontent.com/ghifarit53/tokyonight-vim/master/colors/tokyonight.vim"
+
+# Check if already installed
+if [ -f "$TOKYONIGHT_COLOR_FILE" ]; then
+  log "Tokyo Night colorscheme already installed: $TOKYONIGHT_COLOR_FILE"
+  exit 0
+fi
+
+# Create colors directory
+log "Creating vim colors directory..."
+mkdir -p "$VIM_COLORS_DIR"
+
+# Download colorscheme file
+log "Downloading Tokyo Night colorscheme..."
+if ! curl -fsSL "$REPO_URL" -o "$TOKYONIGHT_COLOR_FILE"; then
+  err "Failed to download Tokyo Night colorscheme"
+  exit 1
+fi
+
+# Verify file was downloaded
+if [ ! -f "$TOKYONIGHT_COLOR_FILE" ]; then
+  err "Colorscheme file not found after download"
+  exit 1
+fi
+
+log "✓ Tokyo Night colorscheme installed successfully"
+log "  File: $TOKYONIGHT_COLOR_FILE"
+log "  Set 'colorscheme tokyonight' and 'let g:tokyonight_style = \"storm\"' in ~/.vimrc"

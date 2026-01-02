@@ -77,7 +77,7 @@ while IFS= read -r changed_file; do
 
   # Check each mapping pattern
   mapping_count=$(jq '.mappings | length' "$MAPPING_FILE")
-  if [ "$mapping_count" -le 0 ] 2>/dev/null; then
+  if [ "$mapping_count" -le 0 ] 2> /dev/null; then
     continue
   fi
 

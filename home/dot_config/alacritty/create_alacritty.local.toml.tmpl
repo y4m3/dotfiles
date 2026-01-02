@@ -1,0 +1,37 @@
+# Alacritty machine-specific configuration
+# This file is created only once and won't be overwritten by chezmoi.
+# 
+# NOTE: This is for Windows host system. WSL users should configure Alacritty on Windows.
+# Configuration file locations:
+#   Windows: %APPDATA%\alacritty\alacritty.local.toml
+#   Linux/macOS: ~/.config/alacritty/alacritty.local.toml
+#
+# IMPORTANT: Add your machine-specific [terminal.shell] configuration here.
+# This file is automatically included by the base alacritty.toml configuration.
+#
+# Example for WSL (Windows - use Windows path format):
+# [terminal.shell]
+# program = "C:\\Windows\\System32\\wsl.exe"
+# args = [
+#     "-d", "dev",
+#     "--cd", "~",
+#     "bash", "-lc",
+#     "'zellij attach --create main'"
+# ]
+#
+# Example for Linux:
+# [terminal.shell]
+# program = "/usr/bin/bash"
+# args = ["-l"]
+#
+# Example for macOS:
+# [terminal.shell]
+# program = "/bin/zsh"
+# args = ["-l"]
+
+# Uncomment and edit the section below for your machine:
+
+# [terminal.shell]
+# program = "YOUR_SHELL_PROGRAM_HERE"
+# args = ["YOUR_ARGS_HERE"]
+

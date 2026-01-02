@@ -1,133 +1,54 @@
-// Zellij config with Vim-style keybinds and Tokyo Night theme
-// Reference: https://zellij.dev/documentation/configuration.html
-// Updated for zellij 0.43+
+// zellij config
 
-// === UI & Behavior ===
-pane_frames true                      // Display pane borders
-copy_on_select true                   // Auto-copy selection to clipboard
-mouse_mode true                       // Enable mouse support (pane click, scroll)
-scroll_lines 5                        // Scroll by 5 lines per wheel/key
-default_shell "bash"                  // Default shell for new panes
-simplified_ui false                   // Show tab bar and status bar
+default_mode "locked"
+scroll_buffer_size 1000000
 
-// === Tokyo Night Color Palette ===
-color_palette {
-    fg "#c0caf5"                    // Foreground (light blue-gray)
-    bg "#1a1b26"                    // Background (dark blue-black)
-    black "#1a1b26"
-    red "#f7768e"                   // Error/delete
-    green "#9ece6a"                 // Add/success
-    yellow "#e0af68"                // Warning
-    blue "#7aa2f7"                  // Primary accent
-    magenta "#bb9af7"               // Secondary accent
-    cyan "#2ac3de"                  // Info
-    white "#a9b1d6"
-    orange "#ff9e64"                // Warning alt
-}
-
-theme "tokyo-night"
-
-// === Vim-Style Keybindings ===
-// Based on zellij 0.43+ syntax
-// See: https://zellij.dev/documentation/keybindings-possible-actions.html
-keybinds {
-    normal {
-        // --- Pane Navigation (h/j/k/l = left/down/up/right) ---
-        bind "h" { MoveFocus "Left"; }
-        bind "j" { MoveFocus "Down"; }
-        bind "k" { MoveFocus "Up"; }
-        bind "l" { MoveFocus "Right"; }
-
-        // --- Pane Creation & Layout ---
-        bind "n" { NewPane; }                           // New pane (default direction)
-        bind "s" { NewPane "Down"; }                    // Split horizontal
-        bind "v" { NewPane "Right"; }                   // Split vertical
-        bind "x" { CloseFocus; }                        // Close current pane
-        bind "Enter" { ToggleFocusFullscreen; }          // Fullscreen pane
-
-        // --- Pane Resizing (Ctrl + h/j/k/l) ---
-        // Resize action: Left | Right | Up | Down | Increase | Decrease
-        // See: https://zellij.dev/documentation/keybindings-possible-actions.html#resize
-        bind "Ctrl h" { Resize "Left"; }
-        bind "Ctrl j" { Resize "Down"; }
-        bind "Ctrl k" { Resize "Up"; }
-        bind "Ctrl l" { Resize "Right"; }
-
-        // --- Tab Management ---
-        bind "Ctrl t" { NewTab; }                        // New tab
-        bind "1" { GoToTab 1; }
-        bind "2" { GoToTab 2; }
-        bind "3" { GoToTab 3; }
-        bind "4" { GoToTab 4; }
-        bind "5" { GoToTab 5; }
-        bind "6" { GoToTab 6; }
-        bind "7" { GoToTab 7; }
-        bind "8" { GoToTab 8; }
-        bind "9" { GoToTab 9; }
-
-        // --- Scrolling & Navigation ---
-        bind "PageUp" { PageScrollUp; }
-        bind "PageDown" { PageScrollDown; }
-        bind "Ctrl u" { HalfPageScrollUp; }
-        bind "Ctrl d" { HalfPageScrollDown; }
-
-        // --- Utility ---
-        bind "q" { Quit; }                               // Quit zellij
-        bind "d" { Detach; }                             // Detach session
-    }
-
-    locked {
-        // Locked mode: disable most keys (useful for reading output)
-        // Press Ctrl-g to exit locked mode
-        bind "Ctrl g" { SwitchToMode "Normal"; }
-    }
-
-    pane {
-        // --- Pane mode: fine-grained pane control ---
-        bind "h" "Left" { MoveFocus "Left"; }
-        bind "j" "Down" { MoveFocus "Down"; }
-        bind "k" "Up" { MoveFocus "Up"; }
-        bind "l" "Right" { MoveFocus "Right"; }
-        bind "p" { SwitchFocus; }
-        bind "Esc" { SwitchToMode "Normal"; }
-    }
-
-    tab {
-        // --- Tab mode: tab management ---
-        bind "h" "Left" { MoveTab "Left"; }
-        bind "l" "Right" { MoveTab "Right"; }
-        bind "n" { NewTab; }
-        bind "x" { CloseTab; }
-        bind "Esc" { SwitchToMode "Normal"; }
-    }
-
-    resize {
-        // --- Resize mode: fine-grained pane resizing ---
-        // Resize action: Left | Right | Up | Down | Increase | Decrease
-        bind "h" { Resize "Left"; }
-        bind "j" { Resize "Down"; }
-        bind "k" { Resize "Up"; }
-        bind "l" { Resize "Right"; }
-        bind "=" { Resize "Increase"; }
-        bind "-" { Resize "Decrease"; }
-        bind "Esc" { SwitchToMode "Normal"; }
-    }
-
-    search {
-        // --- Search mode: text search in scrollback ---
-        // SearchToggleOption: "CaseSensitivity" | "Wrap" | "WholeWord"
-        // See: https://zellij.dev/documentation/keybindings-possible-actions.html#searchtoggleoption
-        bind "c" { SearchToggleOption "CaseSensitivity"; }
-        bind "w" { SearchToggleOption "WholeWord"; }
-        bind "o" { SearchToggleOption "Wrap"; }
-        bind "Esc" { SwitchToMode "Normal"; }
-    }
-}
-
-// === UI Theme Configuration ===
+// UI settings
 ui {
-    pane_frames {
-        rounded_corners true            // Rounded pane borders (visual preference)
-        hide_session_name false         // Show session name in frame
-    }
+  pane_frames {
+    hide_session_name true
+  }
+}
+pane_frames false
+theme "tokyo-night-storm"
+
+// Keybindings
+keybinds {
+  // Step 1: Add Alt keybindings for pane navigation in locked mode
+  locked {
+    // Pane navigation with Alt + hjkl (vim-style)
+    bind "Alt h" { MoveFocusOrTab "Left"; }
+    bind "Alt j" { MoveFocus "Down"; }
+    bind "Alt k" { MoveFocus "Up"; }
+    bind "Alt l" { MoveFocusOrTab "Right"; }
+
+    // Pane navigation with Alt + Arrow keys
+    bind "Alt Left" { MoveFocusOrTab "Left"; }
+    bind "Alt Down" { MoveFocus "Down"; }
+    bind "Alt Up" { MoveFocus "Up"; }
+    bind "Alt Right" { MoveFocusOrTab "Right"; }
+
+    // Tab navigation with Alt + [ ]
+    bind "Alt [" { GoToPreviousTab; }
+    bind "Alt ]" { GoToNextTab; }
+
+    // Pane splitting with Alt + - \
+    bind "Alt -" { NewPane "Down"; }
+    bind "Alt \\" { NewPane "Right"; }
+
+    // Pane and tab management
+    bind "Alt x" { CloseFocus; }
+    bind "Alt t" { NewTab; }
+
+    // Tab navigation with Alt + 1-9
+    bind "Alt 1" { GoToTab 1; }
+    bind "Alt 2" { GoToTab 2; }
+    bind "Alt 3" { GoToTab 3; }
+    bind "Alt 4" { GoToTab 4; }
+    bind "Alt 5" { GoToTab 5; }
+    bind "Alt 6" { GoToTab 6; }
+    bind "Alt 7" { GoToTab 7; }
+    bind "Alt 8" { GoToTab 8; }
+    bind "Alt 9" { GoToTab 9; }
+  }
 }

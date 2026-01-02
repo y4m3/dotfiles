@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# 20-paths.sh — Common PATH management and version manager initialization
+# 020-paths.sh — PATH management
+# Category: 000-099 (Core functionality)
 
 # Prepend a directory to PATH if not already present
 path_prepend() {

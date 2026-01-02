@@ -5,6 +5,12 @@ set -euo pipefail
 INSTALL_DIR="$HOME/.local/bin"
 mkdir -p "$INSTALL_DIR"
 
+# Check if already installed
+if [ -f "$INSTALL_DIR/lazygit" ]; then
+  echo "✓ lazygit already installed: $("$INSTALL_DIR/lazygit" --version 2>/dev/null || echo "version unknown")"
+  exit 0
+fi
+
 # Detect architecture
 case "$(uname -m)" in
 x86_64 | amd64) arch="x86_64" ;;
