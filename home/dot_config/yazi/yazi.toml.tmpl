@@ -1,22 +1,6 @@
 # Yazi general configuration
+# Minimal configuration - uses defaults for most settings
 # See: https://yazi-rs.github.io/docs/configuration/yazi
-
-[manager]
-ratio          = [ 1, 4, 3 ]       # Left:Main:Preview panel ratios
-sort_by        = "natural"          # Sort: natural, modified, created, size
-sort_sensitive = false              # Case-insensitive sort
-sort_reverse   = false              # Ascending order
-sort_dir_first = true               # Directories first
-show_hidden    = false              # Hide dotfiles by default
-show_symlink   = true               # Show symlink targets
-
-[preview]
-tab_size        = 2                 # Tab width in preview
-max_width       = 600               # Max preview width
-max_height      = 900               # Max preview height
-cache_dir       = ""                # Use default cache location
-image_filter    = "triangle"        # Image scaling filter
-image_quality   = 75                # JPEG quality (1-100)
 
 [opener]
 # Use $EDITOR for text files

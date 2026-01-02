@@ -1,47 +1,6 @@
-gui:
-  returnImmediately: false             # Stay open after command
-  wrapMainPanel: true                  # Wrap long lines in main panel
-  theme:
-    activeBorderColor:
-      - cyan
-      - bold
-    inactiveBorderColor:
-      - white
-    optionsTextColor:
-      - blue
-    selectedLineBgColor:
-      - default
-    selectedRangeBgColor:
-      - blue
-
-commandTemplates:
-  # Render literal Go template placeholders for lazydocker to substitute
-  restartService: "docker restart {{ "{{" }} .Container.ID {{ "}}" }}"
-  dockerCompose: "docker-compose"
+# lazydocker config
+# Minimal configuration - uses defaults for most settings
+# See: https://github.com/jesseduffield/lazydocker
 
 logs:
-  timestamps: false                    # Hide timestamps in logs
-  since: "60m"                         # Show logs from last 60 minutes
-  tail: "300"                          # Tail 300 lines
-
-os:
-  openCommand: ""                      # Use default editor from $EDITOR/$VISUAL
-
-stats:
-  graphs:
-    - caption: CPU (%)
-      statPath: CPUPerc
-      color: cyan
-    - caption: Memory (%)
-      statPath: MemPerc
-      color: green
-
-keybinding:
-  universal:
-    quit: q
-    return: <esc>
-  containers:
-    attach: a
-    viewLogs: l
-    restart: r
-    remove: d
+  timestamps: false

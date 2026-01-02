@@ -13,7 +13,7 @@ https://github.com/jesseduffield/lazygit
 
 ## Environment-specific Configuration
 
-- Theme/UI: Tokyo Night color scheme, Nerd Fonts v3 icons, side panel width ~35%, mouse enabled
-- Git integration: delta as pager (tokyo-night feature), pull mode ffOnly, autoFetch disabled
+- Minimal configuration: mouse events enabled, uses `$EDITOR`/`$VISUAL` for editing
+- Other settings use defaults
 
 For keybindings and general usage, refer to the [lazygit documentation](https://github.com/jesseduffield/lazygit).

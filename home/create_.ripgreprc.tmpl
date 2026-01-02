@@ -1,51 +1,14 @@
-# ~/.ripgreprc — default ripgrep settings (managed by chezmoi)
+# ~/.ripgreprc — ripgrep settings (managed by chezmoi)
+
+# Basic options
 --smart-case
 --hidden
---max-columns=160
 
-# Version control
+# Core exclusions
 --glob=!/.git
---glob=!/.svn
---glob=!/.hg
-
-# Build artifacts
 --glob=!node_modules
 --glob=!target
 --glob=!dist
 --glob=!build
---glob=!*.egg-info
---glob=!*.class
-
-# IDE/Editor
---glob=!/.idea
---glob=!/.vscode
---glob=!/.vs
---glob=!*~
---glob=!*.swp
---glob=!*.swo
-
-# OS-specific
---glob=!.DS_Store
---glob=!Thumbs.db
---glob=!desktop.ini
-
-# Python
 --glob=!__pycache__
---glob=!.pytest_cache
---glob=!.mypy_cache
---glob=!.tox
 --glob=!*.pyc
---glob=!*.pyo
-
-# Node/Frontend
---glob=!.next
---glob=!.nuxt
---glob=!.svelte-kit
---glob=!coverage
---glob=!.turbo
-
-# Logs and temp
---glob=!*.log
---glob=!tmp
---glob=!temp
---glob=!.cache
