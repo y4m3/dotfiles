@@ -82,11 +82,8 @@ test: build
 	                 export TEST_LOG_FILE="$$test_log"; \
 	                 TEST_START=$$(date +%s); \
 	                 echo "[$$(date +%H:%M:%S)] Running $$test_name (log: $$test_log)..." | tee -a "$$TEST_LOG_FILE"; \
-	                 if bash "$$test" 2>&1 | tee -a "$$TEST_LOG_FILE"; then \
-	                     test_exit=$$?; \
-	                 else \
-	                     test_exit=$$?; \
-	                 fi; \
+	                 bash "$$test" 2>&1 | tee -a "$$TEST_LOG_FILE"; \
+	                 test_exit=$${PIPESTATUS[0]}; \
 	                 TEST_END=$$(date +%s); \
 	                 TEST_DURATION=$$((TEST_END - TEST_START)); \
 	                 echo "[$$(date +%H:%M:%S)] $$test_name completed in $$TEST_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
@@ -135,11 +132,8 @@ test: build
 	                 export TEST_LOG_FILE="$$test_log"; \
 	                 TEST_START=$$(date +%s); \
 	                 echo "[$$(date +%H:%M:%S)] Running $$test_name (log: $$test_log)..." | tee -a "$$TEST_LOG_FILE"; \
-	                 if bash "$$test" 2>&1 | tee -a "$$TEST_LOG_FILE"; then \
-	                     test_exit=$$?; \
-	                 else \
-	                     test_exit=$$?; \
-	                 fi; \
+	                 bash "$$test" 2>&1 | tee -a "$$TEST_LOG_FILE"; \
+	                 test_exit=$${PIPESTATUS[0]}; \
 	                 TEST_END=$$(date +%s); \
 	                 TEST_DURATION=$$((TEST_END - TEST_START)); \
 	                 echo "[$$(date +%H:%M:%S)] $$test_name completed in $$TEST_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
@@ -200,11 +194,8 @@ test-all: build
 	               test_log="$$TEST_LOG_DIR/$$test_name-$$(date +%Y%m%d-%H%M%S).log"; \
 	               export TEST_LOG_FILE="$$test_log"; \
 	               echo "Running $$test_name (log: $$test_log)..." | tee -a "$$TEST_LOG_FILE"; \
-	               if bash "$$test" 2>&1 | tee -a "$$TEST_LOG_FILE"; then \
-	                   test_exit=$$?; \
-	               else \
-	                   test_exit=$$?; \
-	               fi; \
+	               bash "$$test" 2>&1 | tee -a "$$TEST_LOG_FILE"; \
+	               test_exit=$${PIPESTATUS[0]}; \
 	               if [ $$test_exit -ne 0 ]; then \
 	                   failed=1; \
 	               fi; \
