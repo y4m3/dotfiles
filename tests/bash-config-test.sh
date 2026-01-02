@@ -20,8 +20,8 @@ trap 'rm -rf "$tmpdir"' EXIT
 
 # Test 1: PATH includes home bin entries
 # Source the paths configuration and check PATH
-if ! source ~/.bashrc.d/20-paths.sh 2>&1; then
-  fail "Failed to source ~/.bashrc.d/20-paths.sh"
+if ! source ~/.bashrc.d/020-paths.sh 2>&1; then
+  fail "Failed to source ~/.bashrc.d/020-paths.sh"
 fi
 assert_string_contains "$PATH" "$HOME/.local/bin" "PATH includes \$HOME/.local/bin"
 
@@ -51,8 +51,12 @@ else
 fi
 
 # Test 6: Timezone is set to JST
-if ! source ~/.bashrc.d/10-user-preferences.sh 2>&1; then
-  fail "Failed to source ~/.bashrc.d/10-user-preferences.sh"
+# Source helper functions first (required by 010-user-preferences.sh)
+if [ -f ~/.bashrc.d/000-aliases-helper.sh ]; then
+  source ~/.bashrc.d/000-aliases-helper.sh
+fi
+if ! source ~/.bashrc.d/010-user-preferences.sh 2>&1; then
+  fail "Failed to source ~/.bashrc.d/010-user-preferences.sh"
 fi
 assert_command "[ \"$TZ\" = 'Asia/Tokyo' ]" "Timezone set to JST (Asia/Tokyo)"
 
@@ -61,7 +65,7 @@ assert_file_exists "$HOME/.bashrc" "bashrc deployed"
 
 # Test 8: Verify that required config files exist and are readable
 # Tests 8.1-8.2: Check 2 config files
-for config_file in "$HOME/.bashrc" "$HOME/.bashrc.d/20-paths.sh"; do
+for config_file in "$HOME/.bashrc" "$HOME/.bashrc.d/020-paths.sh"; do
   if [ ! -f "$config_file" ]; then
     fail "Required config file missing: $config_file"
   elif [ ! -r "$config_file" ]; then

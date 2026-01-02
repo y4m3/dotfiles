@@ -84,27 +84,20 @@ else
   errors=$((errors + 1))
 fi
 
-# 3. Check yazi configs (TOML)
-echo "3. Checking yazi configs (TOML)..."
-yazi_configs=(
-  "$HOME/.config/yazi/yazi.toml"
-  "$HOME/.config/yazi/keymap.toml"
-  "$HOME/.config/yazi/theme.toml"
-)
-for config in "${yazi_configs[@]}"; do
-  if [ -f "$config" ]; then
-    # Basic TOML syntax check (check if file can be read)
-    if [ -r "$config" ]; then
-      echo "   OK $(basename "$config") exists and is readable"
-    else
-      echo "   ERROR $(basename "$config") is not readable"
-      errors=$((errors + 1))
-    fi
+# 3. Check yazi config (TOML)
+echo "3. Checking yazi config (TOML)..."
+if [ -f "$HOME/.config/yazi/yazi.toml" ]; then
+  # Basic TOML syntax check (check if file can be read)
+  if [ -r "$HOME/.config/yazi/yazi.toml" ]; then
+    echo "   OK yazi.toml exists and is readable"
   else
-    echo "   WARN $(basename "$config") not found (may be optional)"
-    warnings=$((warnings + 1))
+    echo "   ERROR yazi.toml is not readable"
+    errors=$((errors + 1))
   fi
-done
+else
+  echo "   WARN yazi.toml not found (may be optional)"
+  warnings=$((warnings + 1))
+fi
 
 # 4. Check lazygit config (YAML)
 echo "4. Checking lazygit config (YAML)..."
@@ -146,8 +139,28 @@ else
   warnings=$((warnings + 1))
 fi
 
-# 6. Check btop config
-echo "6. Checking btop config..."
+# 6. Check glow config (YAML)
+echo "6. Checking glow config (YAML)..."
+if [ -f "$HOME/.config/glow/glow.yml" ]; then
+  if command -v glow > /dev/null 2>&1; then
+    # Try to validate by checking if glow can start
+    if timeout 2 glow --version > /dev/null 2>&1; then
+      echo "   OK glow config appears valid (glow starts)"
+    else
+      echo "   ERROR glow config validation failed"
+      errors=$((errors + 1))
+    fi
+  else
+    echo "   WARN glow not found, skipping config check"
+    warnings=$((warnings + 1))
+  fi
+else
+  echo "   WARN glow config file not found (may be optional)"
+  warnings=$((warnings + 1))
+fi
+
+# 7. Check btop config
+echo "7. Checking btop config..."
 if [ -f "$HOME/.config/btop/btop.conf" ]; then
   if command -v btop > /dev/null 2>&1; then
     # btop validates config on startup
@@ -166,8 +179,31 @@ else
   warnings=$((warnings + 1))
 fi
 
-# 7. Check bash configs
-echo "7. Checking bash configs..."
+# 8. Check alacritty config (TOML)
+echo "8. Checking alacritty config (TOML)..."
+if [ -f "$HOME/.config/alacritty/alacritty.toml" ]; then
+  # Basic TOML syntax check (check if file can be read)
+  if [ -r "$HOME/.config/alacritty/alacritty.toml" ]; then
+    echo "   OK alacritty.toml exists and is readable"
+    # Note: Themes must be installed manually on Windows host (not in WSL)
+    # Check if themes directory exists (for Linux/macOS users)
+    if [ -d "$HOME/.config/alacritty/themes/themes" ]; then
+      echo "   OK Alacritty themes directory exists"
+    else
+      echo "   WARN Alacritty themes directory not found (install manually: git clone https://github.com/alacritty/alacritty-theme.git ~/.config/alacritty/themes)"
+      warnings=$((warnings + 1))
+    fi
+  else
+    echo "   ERROR alacritty.toml is not readable"
+    errors=$((errors + 1))
+  fi
+else
+  echo "   WARN alacritty.toml not found (may be optional if Alacritty is not installed)"
+  warnings=$((warnings + 1))
+fi
+
+# 9. Check bash configs
+echo "9. Checking bash configs..."
 bash_configs=(
   "$HOME/.bashrc"
   "$HOME/.bash_profile"

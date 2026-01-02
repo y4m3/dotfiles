@@ -22,33 +22,36 @@ assert_executable "zoxide" "zoxide binary installed"
 # Test 2: zoxide can run basic command (may be empty on first run)
 assert_command "zoxide query -l" "zoxide query command works"
 
-# Test 3: Verify 60-utils.sh sets environment variables
+# Test 3: Verify 299-zoxide.sh sets environment variables
 # Tests 3.1-3.4: File check, source, and verify 2 environment variables
-# 60-utils.sh should set _ZO_RESOLVE_SYMLINKS and _ZO_ECHO when zoxide is available
+# 299-zoxide.sh should set _ZO_RESOLVE_SYMLINKS and _ZO_ECHO when zoxide is available
 # We need to source it and verify the variables are set
-if [ ! -f ~/.bashrc.d/60-utils.sh ]; then
-  fail "60-utils.sh file not found (should be deployed by chezmoi)"
+if [ ! -f ~/.bashrc.d/299-zoxide.sh ]; then
+  fail "299-zoxide.sh file not found (should be deployed by chezmoi)"
 fi
 
-# Source the script to set environment variables
+# Source helper functions first (required by 299-zoxide.sh)
 # Temporarily disable set -u to avoid errors during sourcing
 set +u
-if [ -f ~/.bashrc.d/60-utils.sh ]; then
-  source ~/.bashrc.d/60-utils.sh
+if [ -f ~/.bashrc.d/000-aliases-helper.sh ]; then
+  source ~/.bashrc.d/000-aliases-helper.sh
+fi
+if [ -f ~/.bashrc.d/299-zoxide.sh ]; then
+  source ~/.bashrc.d/299-zoxide.sh
 else
   set -u # Re-enable set -u before calling fail() to ensure proper error detection
-  fail "60-utils.sh file not found (should be deployed by chezmoi)"
+  fail "299-zoxide.sh file not found (should be deployed by chezmoi)"
 fi
 set -u
 
 # Verify environment variables are set
-# 60-utils.sh sets these when zoxide is available (which we verified in Test 1)
-# If they are not set, it means 60-utils.sh did not execute correctly
+# 299-zoxide.sh sets these when zoxide is available (which we verified in Test 1)
+# If they are not set, it means 299-zoxide.sh did not execute correctly
 if [ -z "${_ZO_RESOLVE_SYMLINKS:-}" ]; then
-  fail "_ZO_RESOLVE_SYMLINKS not set after sourcing 60-utils.sh (zoxide is installed, so this should be set)"
+  fail "_ZO_RESOLVE_SYMLINKS not set after sourcing 299-zoxide.sh (zoxide is installed, so this should be set)"
 fi
 if [ -z "${_ZO_ECHO:-}" ]; then
-  fail "_ZO_ECHO not set after sourcing 60-utils.sh (zoxide is installed, so this should be set)"
+  fail "_ZO_ECHO not set after sourcing 299-zoxide.sh (zoxide is installed, so this should be set)"
 fi
 
 # Verify the values are correct
