@@ -51,6 +51,8 @@ if [ "${#to_install[@]}" -eq 0 ]; then
 fi
 
 # Ensure cargo-binstall is available (under ~/.cargo/bin)
+# Note: If cargo-binstall falls back to cargo install, CARGO_BUILD_JOBS (set in ~/.bashrc.d/200-runtimes.sh)
+#       will optimize parallel builds. Prebuilt binaries from cargo-binstall are unaffected.
 if [ ! -x "$CARGO_BINSTALL" ]; then
   log "installing cargo-binstall..."
   "$CARGO" install --locked cargo-binstall
