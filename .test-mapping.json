@@ -34,7 +34,7 @@
     },
     {
       "pattern": "home/run_once_210-shell-cargo-tools.sh.tmpl",
-      "tests": ["tests/cargo-test.sh", "tests/zoxide-test.sh"],
+      "tests": ["tests/cargo-test.sh", "tests/zoxide-test.sh", "tests/starship-test.sh"],
       "description": "Cargo tools (bat, eza, fd, rg, starship, zoxide)"
     },
     {
@@ -124,7 +124,7 @@
     },
     {
       "pattern": "home/dot_config/starship.toml.tmpl",
-      "tests": ["tests/bash-config-test.sh"],
+      "tests": ["tests/starship-test.sh"],
       "description": "starship configuration"
     },
     {

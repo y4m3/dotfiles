@@ -30,8 +30,9 @@ all_passed=true
 
 # 1. All tools installed
 echo "Checking: All tools installed"
-baseline_tests=$(jq -r '.tests | keys[]' "$BASELINE_FILE" 2> /dev/null || echo "")
-tool_count=$(echo "$baseline_tests" | wc -l)
+baseline_tests_count=$(jq -r '.tests | length' "$BASELINE_FILE" 2> /dev/null || echo "0")
+baseline_tests_count=$(echo "$baseline_tests_count" | tr -d '\n\r' | grep -E '^[0-9]+$' || echo "0")
+tool_count="$baseline_tests_count"
 if [ "$tool_count" -gt 0 ]; then
   echo "  ✓ Baseline has $tool_count test(s)"
 else
@@ -41,8 +42,8 @@ fi
 
 # 2. Configuration files deployed
 echo "Checking: Configuration files deployed"
-config_hashes=$(jq -r '.config_hashes | keys[]' "$BASELINE_FILE" 2> /dev/null || echo "")
-config_count=$(echo "$config_hashes" | wc -l)
+config_count=$(jq -r '.config_hashes | length' "$BASELINE_FILE" 2> /dev/null || echo "0")
+config_count=$(echo "$config_count" | tr -d '\n\r' | grep -E '^[0-9]+$' || echo "0")
 if [ "$config_count" -gt 0 ]; then
   echo "  ✓ Baseline has $config_count config file(s)"
 else
@@ -53,7 +54,7 @@ fi
 # 3. PATH correctly configured
 echo "Checking: PATH correctly configured"
 # This is verified by bash-config-test.sh in the baseline
-if echo "$baseline_tests" | grep -q "bash-config-test.sh"; then
+if jq -e '.tests | has("bash-config-test.sh")' "$BASELINE_FILE" > /dev/null 2>&1; then
   echo "  ✓ bash-config-test.sh in baseline"
 else
   echo "  ✗ bash-config-test.sh not in baseline"
@@ -63,7 +64,7 @@ fi
 # 4. GitHub API authentication working
 echo "Checking: GitHub API authentication working"
 # This is verified by github-tools-test.sh in the baseline
-if echo "$baseline_tests" | grep -q "github-tools-test.sh"; then
+if jq -e '.tests | has("github-tools-test.sh")' "$BASELINE_FILE" > /dev/null 2>&1; then
   echo "  ✓ github-tools-test.sh in baseline"
 else
   echo "  ✗ github-tools-test.sh not in baseline"

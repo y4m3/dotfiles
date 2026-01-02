@@ -17,40 +17,62 @@ else
   NC=''
 fi
 
-# Global test counters
+# Global test counters (best-effort; tests are fail-fast)
 TEST_PASS=0
-TEST_FAIL=0
+TEST_WARN=0
 
 # fail: Print error message and increment counter
 # Usage: fail "Error message"
 fail() {
-  echo -e "${RED}FAIL${NC}: $*" >&2
-  TEST_FAIL=$((TEST_FAIL + 1))
+  echo -e "${RED}[TEST] FAIL${NC}: $*" >&2
+  # Fail-fast: stop immediately
+  exit 1
 }
 
 # pass: Print success message
 # Usage: pass "Success message"
 pass() {
-  echo -e "${GREEN}PASS${NC}: $*"
+  echo -e "${GREEN}[TEST] PASS${NC}: $*"
   TEST_PASS=$((TEST_PASS + 1))
 }
 
 # warn: Print warning message (non-fatal)
 # Usage: warn "Warning message"
 warn() {
-  echo -e "${YELLOW}WARN${NC}: $*" >&2
+  echo -e "${YELLOW}[TEST] WARN${NC}: $*" >&2
+  TEST_WARN=$((TEST_WARN + 1))
 }
 
 # assert_command: Assert that a command succeeds
-# Usage: assert_command "command to run" "description"
+# Usage: assert_command "command to run" "description" [quiet]
+#   quiet: if "true", suppress output in error message (default: false)
 assert_command() {
   local cmd="$1"
   local desc="${2:-$cmd}"
+  local quiet="${3:-false}"
 
-  if eval "$cmd" &> /dev/null; then
+  local output
+  local exit_code
+  set +e
+  output=$(eval "$cmd" 2>&1)
+  exit_code=$?
+  set -e
+
+  if [ $exit_code -eq 0 ]; then
     pass "$desc"
   else
-    fail "$desc (command failed: $cmd)"
+    if [ "$quiet" = "true" ]; then
+      fail "$desc (command failed: $cmd, exit code: $exit_code)"
+    else
+      # Truncate output if too long (more than 500 characters)
+      local truncated_output
+      if [ ${#output} -gt 500 ]; then
+        truncated_output="${output:0:500}... (truncated, ${#output} chars total)"
+      else
+        truncated_output="$output"
+      fi
+      fail "$desc (command failed: $cmd, exit code: $exit_code, output: $truncated_output)"
+    fi
   fi
 }
 
@@ -90,33 +112,121 @@ assert_string_contains() {
   if echo "$actual" | grep -qF "$expected"; then
     pass "$desc"
   else
-    fail "$desc (expected: '$expected', actual: '$actual')"
+    # Truncate actual output if too long
+    local truncated_actual
+    if [ ${#actual} -gt 200 ]; then
+      truncated_actual="${actual:0:200}... (truncated, ${#actual} chars total)"
+    else
+      truncated_actual="$actual"
+    fi
+    fail "$desc (expected: '$expected', actual: '$truncated_actual')"
   fi
 }
 
-# print_summary: Print test summary
+# assert_command_fails: Assert that a command fails (non-zero exit code)
+# Usage: assert_command_fails "command to run" "description" [expected_exit_code]
+#   expected_exit_code: optional, specific exit code to expect (default: any non-zero)
+assert_command_fails() {
+  local cmd="$1"
+  local desc="${2:-$cmd should fail}"
+  local expected_exit="${3:-}"
+
+  local output
+  local exit_code
+  set +e
+  output=$(eval "$cmd" 2>&1)
+  exit_code=$?
+  set -e
+
+  if [ $exit_code -eq 0 ]; then
+    fail "$desc (command succeeded but should have failed: $cmd)"
+  elif [ -n "$expected_exit" ] && [ $exit_code -ne "$expected_exit" ]; then
+    fail "$desc (command failed with exit code $exit_code, expected $expected_exit: $cmd)"
+  else
+    pass "$desc (command failed as expected, exit code: $exit_code)"
+  fi
+}
+
+# assert_exit_code: Assert that a command returns a specific exit code
+# Usage: assert_exit_code "command to run" "expected_exit_code" "description"
+assert_exit_code() {
+  local cmd="$1"
+  local expected_exit="$2"
+  local desc="${3:-Command should exit with code $expected_exit}"
+
+  local output
+  local exit_code
+  set +e
+  output=$(eval "$cmd" 2>&1)
+  exit_code=$?
+  set -e
+
+  if [ $exit_code -eq "$expected_exit" ]; then
+    pass "$desc"
+  else
+    # Truncate output if too long
+    local truncated_output
+    if [ ${#output} -gt 200 ]; then
+      truncated_output="${output:0:200}... (truncated, ${#output} chars total)"
+    else
+      truncated_output="$output"
+    fi
+    fail "$desc (expected exit code: $expected_exit, actual: $exit_code, output: $truncated_output)"
+  fi
+}
+
+# assert_output_contains: Assert that command output contains a string
+# Usage: assert_output_contains "command to run" "expected substring" "description"
+assert_output_contains() {
+  local cmd="$1"
+  local expected="$2"
+  local desc="${3:-Command output should contain \"$expected\"}"
+
+  local output
+  local exit_code
+  set +e
+  output=$(eval "$cmd" 2>&1)
+  exit_code=$?
+  set -e
+
+  if echo "$output" | grep -qF "$expected"; then
+    pass "$desc"
+  else
+    # Truncate output if too long
+    local truncated_output
+    if [ ${#output} -gt 200 ]; then
+      truncated_output="${output:0:200}... (truncated, ${#output} chars total)"
+    else
+      truncated_output="$output"
+    fi
+    fail "$desc (expected output to contain: '$expected', actual: '$truncated_output', exit code: $exit_code)"
+  fi
+}
+
+# print_summary: Print test summary (best-effort)
 # Usage: print_summary
+# Note: Tests are fail-fast, so this is mainly for successful runs.
 print_summary() {
-  local total=$((TEST_PASS + TEST_FAIL))
+  local total=$((TEST_PASS + TEST_WARN))
+  local test_script_name="${0:-unknown}"
+
   echo ""
   echo "================================"
   echo "Test Summary:"
   echo "  Passed: ${GREEN}$TEST_PASS${NC}"
-  if [ $TEST_FAIL -gt 0 ]; then
-    echo "  Failed: ${RED}$TEST_FAIL${NC}"
+  if [ $TEST_WARN -gt 0 ]; then
+    echo "  Warnings: ${YELLOW}$TEST_WARN${NC}"
   else
-    echo "  Failed: ${GREEN}0${NC}"
+    echo "  Warnings: ${GREEN}0${NC}"
   fi
   echo "  Total:  $total"
   echo "================================"
-
-  if [ $TEST_FAIL -eq 0 ]; then
-    echo -e "${GREEN}All tests passed!${NC}"
-    exit 0
+  if [ $TEST_WARN -eq 0 ]; then
+    echo -e "${GREEN}$test_script_name: PASS (No WARN)${NC}"
   else
-    echo -e "${RED}Some tests failed!${NC}"
-    exit 1
+    echo -e "${YELLOW}$test_script_name: PASS (WARN: $TEST_WARN)${NC}"
   fi
+  exit 0
 }
 
 # Create temporary directory with cleanup trap
@@ -127,4 +237,4 @@ setup_tmpdir() {
   echo "$tmpdir"
 }
 
-export RED GREEN YELLOW NC TEST_PASS TEST_FAIL
+export RED GREEN YELLOW NC TEST_PASS TEST_WARN

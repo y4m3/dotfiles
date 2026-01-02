@@ -24,7 +24,12 @@ if [ -f "$SNAPSHOT_DIR/local-bin-files.txt" ]; then
   fi
 
   # Find files that were added after snapshot
-  added_files=$(comm -13 "$SNAPSHOT_DIR/local-bin-files.txt" "$current_files" || true)
+  # comm returns non-zero if files don't exist, but we've already checked they exist
+  if ! added_files=$(comm -13 "$SNAPSHOT_DIR/local-bin-files.txt" "$current_files" 2>&1); then
+    echo "Error: Failed to compare files in ~/.local/bin" >&2
+    echo "$added_files" >&2
+    added_files=""
+  fi
 
   if [ -n "$added_files" ]; then
     echo "  Removing manually installed files from ~/.local/bin:"
@@ -48,7 +53,12 @@ if [ -f "$SNAPSHOT_DIR/cargo-bin-files.txt" ]; then
     touch "$current_files"
   fi
 
-  added_files=$(comm -13 "$SNAPSHOT_DIR/cargo-bin-files.txt" "$current_files" || true)
+  # comm returns non-zero if files don't exist, but we've already checked they exist
+  if ! added_files=$(comm -13 "$SNAPSHOT_DIR/cargo-bin-files.txt" "$current_files" 2>&1); then
+    echo "Error: Failed to compare files in ~/.cargo/bin" >&2
+    echo "$added_files" >&2
+    added_files=""
+  fi
 
   if [ -n "$added_files" ]; then
     echo "  Removing manually installed cargo tools:"
@@ -56,7 +66,10 @@ if [ -f "$SNAPSHOT_DIR/cargo-bin-files.txt" ]; then
       tool_name=$(basename "$file")
       echo "    - $tool_name"
       # Try cargo uninstall first, then remove binary
-      cargo uninstall "$tool_name" 2> /dev/null || true
+      # cargo uninstall may fail if package is not installed via cargo, which is acceptable
+      if ! cargo uninstall "$tool_name" 2>&1; then
+        echo "      (cargo uninstall failed, removing binary directly)"
+      fi
       rm -f "$file"
     done
   else
@@ -72,8 +85,13 @@ if [ -f "$SNAPSHOT_DIR/apt-packages.txt" ]; then
   dpkg -l | awk '/^ii/ {print $2 " " $3}' > "$current_packages"
 
   # Find packages that were added after snapshot
-  added_packages=$(comm -13 <(awk '{print $1}' "$SNAPSHOT_DIR/apt-packages.txt" | sort) \
-    <(awk '{print $1}' "$current_packages" | sort) || true)
+  # comm may fail if process substitution fails, but we've already created the files
+  if ! added_packages=$(comm -13 <(awk '{print $1}' "$SNAPSHOT_DIR/apt-packages.txt" | sort) \
+    <(awk '{print $1}' "$current_packages" | sort) 2>&1); then
+    echo "Error: Failed to compare apt packages" >&2
+    echo "$added_packages" >&2
+    added_packages=""
+  fi
 
   if [ -n "$added_packages" ]; then
     echo "  Manually installed apt packages (remove manually if needed):"

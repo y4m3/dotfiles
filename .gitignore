@@ -1,3 +1,9 @@
+# Cursor IDE worktrees configuration (development tool)
+.cursor/worktrees.json
+
+# Test backup files
+tests/*.bak
+
 # Created by https://www.toptal.com/developers/gitignore/api/lua,vim,zsh,powershell,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=lua,vim,zsh,powershell,visualstudiocode
 

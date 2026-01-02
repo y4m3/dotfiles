@@ -11,11 +11,17 @@ CORRECT_LOCATION="$HOME/.local/bin/chezmoi"
 
 # Check correct location first (highest priority)
 if [ -x "$CORRECT_LOCATION" ]; then
-  if CURRENT_VERSION=$("$CORRECT_LOCATION" --version 2>&1 | head -1); then
+  # Capture version output and errors separately
+  version_output=$("$CORRECT_LOCATION" --version 2>&1)
+  version_exit_code=$?
+  if [ $version_exit_code -eq 0 ]; then
+    CURRENT_VERSION=$(echo "$version_output" | head -1)
     echo "✓ chezmoi already installed: $CURRENT_VERSION"
   else
-    echo "Warning: Failed to get chezmoi version" >&2
-    echo "✓ chezmoi already installed (version unknown)"
+    echo "Warning: Failed to get chezmoi version (exit code: $version_exit_code)" >&2
+    echo "$version_output" >&2
+    CURRENT_VERSION="unknown"
+    echo "✓ chezmoi already installed: $CURRENT_VERSION"
   fi
   exit 0
 fi
@@ -43,18 +49,25 @@ echo "==> Installing chezmoi..."
 mkdir -p "$HOME/.local/bin"
 
 # Install chezmoi to $HOME/.local/bin
-# Using official installer with explicit install path
+# Using official installer with explicit install path (Ubuntu 24.04)
 curl -fsSL https://get.chezmoi.io | bash -s -- -b "$HOME/.local/bin"
 
 # Post-installation verification - check correct location only
 if [ -x "$CORRECT_LOCATION" ]; then
-  if INSTALLED_VERSION=$("$CORRECT_LOCATION" --version 2>&1 | head -1); then
+  # Verify installation by checking version
+  version_output=$("$CORRECT_LOCATION" --version 2>&1)
+  version_exit_code=$?
+  if [ $version_exit_code -eq 0 ]; then
+    INSTALLED_VERSION=$(echo "$version_output" | head -1)
     echo "✓ chezmoi installed successfully: $INSTALLED_VERSION"
+    echo "  Location: $CORRECT_LOCATION"
   else
-    echo "Warning: Failed to get chezmoi version after installation" >&2
-    echo "✓ chezmoi installed successfully (version unknown)"
+    echo "❌ chezmoi installation verification failed" >&2
+    echo "  Binary exists but --version command failed (exit code: $version_exit_code)" >&2
+    echo "  Error output:" >&2
+    echo "$version_output" >&2
+    exit 1
   fi
-  echo "  Location: $CORRECT_LOCATION"
 else
   echo "❌ chezmoi installation failed"
   echo "  Expected location: $CORRECT_LOCATION"

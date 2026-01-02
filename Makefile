@@ -1,3 +1,12 @@
+# Use bash as the shell for Makefile recipes (required for bash-specific features)
+# This Makefile uses bash-specific features like:
+# - `read -n` for non-blocking input
+# - `[[` for conditional expressions
+# - `PIPESTATUS` array for pipeline exit codes
+# Note: This Makefile assumes bash is available at /bin/bash.
+# If your system uses a different path, adjust accordingly.
+SHELL := /bin/bash
+
 # Docker image name and tag (customizable via: make IMAGE=custom-tag build)
 IMAGE ?= dotfiles-test:ubuntu24.04
 IMAGE_LINT ?= dotfiles-lint:latest
@@ -48,51 +57,114 @@ test: build
 	@echo "=== Performance Measurement ==="
 	@$(DOCKER_RUN_BASE) $(VOLUMES_FULL) $(IMAGE) \
 	  bash -lc 'export TEST_TYPE=changed; \
-	           echo "[$$(date +%H:%M:%S)] Starting apply-container.sh..."; \
+	           TEST_LOG_DIR="$${XDG_CACHE_HOME:-$$HOME/.cache}/test-logs"; \
+	           mkdir -p "$$TEST_LOG_DIR"; \
+	           TEST_LOG_FILE="$$TEST_LOG_DIR/test-$$(date +%Y%m%d-%H%M%S).log"; \
+	           TEST_RESULTS_JSONL="$$TEST_LOG_DIR/results-$$(date +%Y%m%d-%H%M%S).jsonl"; \
+	           export TEST_RESULTS_JSONL; \
+	           : > "$$TEST_RESULTS_JSONL"; \
+	           echo "Test log file: $$TEST_LOG_FILE"; \
+	           echo "Test results file: $$TEST_RESULTS_JSONL"; \
+	           echo "[$$(date +%H:%M:%S)] Starting apply-container.sh..." | tee -a "$$TEST_LOG_FILE"; \
 	           APPLY_START=$$(date +%s); \
-	           bash scripts/apply-container.sh > /dev/null 2>&1; \
+	           bash scripts/apply-container.sh >> "$$TEST_LOG_FILE" 2>&1; \
 	           APPLY_STATUS=$$?; \
 	           APPLY_END=$$(date +%s); \
 	           APPLY_DURATION=$$((APPLY_END - APPLY_START)); \
 	           if [ "$$APPLY_STATUS" -eq 0 ]; then \
-	             echo "[$$(date +%H:%M:%S)] apply-container.sh completed in $$APPLY_DURATION seconds"; \
+	             echo "[$$(date +%H:%M:%S)] apply-container.sh completed in $$APPLY_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
 	           else \
-	             echo "[$$(date +%H:%M:%S)] apply-container.sh failed after $$APPLY_DURATION seconds (exit $$APPLY_STATUS)" >&2; \
+	             echo "[$$(date +%H:%M:%S)] apply-container.sh failed after $$APPLY_DURATION seconds (exit $$APPLY_STATUS)" | tee -a "$$TEST_LOG_FILE"; \
 	             exit $$APPLY_STATUS; \
 	           fi; \
 	           [ -f ~/.bashrc ] && source ~/.bashrc; \
 	           TESTS_START=$$(date +%s); \
 	           tests_to_run=$$(bash scripts/detect-changes.sh); \
 	           if [ -z "$$tests_to_run" ]; then \
-	             echo "No changes detected, running all tests..."; \
-	             failed=0; \
+	             echo "No changes detected, running all tests..." | tee -a "$$TEST_LOG_FILE"; \
+	             warn_count=0; \
+	             fail_count=0; \
 	             for test in tests/*-test.sh; do \
-	                 echo ""; \
+	                 echo "" | tee -a "$$TEST_LOG_FILE"; \
+	                 test_name=$$(basename "$$test"); \
+	                 test_log="$$TEST_LOG_DIR/$$test_name-$$(date +%Y%m%d-%H%M%S).log"; \
+	                 export TEST_LOG_FILE="$$test_log"; \
 	                 TEST_START=$$(date +%s); \
-	                 if ! bash "$$test"; then failed=1; fi; \
+	                 echo "[$$(date +%H:%M:%S)] Running $$test_name (log: $$test_log)..." | tee -a "$$TEST_LOG_FILE"; \
+	                 bash "$$test" 2>&1 | tee -a "$$TEST_LOG_FILE"; \
+	                 test_exit=$${PIPESTATUS[0]}; \
 	                 TEST_END=$$(date +%s); \
 	                 TEST_DURATION=$$((TEST_END - TEST_START)); \
-	                 echo "[$$(date +%H:%M:%S)] $$(basename $$test) completed in $$TEST_DURATION seconds"; \
+	                 echo "[$$(date +%H:%M:%S)] $$test_name completed in $$TEST_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
+	                 status="pass"; \
+	                 if [ $$test_exit -ne 0 ]; then \
+	                     fail_count=$$((fail_count + 1)); \
+	                     status="fail"; \
+	                 fi; \
+	                 # Count WARN in log file (WARN is non-fatal) \
+	                 test_warn=0; \
+	                 if [ -f "$$test_log" ]; then \
+	                     test_warn=$$(awk "/^\\[TEST\\] WARN:/ {count++} END {print count+0}" "$$test_log" 2>/dev/null | tr -d "\n\r"); \
+	                     test_warn=$$(echo "$$test_warn" | tr -d "\n\r" | grep -E "^[0-9]+$$" || echo "0"); \
+	                 fi; \
+	                 warn_count=$$((warn_count + test_warn)); \
+	                 jq -n --arg name "$$test_name" --arg status "$$status" --arg log_file "$$test_log" \
+	                   --argjson duration_seconds "$$TEST_DURATION" --argjson warn_count "$$test_warn" \
+	                   '\''{name:$$name,status:$$status,duration_seconds:$$duration_seconds,warn_count:$$warn_count,log_file:$$log_file}'\'' >> "$$TEST_RESULTS_JSONL"; \
 	             done; \
 	             TESTS_END=$$(date +%s); \
 	             TESTS_DURATION=$$((TESTS_END - TESTS_START)); \
-	             echo "[$$(date +%H:%M:%S)] All tests completed in $$TESTS_DURATION seconds"; \
-	             exit $$failed; \
+	             echo "[$$(date +%H:%M:%S)] All tests completed in $$TESTS_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
+	             echo ""; \
+	             echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
+	             echo "Overall Test Results:" | tee -a "$$TEST_LOG_FILE"; \
+	             echo "  Total WARN: $$warn_count" | tee -a "$$TEST_LOG_FILE"; \
+	             echo "  Total FAIL: $$fail_count" | tee -a "$$TEST_LOG_FILE"; \
+	             echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
+	             bash scripts/record-test-results.sh; \
+	             if [ $$fail_count -ne 0 ]; then exit 1; else exit 0; fi; \
 	           else \
-	             echo "Running affected tests: $$tests_to_run"; \
-	             failed=0; \
+	             echo "Running affected tests: $$tests_to_run" | tee -a "$$TEST_LOG_FILE"; \
+	             warn_count=0; \
+	             fail_count=0; \
 	             for test in $$tests_to_run; do \
-	                 echo ""; \
+	                 echo "" | tee -a "$$TEST_LOG_FILE"; \
+	                 test_name=$$(basename "$$test"); \
+	                 test_log="$$TEST_LOG_DIR/$$test_name-$$(date +%Y%m%d-%H%M%S).log"; \
+	                 export TEST_LOG_FILE="$$test_log"; \
 	                 TEST_START=$$(date +%s); \
-	                 if ! bash "$$test"; then failed=1; fi; \
+	                 echo "[$$(date +%H:%M:%S)] Running $$test_name (log: $$test_log)..." | tee -a "$$TEST_LOG_FILE"; \
+	                 bash "$$test" 2>&1 | tee -a "$$TEST_LOG_FILE"; \
+	                 test_exit=$${PIPESTATUS[0]}; \
 	                 TEST_END=$$(date +%s); \
 	                 TEST_DURATION=$$((TEST_END - TEST_START)); \
-	                 echo "[$$(date +%H:%M:%S)] $$(basename $$test) completed in $$TEST_DURATION seconds"; \
+	                 echo "[$$(date +%H:%M:%S)] $$test_name completed in $$TEST_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
+	                 status="pass"; \
+	                 if [ $$test_exit -ne 0 ]; then \
+	                     fail_count=$$((fail_count + 1)); \
+	                     status="fail"; \
+	                 fi; \
+	                 test_warn=0; \
+	                 if [ -f "$$test_log" ]; then \
+	                     test_warn=$$(awk "/^\\[TEST\\] WARN:/ {count++} END {print count+0}" "$$test_log" 2>/dev/null | tr -d "\n\r"); \
+	                     test_warn=$$(echo "$$test_warn" | tr -d "\n\r" | grep -E "^[0-9]+$$" || echo "0"); \
+	                 fi; \
+	                 warn_count=$$((warn_count + test_warn)); \
+	                 jq -n --arg name "$$test_name" --arg status "$$status" --arg log_file "$$test_log" \
+	                   --argjson duration_seconds "$$TEST_DURATION" --argjson warn_count "$$test_warn" \
+	                   '\''{name:$$name,status:$$status,duration_seconds:$$duration_seconds,warn_count:$$warn_count,log_file:$$log_file}'\'' >> "$$TEST_RESULTS_JSONL"; \
 	             done; \
 	             TESTS_END=$$(date +%s); \
 	             TESTS_DURATION=$$((TESTS_END - TESTS_START)); \
-	             echo "[$$(date +%H:%M:%S)] Affected tests completed in $$TESTS_DURATION seconds"; \
-	             exit $$failed; \
+	             echo "[$$(date +%H:%M:%S)] Affected tests completed in $$TESTS_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
+	             echo ""; \
+	             echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
+	             echo "Overall Test Results:" | tee -a "$$TEST_LOG_FILE"; \
+	             echo "  Total WARN: $$warn_count" | tee -a "$$TEST_LOG_FILE"; \
+	             echo "  Total FAIL: $$fail_count" | tee -a "$$TEST_LOG_FILE"; \
+	             echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
+	             bash scripts/record-test-results.sh; \
+	             if [ $$fail_count -ne 0 ]; then exit 1; else exit 0; fi; \
 	           fi'
 
 # test-all: Run all test suites and create snapshot on success
@@ -102,24 +174,67 @@ test: build
 test-all: build
 	@$(DOCKER_RUN_BASE) $(VOLUMES_FULL) $(IMAGE) \
 	  bash -lc 'export TEST_TYPE=all; \
+	           TEST_LOG_DIR="$${XDG_CACHE_HOME:-$$HOME/.cache}/test-logs"; \
+	           mkdir -p "$$TEST_LOG_DIR"; \
+	           TEST_LOG_FILE="$$TEST_LOG_DIR/test-all-$$(date +%Y%m%d-%H%M%S).log"; \
+	           TEST_RESULTS_JSONL="$$TEST_LOG_DIR/results-all-$$(date +%Y%m%d-%H%M%S).jsonl"; \
+	           export TEST_RESULTS_JSONL; \
+	           : > "$$TEST_RESULTS_JSONL"; \
+	           echo "Test log file: $$TEST_LOG_FILE"; \
+	           echo "Test results file: $$TEST_RESULTS_JSONL"; \
 	           bash scripts/apply-container.sh && \
 	           echo "Running all tests..." && \
-	           failed=0; \
+	           warn_count=0; \
+	           fail_count=0; \
 	           for test in tests/*-test.sh; do \
 	               echo ""; \
-	               if ! bash "$$test"; then failed=1; fi; \
+	               test_name=$$(basename "$$test"); \
+	               test_log="$$TEST_LOG_DIR/$$test_name-$$(date +%Y%m%d-%H%M%S).log"; \
+	               export TEST_LOG_FILE="$$test_log"; \
+	               echo "Running $$test_name (log: $$test_log)..." | tee -a "$$TEST_LOG_FILE"; \
+	               TEST_START=$$(date +%s); \
+	               bash "$$test" 2>&1 | tee -a "$$TEST_LOG_FILE"; \
+	               test_exit=$${PIPESTATUS[0]}; \
+	               TEST_END=$$(date +%s); \
+	               TEST_DURATION=$$((TEST_END - TEST_START)); \
+	               if [ $$test_exit -ne 0 ]; then \
+	                   fail_count=$$((fail_count + 1)); \
+	               fi; \
+	               status="pass"; \
+	               if [ $$test_exit -ne 0 ]; then status="fail"; fi; \
+	               test_warn=0; \
+	               if [ -f "$$test_log" ]; then \
+	                   test_warn=$$(awk "/^\\[TEST\\] WARN:/ {count++} END {print count+0}" "$$test_log" 2>/dev/null | tr -d "\n\r"); \
+	                   test_warn=$$(echo "$$test_warn" | tr -d "\n\r" | grep -E "^[0-9]+$$" || echo "0"); \
+	               fi; \
+	               warn_count=$$((warn_count + test_warn)); \
+	               jq -n --arg name "$$test_name" --arg status "$$status" --arg log_file "$$test_log" \
+	                 --argjson duration_seconds "$$TEST_DURATION" --argjson warn_count "$$test_warn" \
+	                 '\''{name:$$name,status:$$status,duration_seconds:$$duration_seconds,warn_count:$$warn_count,log_file:$$log_file}'\'' >> "$$TEST_RESULTS_JSONL"; \
 	           done; \
-	           if [ $$failed -eq 0 ]; then \
+	           echo ""; \
+	           echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
+	           echo "Overall Test Results:" | tee -a "$$TEST_LOG_FILE"; \
+	           echo "  Total WARN: $$warn_count" | tee -a "$$TEST_LOG_FILE"; \
+	           echo "  Total FAIL: $$fail_count" | tee -a "$$TEST_LOG_FILE"; \
+	           echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
+	           if [ $$fail_count -eq 0 ]; then \
 	               echo ""; \
-	               echo "==> All tests passed. Creating environment snapshot..."; \
+	               echo "==> All tests passed (No FAIL). Creating environment snapshot..." | tee -a "$$TEST_LOG_FILE"; \
 	               bash scripts/create-snapshot.sh; \
 	               if [ "$(BASELINE)" = "1" ]; then \
 	                   echo ""; \
-	                   echo "==> Saving baseline test results..."; \
+	                   echo "==> Saving baseline test results..." | tee -a "$$TEST_LOG_FILE"; \
 	                   bash scripts/record-test-results.sh --baseline; \
+	               else \
+	                   bash scripts/record-test-results.sh; \
 	               fi; \
+	           else \
+	               echo "==> Tests completed with issues (WARN: $$warn_count, FAIL: $$fail_count)" | tee -a "$$TEST_LOG_FILE"; \
+	               echo "==> Check log files in $$TEST_LOG_DIR for details" | tee -a "$$TEST_LOG_FILE"; \
+	               bash scripts/record-test-results.sh; \
 	           fi; \
-	           exit $$failed'
+	           if [ $$fail_count -ne 0 ]; then exit 1; else exit 0; fi'
 
 # clean: Remove persistent Docker volumes
 # Usage: make clean [REBUILD=1]
@@ -131,35 +246,57 @@ clean:
 		read -p "Are you sure? [y/N] " -n 1 -r; \
 		echo; \
 		if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+			volume_errors=0; \
 			for vol in dotfiles-state cargo-data rustup-data env-snapshot; do \
 				if docker volume inspect "$$vol" >/dev/null 2>&1; then \
-					if ! vol_err=$$(docker volume rm "$$vol" 2>&1); then \
-						echo "Warning: Failed to remove volume $$vol" >&2; \
-						if [ -n "$$vol_err" ]; then \
-							echo "  $$vol_err" >&2; \
+					error_msg=$$(docker volume rm "$$vol" 2>&1); \
+					exit_code=$$?; \
+					if [ $$exit_code -ne 0 ]; then \
+						if echo "$$error_msg" | grep -q "no such volume"; then \
+							:; \
+						elif echo "$$error_msg" | grep -qE "(in use|cannot connect|permission denied|Error response)"; then \
+							echo "Error: Failed to remove volume $$vol" >&2; \
+							echo "$$error_msg" >&2; \
+							volume_errors=1; \
 						fi; \
 					fi; \
 				fi; \
 			done; \
-			echo "✓ Volumes cleared. Rebuilding environment A..."; \
-			$(MAKE) test-all; \
+			if [ $$volume_errors -eq 0 ]; then \
+				echo "✓ Volumes cleared. Rebuilding environment A..."; \
+				$(MAKE) test-all; \
+			else \
+				echo "Error: Some volumes could not be removed. Please stop any running containers first." >&2; \
+				exit 1; \
+			fi; \
 		else \
 			echo "Cancelled."; \
 		fi; \
 	else \
 		echo "==> Removing persistent volumes..."; \
+		volume_errors=0; \
 		for vol in dotfiles-state cargo-data rustup-data env-snapshot; do \
 			if docker volume inspect "$$vol" >/dev/null 2>&1; then \
-				if ! vol_err=$$(docker volume rm "$$vol" 2>&1); then \
-					echo "Warning: Failed to remove volume $$vol" >&2; \
-					if [ -n "$$vol_err" ]; then \
-						echo "  $$vol_err" >&2; \
+				error_msg=$$(docker volume rm "$$vol" 2>&1); \
+				exit_code=$$?; \
+				if [ $$exit_code -ne 0 ]; then \
+					if echo "$$error_msg" | grep -q "no such volume"; then \
+						:; \
+					elif echo "$$error_msg" | grep -qE "(in use|cannot connect|permission denied|Error response)"; then \
+						echo "Error: Failed to remove volume $$vol" >&2; \
+						echo "$$error_msg" >&2; \
+						volume_errors=1; \
 					fi; \
 				fi; \
 			fi; \
 		done; \
-		echo "✓ Persistent state cleared (dotfiles-state, cargo-data, rustup-data, env-snapshot)."; \
-		echo "  Next 'make dev' or 'make test' will rebuild the environment."; \
+		if [ $$volume_errors -eq 0 ]; then \
+			echo "✓ Persistent state cleared (dotfiles-state, cargo-data, rustup-data, env-snapshot)."; \
+			echo "  Next 'make dev' or 'make test' will rebuild the environment."; \
+		else \
+			echo "Error: Some volumes could not be removed. Please stop any running containers first." >&2; \
+			exit 1; \
+		fi; \
 	fi
 
 # reset: Reset manual installations while preserving chezmoi state

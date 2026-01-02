@@ -23,6 +23,12 @@ fi
 
 # Run official install script (no plugin manager, no key bindings auto-setup)
 # Pipe 'y' to answer "yes" to interactive prompts
-echo "y" | "$FZF_DIR/install" --no-update-rc 2>&1 | grep -v "^Do you want" || true
+# Filter out the interactive prompt message, but preserve other output and errors
+if ! install_output=$(echo "y" | "$FZF_DIR/install" --no-update-rc 2>&1); then
+  echo "Error: fzf installation failed" >&2
+  echo "$install_output" >&2
+  exit 1
+fi
+echo "$install_output" | grep -v "^Do you want"
 
 echo "✓ fzf installed to $FZF_DIR"

@@ -41,7 +41,12 @@ if [ -f "$HOME/.config/zellij/config.kdl" ]; then
       echo "   OK zellij config appears valid"
     else
       echo "   ERROR zellij config has errors:"
-      zellij setup --check 2>&1 | grep -E "(error|Error|invalid|Invalid)" | head -3 || true
+      error_output=$(zellij setup --check 2>&1 | grep -E "(error|Error|invalid|Invalid)" | head -3)
+      if [ -n "$error_output" ]; then
+        echo "$error_output"
+      else
+        echo "   (Error details not found in output)"
+      fi
       errors=$((errors + 1))
     fi
   else
@@ -60,7 +65,12 @@ if [ -f "$HOME/.config/starship.toml" ]; then
     # starship config validates the config file
     if starship config 2>&1 | grep -qE "(error|Error|invalid|Invalid)"; then
       echo "   ERROR starship config has errors"
-      starship config 2>&1 | grep -E "(error|Error|invalid|Invalid)" || true
+      error_output=$(starship config 2>&1 | grep -E "(error|Error|invalid|Invalid)")
+      if [ -n "$error_output" ]; then
+        echo "$error_output"
+      else
+        echo "   (Error details not found in output)"
+      fi
       errors=$((errors + 1))
     else
       echo "   OK starship config is valid"
