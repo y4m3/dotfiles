@@ -139,15 +139,13 @@ The snapshot system automatically tracks run_once-installed tools, so you don't 
 
 **Responsibilities**:
 - Apply dotfiles configuration with retry logic for lock contention
-- Execute `run_once_*` scripts that haven't been executed yet
-- Verify tool installations and re-run if needed
-- Handle GitHub API rate limit errors with clear guidance
+- Ensure PATH is set correctly for installed tools
+- chezmoi automatically executes `run_once_*.sh.tmpl` scripts during `chezmoi apply`
 
 **Key Features**:
 - Retry logic for chezmoi lock contention
-- Tool verification: Checks if tools are actually installed (not just marked as executed)
-- Re-execution: If tool is missing despite being marked as executed, re-runs installation
-- Error handling: Detects GitHub API rate limit errors and provides guidance
+- PATH setup: Ensures `~/.local/bin` and `~/.cargo/bin` are in PATH
+- chezmoi handles `run_once` script execution automatically using SHA256 hash-based state tracking
 
 ## GitHub API Authentication
 

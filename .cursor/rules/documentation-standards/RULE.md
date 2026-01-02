@@ -140,10 +140,10 @@ Concise notes focused on environment-specific configuration. Refer to official d
 **REQUIRED**: Focus on repository workflows and policies
 
 - `README.md`: Quick start, main targets, directory structure
-- `docs/configuration.md`: Configuration policy and customization methods
+- `docs/manual-setup-tasks.md`: Manual setup tasks after initial apply
+- `docs/post-setup.md`: Quick checklist for manual tasks
 - `docs/testing-guide.md`: Testing system and change detection
-- `docs/troubleshooting.md`: Common issues and solutions
-- `docs/pre-commit-checklist.md`: Verification workflow before commits
+- `docs/installed-tools.md`: Complete list of installed tools
 
 ## Remove Redundant Content
 
@@ -190,7 +190,7 @@ j() {
 ```markdown
 ## References
 
-- [Configuration Guide](../docs/configuration.md) - Configuration policy
+- [Manual Setup Tasks](../docs/manual-setup-tasks.md) - Manual setup guide
 - [Testing Guide](../docs/testing-guide.md) - Testing workflow
 - [Tool Name Official Docs](https://...) - General usage
 ```
@@ -208,7 +208,7 @@ When creating or updating documentation:
 
 ## References
 
-- [Configuration Guide](../docs/configuration.md) - Configuration policy
+- [Manual Setup Tasks](../docs/manual-setup-tasks.md) - Manual setup guide
 - [Testing Guide](../docs/testing-guide.md) - Testing workflow
 - Existing tool documentation: `docs/tools/*.md` (examples of simplified documentation)
 
