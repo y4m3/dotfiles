@@ -54,8 +54,8 @@ echo "2. Checking TOML configuration files..."
 toml_files=(
   "home/dot_config/create_starship.toml.tmpl"
   "home/dot_config/yazi/yazi.toml.tmpl"
-  "home/dot_config/yazi/keymap.toml.tmpl"
-  "home/dot_config/yazi/theme.toml.tmpl"
+  # Note: alacritty.toml.example is not managed by chezmoi, so syntax check is optional
+  # "home/dot_config/alacritty/alacritty.toml.example"
 )
 for file in "${toml_files[@]}"; do
   if [ -f "$REPO_ROOT/$file" ]; then
@@ -103,6 +103,7 @@ fi
 echo ""
 echo "4. Checking YAML configuration files..."
 yaml_files=(
+  "home/dot_config/glow/create_glow.yml.tmpl"
   "home/dot_config/lazygit/create_config.yml.tmpl"
   "home/dot_config/lazydocker/create_config.yml.tmpl"
 )
