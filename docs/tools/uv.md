@@ -10,13 +10,10 @@ https://github.com/astral-sh/uv
 
 Managed by `run_once_120-runtimes-python-uv.sh.tmpl`:
 - Installed to `~/.cargo/bin/uv`
-- PATH integration via `home/dot_bashrc.d/40-runtimes.sh`
+- PATH integration via `home/dot_bashrc.d/200-runtimes.sh`
 
 ## Environment-specific Configuration
 
-- `alias pip='uv pip'` is defined to prefer uv over system pip.
 - Recommended direnv integration for auto-venv:
 	- Add `layout python_uv` to project `.envrc`, then `direnv allow`.
 - Python versions and venvs are managed per-project; no global Python enforced.
-
- 

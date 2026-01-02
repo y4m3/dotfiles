@@ -1,38 +1,36 @@
 # Testing Guide
 
-This guide explains the testing system, change detection mechanism, and how to use test results.
+This guide provides comprehensive documentation of the testing system for this dotfiles repository. It is designed to be read by both humans and AI assistants to understand the testing architecture, workflows, and implementation details.
+
+## Overview
+
+The testing system validates dotfiles configuration in isolated Docker containers. It supports three main test execution modes:
+
+1. **Change Detection Test** (`make test`): Runs only tests affected by changed files (default, frequently used)
+2. **All Tests** (`make test-all`): Runs all tests regardless of changes
+3. **Baseline Update** (`make test-all BASELINE=1`): Runs all tests and saves results as baseline for comparison
+
+The system uses Docker volumes for persistent state (chezmoi state, cargo data, rustup data, environment snapshots) to enable efficient incremental testing.
 
 ## Test Types
 
 ### 1. Change Detection Test (`make test`)
 
-**Purpose**: Run tests only for changed files (default, frequently used)
+**Purpose**: Run tests only for changed files to minimize execution time during development.
+
+**How it works**:
+1. **Change Detection**: Uses `scripts/detect-changes.sh` to detect uncommitted changes via `git diff` (HEAD vs working directory, including staged changes)
+2. **Pattern Matching**: Maps changed files to relevant tests using `.test-mapping.json` (glob pattern matching)
+3. **Dependency Resolution**: If any changed file has `affects_all: true` flag (e.g., `bashrc` changes), runs all tests
+4. **Test Execution**: Runs only the affected tests in Docker container
+5. **Fallback**: If no changes detected, runs all tests (safe default)
 
 **Exit code policy**:
 - **FAIL**: fatal (Make targets exit non-zero)
 - **WARN**: non-fatal (Make targets still exit 0 unless there is a FAIL)
 
-**Log format**:
-- Test helper output is prefixed with `[TEST]` (e.g., `[TEST] PASS:` / `[TEST] WARN:` / `[TEST] FAIL:`).
-- This allows stable warning counting in Make targets without matching tool output accidentally.
-
-**Debug/strict knobs**:
-- `DEBUG_DETECT_CHANGES=1`: Print why change detection falls back to running all tests.
-- `STRICT_COMPARE=1`: Treat missing tests in latest results as an error in `compare-test-results.sh`.
-- `STRICT_RESULTS=1`: Fail `record-test-results.sh` if the JSONL input contains invalid lines or missing required keys.
-
-**How it works**:
-1. Detects changed files using `git diff`
-2. Maps changed files to relevant tests using `.test-mapping.json`
-3. Runs only the affected tests
-4. If no changes detected, runs all tests (safe default)
-
-**Execution time**: Seconds to minutes (depends on change scope)
-
-**Use cases**:
-- After modifying a specific tool's configuration
-- After updating a single `run_once` script
-- Daily development workflow
+**Debug knobs**:
+- `DEBUG_DETECT_CHANGES=1`: Print why change detection falls back to running all tests
 
 **Example**:
 ```bash
@@ -44,119 +42,148 @@ make test
 # Only runs: tests/zellij-test.sh
 ```
 
+**Implementation details**:
+- Change detection script: `scripts/detect-changes.sh`
+- Mapping file: `.test-mapping.json` (JSON format with pattern-to-tests mapping)
+- Pattern matching: Converts glob patterns (`**`, `*`) to regex for matching
+- Special handling: Files with `affects_all: true` trigger all tests (e.g., `home/dot_bashrc.d/**` affects all tools due to PATH impact)
+
 ### 2. All Tests (`make test-all`)
 
-**Purpose**: Run all tests regardless of changes
+**Purpose**: Run all tests regardless of changes. Used for initial setup, after major changes, or before releases.
 
 **How it works**:
-1. Runs `apply-container.sh` (checks/executes `run_once` scripts)
-2. Runs all test files (all `*-test.sh` files in `tests/` directory)
-3. Creates environment snapshot on success (no FAIL)
+1. **Apply Configuration**: Runs `scripts/apply-container.sh` (applies chezmoi configuration, executes run_once scripts)
+2. **Test Execution**: Runs all test files (all `*-test.sh` files in `tests/` directory)
+3. **Snapshot Creation**: Creates environment snapshot on success (no FAIL) via `scripts/create-snapshot.sh`
+4. **Result Recording**: Records test results in JSON format via `scripts/record-test-results.sh`
 
-**Execution time**: 2-3 minutes (if already installed), 10-20 minutes (first time)
+**Execution time**:
+- 2-3 minutes (if already installed, using cached Docker volumes)
+- 10-20 minutes (first time, installing all tools)
 
 **Use cases**:
-- Initial setup
-- After major changes
-- Periodic full verification (weekly, etc.)
-- Before releases
+- Initial setup verification
+- After major changes (e.g., bashrc refactoring)
+- Before releases or pull requests
+- Creating baseline for comparison
 
-**Example**:
-```bash
-# Run all tests
-make test-all
-# Runs all tests and creates snapshot on success
-```
+**Snapshot system**:
+- Snapshot location: `~/.local/share/env-snapshot/` (Docker volume: `env-snapshot`)
+- Snapshot contents:
+  - `local-bin-files.txt`: List of executables in `~/.local/bin`
+  - `cargo-bin-files.txt`: List of executables in `~/.cargo/bin`
+  - `config-structure.txt`: Directory structure in `~/.config` (excluding chezmoi)
+  - `apt-packages.txt`: List of installed apt packages
+  - `timestamp.txt`: Snapshot creation timestamp
+- Used by `make reset` to detect and remove manually installed tools
 
 ### 3. Baseline Update (`make test-all BASELINE=1`)
 
-**Purpose**: Save test results as baseline for comparison
+**Purpose**: Save test results as baseline for comparison. Useful for detecting regressions.
 
 **How it works**:
 1. Runs all tests (same as `make test-all`)
-2. Saves results to `.test-results/baseline.json`
+2. Saves results to both `latest.json` and `baseline.json` via `scripts/record-test-results.sh --baseline`
 
-**Use cases**:
-- After initial setup
-- After major changes
-- To establish a known-good state
-
-**Example**:
+**Usage**:
 ```bash
-# Run all tests and save as baseline
 make test-all BASELINE=1
 ```
 
+**Baseline comparison**:
+- Compare current results with baseline: `bash scripts/compare-test-results.sh`
+- Detects regressions (tests that passed in baseline but failed in latest)
+- Detects improvements (tests that failed in baseline but passed in latest)
+- Detects new tests (tests in latest but not in baseline)
+- Detects missing tests (tests in baseline but not in latest)
+
 ## Change Detection Mechanism
 
-### How It Works
+The change detection system (`scripts/detect-changes.sh`) maps changed files to relevant tests using pattern matching.
 
-1. **Git Diff**: Detects uncommitted changes (HEAD vs working directory) by default, or compares between commits if base commit is specified
+### Process Flow
+
+1. **Git Diff**: Detects uncommitted changes (HEAD vs working directory, including staged changes)
+   - Uses `git diff --name-only HEAD` for unstaged changes
+   - Uses `git diff --cached --name-only` for staged changes
+   - Merges and deduplicates both lists
+
 2. **Pattern Matching**: Matches changed files against patterns in `.test-mapping.json`
-3. **Dependency Resolution**: If a file affects all tests (e.g., `bashrc` changes), runs all tests
-4. **Test Execution**: Runs only the affected tests
+   - Glob pattern conversion: `**` → `.*`, `*` → `[^/]*`, `.` → `\.`
+   - Pattern matching uses regex against file paths
 
-### Mapping File
+3. **Dependency Resolution**: 
+   - If any changed file has `affects_all: true` flag, runs all tests
+   - Common cases: `home/dot_bashrc*`, `home/dot_bash_profile.tmpl`, `home/dot_bashrc.d/**` (PATH impact)
 
-The `.test-mapping.json` file defines:
-- File patterns (e.g., `home/run_once_*zellij*.sh.tmpl`)
-- Associated tests (e.g., `tests/zellij-test.sh`)
-- Dependencies (e.g., `bashrc` changes affect all tests)
+4. **Test Selection**: Collects unique test files from matching patterns
 
-### Example Mappings
+5. **Fallback**: If no changes detected or no specific tests matched, runs all tests (safe default)
 
+### Mapping File Format
+
+`.test-mapping.json` structure:
 ```json
 {
-  "pattern": "home/run_once_265-terminal-zellij.sh.tmpl",
-  "tests": ["tests/zellij-test.sh"]
-},
-{
-  "pattern": "home/dot_config/starship.toml.tmpl",
-  "tests": ["tests/starship-test.sh"]
-},
-{
-  "pattern": "home/dot_bashrc*",
-  "tests": ["tests/bash-config-test.sh"],
-  "affects_all": true
+  "version": "1.0",
+  "description": "Mapping between source files and test files",
+  "mappings": [
+    {
+      "pattern": "home/dot_config/zellij/**",
+      "tests": ["tests/zellij-test.sh"],
+      "description": "zellij configuration"
+    },
+    {
+      "pattern": "home/dot_bashrc.d/**",
+      "tests": ["tests/bash-config-test.sh"],
+      "affects_all": true,
+      "description": "bashrc.d changes affect all tools (PATH impact)"
+    }
+  ]
 }
 ```
 
-### Special Cases
+**Pattern matching rules**:
+- `**`: Matches any path including `/` (recursive)
+- `*`: Matches any characters except `/` (single level)
+- Patterns are matched against full file paths relative to repository root
 
-- **`affects_all: true`**: If any file with this flag changes, all tests are run
-  - Examples: `dot_bashrc*`, `dot_bash_profile.tmpl`, `dot_bashrc.d/**`
-  - Reason: PATH changes affect all tools
+**Special flags**:
+- `affects_all: true`: If any file matching this pattern changes, all tests are run
 
+### Edge Cases
+
+- **Not a git repository**: Falls back to running all tests (silent, unless `DEBUG_DETECT_CHANGES=1`)
+- **jq not available**: Falls back to running all tests (silent, unless `DEBUG_DETECT_CHANGES=1`)
+- **Deleted files**: Skipped (pattern matching only checks existing files)
 - **No changes detected**: Runs all tests (safe default)
-
-- **Uncommitted changes**: By default, detects uncommitted changes (staged + unstaged). This is useful for testing changes before committing, especially during tool trial periods in `make dev`.
-
-- **Pattern matching**: Uses glob patterns (`*`, `**`) converted to regex
 
 ## Test Results
 
-### Recording
+Test results are automatically recorded in JSON format for analysis and comparison.
 
-Test results are automatically recorded in JSON format:
-- Location: `.test-results/` (Git-ignored)
-- Files:
+### Result Storage
+
+- **Location**: `.test-results/` (Git-ignored)
+- **Files**:
   - `latest.json`: Most recent test results
-  - `baseline.json`: Baseline results for comparison
-  - `history/`: Timestamped history
+  - `baseline.json`: Baseline results (created with `BASELINE=1`)
+  - `history/`: Timestamped history files (`test-results-YYYYMMDD-HHMMSS.json`)
 
 ### Result Format
 
 ```json
 {
-  "timestamp": "2025-12-29T02:37:04+09:00",
+  "timestamp": "2024-01-01T12:00:00+00:00",
   "git_commit": "abc123...",
   "test_type": "changed|all",
   "tests": {
     "zellij-test.sh": {
-      "status": "pass",
-      "duration_seconds": 2,
+      "status": "pass|fail",
+      "duration_seconds": 5,
       "warn_count": 0,
-      "log_file": "/root/.cache/test-logs/zellij-test.sh-20251229-023704.log"
+      "log_file": "/path/to/log"
     }
   },
   "config_hashes": {
@@ -164,240 +191,88 @@ Test results are automatically recorded in JSON format:
     "/root/.config/starship.toml": "sha256:..."
   },
   "summary": {
-    "total": 12,
-    "passed": 12,
-    "failed": 0,
-    "warned": 0
+    "total": 10,
+    "passed": 9,
+    "failed": 1,
+    "warned": 2
   }
 }
 ```
 
-### Comparison
+**Fields**:
+- `timestamp`: ISO 8601 timestamp of test execution
+- `git_commit`: Git commit hash (if in git repo)
+- `test_type`: `"changed"` (change detection) or `"all"` (all tests)
+- `tests`: Object mapping test names to results
+- `config_hashes`: SHA256 hashes of key configuration files (for change detection)
+- `summary`: Aggregate statistics
 
-Use `scripts/compare-test-results.sh` to compare current results with baseline:
+### Result Recording
 
+**Script**: `scripts/record-test-results.sh
+
+**Input**: `TEST_RESULTS_JSONL` environment variable (JSON Lines format, one JSON object per test)
+
+**Process**:
+1. Reads JSONL file (one test result per line)
+2. Validates JSON (strict mode: `STRICT_RESULTS=1` fails on invalid JSON, default: best-effort)
+3. Aggregates into single JSON object
+4. Computes config file hashes (low-cost, key files only)
+5. Saves to `latest.json` and history file
+6. Optionally saves to `baseline.json` if `--baseline` flag is set
+
+**Strict mode**:
+- `STRICT_RESULTS=1`: Fail if any JSONL line is invalid JSON or missing required keys
+- Default: Skip invalid JSONL lines (best-effort mode)
+
+### Result Comparison
+
+**Script**: `scripts/compare-test-results.sh`
+
+**Usage**:
 ```bash
 bash scripts/compare-test-results.sh
 ```
 
-This will show:
-- Regressions (tests that passed in baseline but failed in latest)
-- Improvements (tests that failed in baseline but passed in latest)
-- New tests
-- Missing tests
+**Output**:
+- Regressions: Tests that passed in baseline but failed in latest
+- Improvements: Tests that failed in baseline but passed in latest
+- New tests: Tests in latest but not in baseline
+- Missing tests: Tests in baseline but not in latest
 
-## Verification Procedures
+**Exit codes**:
+- Exit 1: Regressions detected
+- Exit 1: Missing tests detected (if `STRICT_COMPARE=1`)
+- Exit 0: No regressions
 
-This section provides step-by-step procedures to verify that all tools are correctly installed and configured.
+**Strict mode**:
+- `STRICT_COMPARE=1`: Treat missing tests in latest results as an error (exit 1)
+- Default: Missing tests are warnings only (exit 0)
 
-### Prerequisites
+## Running Single Tests
 
-- Docker is installed and running
-- Host system has `gh` CLI installed and authenticated (optional, but recommended for higher GitHub API rate limits)
-- This repository is cloned and you are in the repository root directory
-
-### Step 1: Clean Environment Setup
-
-Start with a clean environment to ensure fresh installation:
+### From Host Machine
 
 ```bash
-# Remove all persistent volumes
-make clean
-
-# Rebuild Docker image (if needed)
-make build
+# Run specific test
+bash tests/zellij-test.sh
 ```
 
-### Step 2: Run Full Test Suite
+**Note**: Tests are designed to run in Docker containers with proper environment setup. Running directly on host may fail due to missing dependencies or environment differences.
 
-Execute the complete test suite which will:
-- Install all tools via `run_once` scripts
-- Run all test cases
-- Create environment snapshot on success
+### From Docker Container
 
 ```bash
-make test-all
+# Enter container
+make dev
+
+# Run specific test
+bash tests/zellij-test.sh
 ```
 
-**Expected Result:**
-- All tests should pass
-- Environment snapshot should be created successfully
-- No errors related to GitHub API rate limits
-
-### Step 3: Verify GitHub API Authentication
-
-Check if GitHub API authentication is working correctly:
+### Manual Docker Run
 
 ```bash
-docker run --rm \
-  -v "$(pwd):/workspace" -w /workspace \
-  -v dotfiles-state:/root/.config/chezmoi \
-  -v cargo-data:/root/.cargo \
-  -v rustup-data:/root/.rustup \
-  -v env-snapshot:/root/.local/share/env-snapshot \
-  -v "$HOME/.config/gh:/root/.config/gh:ro" \
-  -e GITHUB_TOKEN="$(gh auth token 2>/dev/null || echo '')" \
-  dotfiles-test:ubuntu24.04 \
-  bash -lc 'if [ -n "${GITHUB_TOKEN:-}" ]; then \
-    echo "✓ Using authenticated requests (5000/hour limit)"; \
-    curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/rate_limit | \
-    jq "{remaining: .rate.remaining, limit: .rate.limit}"; \
-  else \
-    echo "⚠ Using unauthenticated requests (60/hour limit)"; \
-    curl -s https://api.github.com/rate_limit | \
-    jq "{remaining: .rate.remaining, limit: .rate.limit}"; \
-  fi'
-```
-
-**Expected Result:**
-- If `gh` is authenticated on host: `limit: 5000, remaining: 4995+`
-- If `gh` is not authenticated: `limit: 60, remaining: 50+`
-
-### Step 4: Verify Tool Installation
-
-Check that all expected tools are installed:
-
-```bash
-docker run --rm \
-  -v "$(pwd):/workspace" -w /workspace \
-  -v dotfiles-state:/root/.config/chezmoi \
-  -v cargo-data:/root/.cargo \
-  -v rustup-data:/root/.rustup \
-  -v env-snapshot:/root/.local/share/env-snapshot \
-  -v "$HOME/.config/gh:/root/.config/gh:ro" \
-  -e GITHUB_TOKEN="$(gh auth token 2>/dev/null || echo '')" \
-  dotfiles-test:ubuntu24.04 \
-  bash -lc 'bash scripts/apply-container.sh > /dev/null 2>&1 && \
-    echo "=== Installed Tools ===" && \
-    ls -1 ~/.local/bin/ | sort && \
-    echo "" && \
-    echo "=== Tool Count ===" && \
-    echo "Total: $(ls -1 ~/.local/bin/ | wc -l) tools"'
-```
-
-### Step 5: Verify Tool Versions
-
-Verify that each tool can be executed and shows version information:
-
-```bash
-docker run --rm \
-  -v "$(pwd):/workspace" -w /workspace \
-  -v dotfiles-state:/root/.config/chezmoi \
-  -v cargo-data:/root/.cargo \
-  -v rustup-data:/root/.rustup \
-  -v env-snapshot:/root/.local/share/env-snapshot \
-  -v "$HOME/.config/gh:/root/.config/gh:ro" \
-  -e GITHUB_TOKEN="$(gh auth token 2>/dev/null || echo '')" \
-  dotfiles-test:ubuntu24.04 \
-  bash -lc 'bash scripts/apply-container.sh > /dev/null 2>&1 && \
-    echo "=== Tool Versions ===" && \
-    for tool in ~/.local/bin/*; do \
-      if [ -f "$tool" ] && [ -x "$tool" ]; then \
-        tool_name=$(basename "$tool"); \
-        version=$("$tool" --version 2>&1 | head -1 || echo "N/A"); \
-        echo "✓ $tool_name: $version"; \
-      fi; \
-    done'
-```
-
-**Expected Result:**
-- All tools should show version information
-- No "N/A" messages
-
-### Step 6: Verify PATH Configuration
-
-Check that PATH is correctly configured to include tool directories:
-
-```bash
-docker run --rm \
-  -v "$(pwd):/workspace" -w /workspace \
-  -v dotfiles-state:/root/.config/chezmoi \
-  -v cargo-data:/root/.cargo \
-  -v rustup-data:/root/.rustup \
-  -v env-snapshot:/root/.local/share/env-snapshot \
-  -v "$HOME/.config/gh:/root/.config/gh:ro" \
-  -e GITHUB_TOKEN="$(gh auth token 2>/dev/null || echo '')" \
-  dotfiles-test:ubuntu24.04 \
-  bash -lc 'bash scripts/apply-container.sh > /dev/null 2>&1 && \
-    source ~/.bash_profile && \
-    echo "=== PATH Configuration ===" && \
-    echo "$PATH" | tr ":" "\n" | grep -E "(local/bin|cargo/bin)" && \
-    echo "" && \
-    echo "=== Tool Availability in PATH ===" && \
-    for tool in ~/.local/bin/*; do \
-      if [ -f "$tool" ] && [ -x "$tool" ]; then \
-        tool_name=$(basename "$tool"); \
-        if command -v "$tool_name" >/dev/null 2>&1; then \
-          echo "✓ $tool_name: available in PATH"; \
-        else \
-          echo "✗ $tool_name: NOT in PATH"; \
-        fi; \
-      fi; \
-    done'
-```
-
-**Expected Result:**
-- `~/.local/bin` and `~/.cargo/bin` should be in PATH
-- All tools should be available via `command -v`
-
-### Step 7: Verify Configuration Files
-
-Check that configuration files are correctly deployed:
-
-```bash
-docker run --rm \
-  -v "$(pwd):/workspace" -w /workspace \
-  -v dotfiles-state:/root/.config/chezmoi \
-  -v cargo-data:/root/.cargo \
-  -v rustup-data:/root/.rustup \
-  -v env-snapshot:/root/.local/share/env-snapshot \
-  -v "$HOME/.config/gh:/root/.config/gh:ro" \
-  -e GITHUB_TOKEN="$(gh auth token 2>/dev/null || echo '')" \
-  dotfiles-test:ubuntu24.04 \
-  bash -lc 'bash scripts/apply-container.sh > /dev/null 2>&1 && \
-    echo "=== Configuration Files ===" && \
-    echo "Bash config:" && \
-    test -f ~/.bashrc && echo "  ✓ ~/.bashrc exists" || echo "  ✗ ~/.bashrc missing" && \
-    test -f ~/.bash_profile && echo "  ✓ ~/.bash_profile exists" || echo "  ✗ ~/.bash_profile missing" && \
-    test -d ~/.bashrc.d && echo "  ✓ ~/.bashrc.d exists" || echo "  ✗ ~/.bashrc.d missing" && \
-    echo "" && \
-    echo "Tool configs:" && \
-    test -f ~/.config/starship.toml && echo "  ✓ starship.toml exists" || echo "  ✗ starship.toml missing" && \
-    test -f ~/.config/zellij/config.kdl && echo "  ✓ zellij/config.kdl exists" || echo "  ✗ zellij/config.kdl missing"'
-```
-
-### Step 8: Verify Snapshot Creation
-
-Check that environment snapshot was created correctly:
-
-```bash
-docker run --rm \
-  -v "$(pwd):/workspace" -w /workspace \
-  -v dotfiles-state:/root/.config/chezmoi \
-  -v cargo-data:/root/.cargo \
-  -v rustup-data:/root/.rustup \
-  -v env-snapshot:/root/.local/share/env-snapshot \
-  -v "$HOME/.config/gh:/root/.config/gh:ro" \
-  -e GITHUB_TOKEN="$(gh auth token 2>/dev/null || echo '')" \
-  dotfiles-test:ubuntu24.04 \
-  bash -lc 'bash scripts/apply-container.sh > /dev/null 2>&1 && \
-    bash scripts/create-snapshot.sh && \
-    echo "=== Snapshot Files ===" && \
-    ls -lh ~/.local/share/env-snapshot/ && \
-    echo "" && \
-    echo "=== Snapshot Contents ===" && \
-    echo "Local bin files: $(wc -l < ~/.local/share/env-snapshot/local-bin-files.txt)" && \
-    echo "Cargo bin files: $(wc -l < ~/.local/share/env-snapshot/cargo-bin-files.txt)" && \
-    echo "Config items: $(wc -l < ~/.local/share/env-snapshot/config-structure.txt)" && \
-    echo "Apt packages: $(wc -l < ~/.local/share/env-snapshot/apt-packages.txt)"'
-```
-
-### Step 9: Verify Reset Functionality
-
-Test the reset functionality to ensure it works correctly:
-
-```bash
-# First, manually install a test tool
 docker run --rm -it \
   -v "$(pwd):/workspace" -w /workspace \
   -v dotfiles-state:/root/.config/chezmoi \
@@ -407,153 +282,240 @@ docker run --rm -it \
   -v "$HOME/.config/gh:/root/.config/gh:ro" \
   -e GITHUB_TOKEN="$(gh auth token 2>/dev/null || echo '')" \
   dotfiles-test:ubuntu24.04 \
-  bash -lc 'bash scripts/apply-container.sh > /dev/null 2>&1 && \
-    echo "test-tool" > ~/.local/bin/test-tool && \
-    chmod +x ~/.local/bin/test-tool && \
-    echo "Created test-tool" && \
-    ls -1 ~/.local/bin/ | grep test-tool'
-
-# Then reset and verify it's removed
-make reset
-
-# Verify test-tool is removed
-docker run --rm \
-  -v "$(pwd):/workspace" -w /workspace \
-  -v dotfiles-state:/root/.config/chezmoi \
-  -v cargo-data:/root/.cargo \
-  -v rustup-data:/root/.rustup \
-  -v env-snapshot:/root/.local/share/env-snapshot \
-  -v "$HOME/.config/gh:/root/.config/gh:ro" \
-  -e GITHUB_TOKEN="$(gh auth token 2>/dev/null || echo '')" \
-  dotfiles-test:ubuntu24.04 \
-  bash -lc 'bash scripts/reset-manual-installs.sh && \
-    if [ -f ~/.local/bin/test-tool ]; then \
-      echo "✗ test-tool still exists (reset failed)"; \
-    else \
-      echo "✓ test-tool removed (reset successful)"; \
-    fi'
+  bash -lc 'bash scripts/apply-container.sh && bash tests/zellij-test.sh'
 ```
 
-### Step 10: Interactive Verification
+## Test Structure
 
-Enter the container interactively to manually verify tools:
+### Test File Naming
+
+- **Pattern**: `tests/*-test.sh`
+- **Examples**: `tests/zellij-test.sh`, `tests/bash-config-test.sh`, `tests/cargo-test.sh`
+
+### Test File Structure
 
 ```bash
-make dev
+#!/usr/bin/env bash
+# Test description
+# Usage: bash tests/tool-test.sh
+
+set -euo pipefail
+
+# Import test helpers
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/helpers.sh"
+
+echo "=========================================="
+echo "Testing tool-name"
+echo "=========================================="
+
+# Test 1: Installation check
+assert_executable "tool" "tool installed"
+
+# Test 2: Version check
+assert_command "tool --version" "tool version prints"
+
+# Test 3: Configuration file check
+assert_file_exists "$HOME/.config/tool/config" "tool config file exists"
+
+# Test 4: Functionality test
+assert_command "tool --help" "tool help works"
+
+# Print summary
+print_summary
 ```
 
-Inside the container, verify:
+### Test Helpers
 
-```bash
-# Check PATH
-echo $PATH | grep -E "(local/bin|cargo/bin)"
+**Location**: `tests/lib/helpers.sh`
 
-# Test tools interactively
-# Run --version for installed tools to verify they work
+**Common functions**:
 
-# Check configuration files
-cat ~/.bashrc | head -20
-cat ~/.config/starship.toml | head -20
-cat ~/.config/zellij/config.kdl | head -20
-```
+- `pass "message"`: Record test success (increments `TEST_PASS` counter)
+- `fail "message"`: End script immediately with error (fail-fast, exit 1)
+- `warn "message"`: Non-fatal warning (increments `TEST_WARN` counter, does not exit)
+- `assert_command "cmd" ["desc"] ["quiet"]`: Assert command succeeds (exit code 0)
+  - `quiet`: If `"true"`, suppress output in error message (default: `false`)
+- `assert_file_exists "path" ["desc"]`: Assert file exists
+- `assert_executable "cmd" ["desc"]`: Assert command exists in PATH (`command -v`)
+- `assert_string_contains "actual" "expected" ["desc"]`: Assert string contains substring
+- `assert_command_fails "cmd" ["desc"] ["expected_exit"]`: Assert command fails (non-zero exit code)
+  - `expected_exit`: Optional, specific exit code to expect (default: any non-zero)
+- `assert_exit_code "cmd" "expected_exit" ["desc"]`: Assert command returns specific exit code
+- `assert_output_contains "cmd" "expected" ["desc"]`: Assert command output contains string
+- `print_summary`: Print test summary (pass count, warn count, total)
 
-### Quick Verification Checklist
+**Global variables**:
+- `TEST_PASS`: Pass counter (incremented by `pass`)
+- `TEST_WARN`: Warning counter (incremented by `warn`)
 
-Use this checklist for quick verification:
+**Color codes** (disabled when not a TTY):
+- `RED`, `GREEN`, `YELLOW`, `NC` (No Color)
 
-- [ ] `make test-all` passes without errors
-- [ ] GitHub API authentication working (5000/hour limit if authenticated)
-- [ ] All tools installed in `~/.local/bin`
-- [ ] All tools show version information
-- [ ] PATH includes `~/.local/bin` and `~/.cargo/bin`
-- [ ] All tools available via `command -v`
-- [ ] Configuration files exist (`~/.bashrc`, `~/.bash_profile`, `~/.config/starship.toml`, `~/.config/zellij/config.kdl`)
-- [ ] Environment snapshot created successfully
-- [ ] Reset functionality works correctly
-- [ ] Interactive shell works (`make dev`)
+**Error handling**:
+- Tests use `set -euo pipefail` for strict error checking
+- `fail()` immediately exits with code 1 (fail-fast)
+- `warn()` does not exit (non-fatal)
+
+### Test Standards
+
+For personal chezmoi dotfiles management, we use a 3-level testing standard:
+
+#### Level 1: Basic Verification (Minimum)
+
+**Required for all tools:**
+- Installation check: `assert_executable "tool"`
+- Version check: `assert_command "tool --version"`
+- Config file existence check (if managed by chezmoi): `assert_file_exists "$HOME/.config/tool/config"`
+
+#### Level 2: Functionality Verification (Recommended)
+
+**Level 1 + add:**
+- Basic functionality test (one main feature)
+- Config file validation (if managed by chezmoi, e.g., `zellij setup --check`)
+
+#### Level 3: Detailed Verification (Only when needed)
+
+**Level 2 + add:**
+- Integration test (e.g., git integration for delta)
+- Error handling test (verify it doesn't crash on invalid input)
+
+**Guidelines**:
+- Level 1 is mandatory for all tools
+- Level 2 is recommended for tools with configuration files
+- Level 3 is only for tools that require complex integration testing
+- Test execution time should be reasonable (Level 1: <1 second, Level 2: 1-2 seconds, Level 3: <10 seconds per test)
+
+## Makefile Targets
+
+### `make test`
+
+**Purpose**: Change detection test (default, frequently used)
+
+**Process**:
+1. Builds Docker image if needed
+2. Runs `scripts/apply-container.sh` in container
+3. Detects changed files via `scripts/detect-changes.sh`
+4. Runs affected tests (or all tests if no changes detected)
+5. Records results via `scripts/record-test-results.sh`
+6. Exits with code 1 if any test fails (FAIL), code 0 if all pass (WARN is non-fatal)
+
+**Performance measurement**:
+- Logs execution time for `apply-container.sh` and each test
+- Logs stored in `~/.cache/test-logs/` (container path)
+- Results stored in JSONL format (`TEST_RESULTS_JSONL` environment variable)
+
+### `make test-all`
+
+**Purpose**: Run all tests regardless of changes
+
+**Process**:
+1. Builds Docker image if needed
+2. Runs `scripts/apply-container.sh` in container
+3. Runs all test files (`tests/*-test.sh`)
+4. Creates environment snapshot on success (no FAIL) via `scripts/create-snapshot.sh`
+5. Records results via `scripts/record-test-results.sh`
+6. Optionally saves baseline if `BASELINE=1` is set
+
+**Snapshot creation**:
+- Only created if all tests pass (no FAIL)
+- Snapshot location: `~/.local/share/env-snapshot/` (Docker volume: `env-snapshot`)
+- Used by `make reset` to detect manually installed tools
+
+### `make test-all BASELINE=1`
+
+**Purpose**: Run all tests and save baseline
+
+**Process**:
+- Same as `make test-all`, but also saves results to `baseline.json`
+
+### `make dev`
+
+**Purpose**: Interactive development shell
+
+**Process**:
+1. Builds Docker image if needed
+2. Runs `scripts/apply-container.sh` in container
+3. Drops into interactive login shell (`bash -l`)
+
+**Use cases**:
+- Manual testing and debugging
+- Verifying configuration changes
+- Testing tool installations
+
+**Exit code**: 130 (SIGINT) is treated as success (Ctrl+C to exit)
+
+### `make clean`
+
+**Purpose**: Remove persistent Docker volumes
+
+**Usage**:
+- `make clean`: Remove volumes (next `make dev` or `make test` will rebuild)
+- `make clean REBUILD=1`: Remove volumes and rebuild environment (complete reset)
+
+**Volumes removed**:
+- `dotfiles-state`: chezmoi state
+- `cargo-data`: Rust cargo cache
+- `rustup-data`: Rust toolchain data
+- `env-snapshot`: Environment snapshots
+- `vim-data`: Vim plugins
+
+### `make reset`
+
+**Purpose**: Reset manual installations while preserving chezmoi state
+
+**Process**:
+1. Compares current state with snapshot (via `scripts/reset-manual-installs.sh`)
+2. Removes manually installed tools (files in `~/.local/bin` or `~/.cargo/bin` not in snapshot)
+3. Preserves chezmoi-managed state
+
+**Use cases**:
+- Remove manually installed tools after testing
+- Return to clean state A (after state B = A + manually installed tools)
+
+## Docker Environment
+
+### Volumes
+
+Persistent Docker volumes for state management:
+
+- **`dotfiles-state`**: chezmoi state (`~/.config/chezmoi`)
+- **`cargo-data`**: Rust cargo cache (`~/.cargo`)
+- **`rustup-data`**: Rust toolchain data (`~/.rustup`)
+- **`env-snapshot`**: Environment snapshots (`~/.local/share/env-snapshot`)
+- **`vim-data`**: Vim plugins (`~/.vim`)
+
+**Benefits**:
+- Faster test execution (cached installations)
+- Incremental testing (only installs new tools)
+- State preservation across container runs
+
+### Image
+
+**Base image**: `dotfiles-test:ubuntu24.04` (built from `Dockerfile`)
+
+**Contents**:
+- Ubuntu 24.04
+- Essential tools: `git`, `curl`, `bash-completion`
+- Locales: `en_US.UTF-8`
+- Pre-installed chezmoi (via installation script in Dockerfile)
+
+### GitHub Authentication
+
+**Purpose**: Higher API rate limits for GitHub API requests (5000/hour vs 60/hour unauthenticated)
+
+**Implementation**:
+- Mounts `~/.config/gh` from host (read-only) if available
+- Passes `GITHUB_TOKEN` environment variable from host (`gh auth token`)
+- Used by tools like `gh` CLI and `ghq` during installation
 
 ## Troubleshooting
 
-### Tools Not Found After Installation
-
-**Symptoms:**
-- `command not found` errors
-- Tools exist in `~/.local/bin` but not in PATH
-
-**Solution:**
-```bash
-# Verify PATH is set correctly
-source ~/.bash_profile
-echo $PATH
-
-# Manually add to PATH if needed
-export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
-```
-
-### GitHub API Rate Limit Errors
-
-**Symptoms:**
-- `403` or `429` errors during installation
-- "rate limit" error messages
-
-**Solution:**
-1. Check if `gh` is authenticated on host:
-   ```bash
-   gh auth status
-   ```
-
-2. Verify GITHUB_TOKEN is passed to container:
-   ```bash
-   docker run --rm ... -e GITHUB_TOKEN="$(gh auth token)" ... \
-     bash -lc 'echo "Token: ${GITHUB_TOKEN:0:10}..."'
-   ```
-
-3. Wait for rate limit to reset:
-   ```bash
-   curl -s https://api.github.com/rate_limit | jq '.rate.reset'
-   ```
-
-### Chezmoi State Conflicts
-
-**Symptoms:**
-- Scripts marked as executed but tools not installed
-- Lock contention errors
-
-**Solution:**
-```bash
-# Clean chezmoi state
-make clean
-
-# Rebuild from scratch
-make test-all
-```
-
-### Snapshot Not Created
-
-**Symptoms:**
-- `make test-all` passes but snapshot directory is empty
-
-**Solution:**
-```bash
-# Manually create snapshot
-docker run --rm \
-  -v "$(pwd):/workspace" -w /workspace \
-  -v env-snapshot:/root/.local/share/env-snapshot \
-  dotfiles-test:ubuntu24.04 \
-  bash -lc 'bash scripts/create-snapshot.sh'
-```
-
 ### Change Detection Not Working
 
-**Problem**: `make test` runs all tests even when files changed
+**Symptoms**: `make test` always runs all tests
 
-**Possible causes**:
-1. Not in a git repository
-2. `jq` not installed (required for JSON parsing)
-3. `.test-mapping.json` not found
-4. Pattern matching issue
-
-**Solution**:
+**Solutions**:
 ```bash
 # Check if in git repo
 git rev-parse --git-dir
@@ -563,430 +525,128 @@ command -v jq
 
 # Check mapping file
 cat .test-mapping.json
+
+# Enable debug output
+DEBUG_DETECT_CHANGES=1 make test
 ```
+
+**Common causes**:
+- Not in git repository (Docker with git worktrees)
+- `jq` not installed
+- No changes detected (runs all tests as safe default)
 
 ### Tests Not Running
 
-**Problem**: Specific test not running when file changes
+**Symptoms**: Tests fail to execute or hang
 
-**Possible causes**:
-1. Pattern not matching in `.test-mapping.json`
-2. Test file doesn't exist
-3. Git diff not detecting changes
-
-**Solution**:
+**Solutions**:
 ```bash
 # Check what files changed
 git diff --name-only HEAD
 
-# Check mapping
-jq '.mappings[] | select(.pattern | contains("zellij"))' .test-mapping.json
+# Check if test file exists
+ls -la tests/zellij-test.sh
 
 # Manually run test
 bash tests/zellij-test.sh
+
+# Check Docker container
+make dev
 ```
+
+**Common causes**:
+- Test file missing or not executable
+- Docker container issues
+- Missing dependencies in test environment
 
 ### Baseline Not Found
 
-**Problem**: `compare-test-results.sh` fails with "Baseline file not found"
+**Symptoms**: `bash scripts/compare-test-results.sh` fails with "Baseline file not found"
 
-**Solution**:
+**Solutions**:
 ```bash
 # Create baseline
 make test-all BASELINE=1
+
+# Verify baseline exists
+ls -la .test-results/baseline.json
 ```
 
-### Test Results Not Recorded
+### Docker Container Hangs
 
-**Problem**: Test results not saved to `.test-results/`
+**Symptoms**: `make dev` or `make test` hangs
 
-**Possible causes**:
-1. Directory not writable
-2. Script not executed
-3. JSON parsing error
-
-**Solution**:
+**Solutions**:
 ```bash
-# Check directory permissions
-ls -la .test-results/
+# Stop all running containers
+docker ps -q | xargs -r docker stop
 
-# Manually record results
-bash scripts/record-test-results.sh
+# Check GitHub API rate limit
+curl -s https://api.github.com/rate_limit | jq '.rate'
+
+# Clean and rebuild
+make clean REBUILD=1
+```
+
+**Common causes**:
+- GitHub API rate limit exceeded (check with `gh auth status`)
+- Docker volume lock issues
+- Network connectivity issues
+
+### Test Failures
+
+**Symptoms**: Tests fail with unclear error messages
+
+**Solutions**:
+```bash
+# Check test log file (from test output)
+cat /path/to/test-log-file
+
+# Run test manually with verbose output
+bash -x tests/zellij-test.sh
+
+# Check environment in container
+make dev
+# Then: command -v tool, echo $PATH, etc.
+```
+
+### Snapshot Issues
+
+**Symptoms**: `make reset` doesn't work correctly
+
+**Solutions**:
+```bash
+# Check if snapshot exists
+docker run --rm -v env-snapshot:/snapshot -it ubuntu:24.04 ls -la /snapshot
+
+# Recreate snapshot
+make test-all  # Creates snapshot on success
+
+# Verify snapshot contents
+docker run --rm -v env-snapshot:/snapshot -it ubuntu:24.04 cat /snapshot/timestamp.txt
 ```
 
 ## Best Practices
 
-1. **Use `make test` for daily development**: Fast feedback on changes
-2. **Use `make test-all` before commits**: Ensure all tests pass
-3. **Update baseline after major changes**: `make test-all BASELINE=1`
-4. **Compare results regularly**: Check for regressions
-5. **Follow verification procedures**: Use the verification steps above to ensure everything is working correctly
-
-## Workflow Examples
-
-### Daily Development
-
-```bash
-# 1. Make changes
-vim home/dot_config/zellij/config.kdl.tmpl
-
-# 2. Run change detection test
-make test
-# Only runs zellij-test.sh
-
-# 3. If all pass, commit
-git add home/dot_config/zellij/config.kdl.tmpl
-git commit -m "Update zellij config"
-```
-
-### Major Changes
-
-```bash
-# 1. Make major changes
-vim home/dot_bashrc.tmpl
-vim home/run_once_265-terminal-zellij.sh.tmpl
-
-# 2. Run all tests
-make test-all
-# Runs all tests, creates snapshot
-
-# 3. Update baseline
-make test-all BASELINE=1
-
-# 4. Compare with previous baseline
-bash scripts/compare-test-results.sh
-```
-
-### Initial Setup
-
-```bash
-# 1. Build image
-make build
-
-# 2. Run all tests
-make test-all
-# Installs all tools, runs all tests, creates snapshot
-
-# 3. Create baseline
-make test-all BASELINE=1
-
-# 4. Verify
-bash scripts/verify-baseline.sh
-```
-
-## Test Suite Structure
-
-This section explains the test suite structure for developers who want to add or modify tests.
-
-### Directory Structure
-
-```
-tests/
-├── *-test.sh                   # Individual test files for each tool/component
-└── lib/
-    └── helpers.sh              # Common test functions and utilities
-```
-
-### Running Single Tests
-
-You can run individual test files directly:
-
-```bash
-# Cargo test only
-bash tests/cargo-test.sh
-
-# Or from within container (with persistent volumes)
-docker run --rm -it \
-  -v "$(pwd):/workspace" -w /workspace \
-  -v dotfiles-state:/root/.config/chezmoi \
-  -v cargo-data:/root/.cargo \
-  -v rustup-data:/root/.rustup \
-  -v env-snapshot:/root/.local/share/env-snapshot \
-  -v "$HOME/.config/gh:/root/.config/gh:ro" \
-  -e GITHUB_TOKEN="$(gh auth token 2>/dev/null || echo '')" \
-  dotfiles-test:ubuntu24.04 \
-  bash -lc 'bash scripts/apply-container.sh && bash tests/cargo-test.sh'
-```
-
-### Running All Tests Manually
-
-```bash
-for test in tests/*-test.sh; do bash "$test"; done
-```
-
-## Common Test Functions (helpers.sh)
-
-`tests/lib/helpers.sh` defines common functions:
-
-| Function | Purpose | Usage Example |
-|----------|---------|---------------|
-| `pass "message"` | Record test success | `pass "cargo installed"` |
-| `fail "message"` | End script immediately (fail-fast) | `fail "rustc not found"` |
-| `warn "message"` | Non-fatal warning | `warn "Version outdated"` |
-| `assert_command "cmd" ["desc"] [quiet]` | Assert command success | `assert_command "rustc --version"` or `assert_command "cmd" "desc" "true"` (quiet mode) |
-| `assert_file_exists "path" ["desc"]` | Assert file existence | `assert_file_exists "$HOME/.cargo/bin/rustc"` |
-| `assert_executable "cmd" ["desc"]` | Assert command exists in PATH | `assert_executable "rustc"` |
-| `assert_string_contains "actual" "expected" ["desc"]` | Assert string contains substring | `assert_string_contains "$PATH" "$HOME/.local/bin"` |
-| `assert_command_fails "cmd" ["desc"] [expected_exit]` | Assert command fails | `assert_command_fails "false" "should fail"` |
-| `assert_exit_code "cmd" expected_exit ["desc"]` | Assert exit code | `assert_exit_code "bash -c \"exit 2\"" 2` |
-| `assert_output_contains "cmd" "expected" ["desc"]` | Assert command output contains substring | `assert_output_contains "echo hi" "hi"` |
-| `setup_tmpdir` | Create temporary directory for tests | `tmpdir=$(setup_tmpdir)` |
-| `print_summary` | Display test result summary | `print_summary` |
-
-## Guidelines for Adding Tests
-
-When adding new test scripts:
-
-1. **Naming Convention**: Use `*-test.sh` suffix (e.g., `docker-test.sh`)
-2. **Load helpers.sh**:
-   ```bash
-   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-   source "$SCRIPT_DIR/lib/helpers.sh"
-   ```
-
-3. **Use helper functions**:
-   ```bash
-   # Test content
-   assert_command "docker --version" "Docker installed"
-   assert_file_exists "/usr/bin/docker" "Docker binary exists"
-   ```
-
-4. **Optional summary**:
-   ```bash
-   # At end of script
-   print_summary
-   ```
-
-5. **Exit handling**: `fail()` calls `exit 1` (fail-fast), so tests stop at the first failure within the test file.
-
-## Test Design Principles
-
-- **Independent**: Each test script runs independently
-- **Concise**: 1 test script = 1 feature/area tested
-- **Idempotent**: Can run multiple times without side effects
-- **Fast**: Minimize execution time (especially important for CI)
-- **Fail-fast**: Prefer early exit on failure (clear and deterministic)
-- **Stable logs**: Test helper output is prefixed with `[TEST]` (e.g., `[TEST] PASS:` / `[TEST] WARN:`) so automation can count warnings reliably.
-
-## Test Standards
-
-For personal chezmoi dotfiles management, we use a 3-level testing standard to balance thoroughness with maintainability:
-
-### Level 1: Basic Verification (Minimum)
-
-**Required for all tools:**
-- Installation check: `assert_executable "tool"`
-- Version check: `assert_command "tool --version"`
-- Config file existence check (if managed by chezmoi): `assert_file_exists "$HOME/.config/tool/config"`
-
-**Target tools**: Simple tools (btop, lazygit, lazydocker, yq, chezmoi, prerequisites, node, uv, github-tools, yazi, etc.)
-
-**Example:**
-```bash
-assert_executable "btop" "btop installed"
-assert_command "btop --version" "btop version prints"
-assert_file_exists "$HOME/.config/btop/btop.conf" "btop config file deployed"
-```
-
-### Level 2: Functionality Verification (Recommended)
-
-**Level 1 + add:**
-- Basic functionality test (one): Test one main feature of the tool
-- Config file validation (if managed by chezmoi): Verify config file is valid
-
-**Target tools**: Tools where config files are important (zellij, starship, direnv, shellcheck, fzf, zoxide, etc.)
-
-**Note**: Each tool should have its own test file. For example:
-- `tests/zellij-test.sh` - Tests zellij installation and config validation
-- `tests/starship-test.sh` - Tests starship installation and config validation
-
-**Example:**
-```bash
-# Level 1 tests
-assert_executable "zellij" "zellij installed"
-assert_command "zellij --version" "zellij version prints"
-assert_file_exists "$HOME/.config/zellij/config.kdl" "zellij config file exists"
-
-# Level 2: Config validation
-zellij setup --check < /dev/null && pass "zellij config syntax is valid" || fail "zellij config has errors"
-```
-
-### Level 3: Detailed Verification (Only when needed)
-
-**Level 2 + add:**
-- Integration test (e.g., git integration)
-- Error handling test (verify it doesn't crash)
-
-**Target tools**: Tools requiring complex integration (delta, etc.)
-
-**Example:**
-```bash
-# Level 1 & 2 tests
-# ...
-
-# Level 3: Integration test
-git init -q
-echo "test" > file.txt
-git add file.txt
-git commit -q -m "test"
-assert_command "git diff | delta --color-only" "delta works with git"
-```
-
-### Tests to Exclude
-
-For personal environments, the following tests are excessive:
-- Multiple functionality tests (one is enough)
-- Detailed error handling tests (only verify it doesn't crash)
-- Project creation/build tests (except for development environment tools)
-- Multiple edge case tests
-
-### Guidelines for Adding New Tools
-
-When adding a new tool:
-1. Start with Level 1 (basic verification)
-2. Expand to Level 2 if config files are important
-3. Expand to Level 3 only if special integration is needed
-
-This keeps test maintenance overhead minimal while ensuring necessary verification.
-
-## Test Templates
-
-### Level 1 Template
-
-```bash
-#!/usr/bin/env bash
-# Test [tool name] installation
-# Usage: bash tests/[tool]-test.sh
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/lib/helpers.sh"
-
-echo "=========================================="
-echo "Testing [tool name]"
-echo "=========================================="
-
-# Ensure PATH includes tool location
-case ":$PATH:" in
-  *":$HOME/.local/bin:"*) : ;;
-  *) PATH="$HOME/.local/bin:$PATH" ;;
-esac
-
-# Level 1: Basic verification
-assert_executable "[tool]" "[tool] installed"
-assert_command "[tool] --version" "[tool] version prints"
-
-# Config file check (if managed by chezmoi)
-assert_file_exists "$HOME/.config/[tool]/config" "[tool] config file deployed"
-
-print_summary
-```
-
-### Level 2 Template
-
-```bash
-#!/usr/bin/env bash
-# Test [tool name] installation and functionality
-# Usage: bash tests/[tool]-test.sh
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/lib/helpers.sh"
-
-echo "=========================================="
-echo "Testing [tool name]"
-echo "=========================================="
-
-# Ensure PATH includes tool location
-case ":$PATH:" in
-  *":$HOME/.local/bin:"*) : ;;
-  *) PATH="$HOME/.local/bin:$PATH" ;;
-esac
-
-# Level 1: Basic verification
-assert_executable "[tool]" "[tool] installed"
-assert_command "[tool] --version" "[tool] version prints"
-assert_file_exists "$HOME/.config/[tool]/config" "[tool] config file exists"
-
-# Level 2: Config validation
-# Validate config using tool's built-in validation
-if command -v "[tool]" >/dev/null 2>&1; then
-  if [tool] --check-config 2>&1; then
-    pass "[tool] config is valid"
-  else
-    fail "[tool] config has errors"
-  fi
-fi
-
-# Level 2: Basic functionality test (one main feature)
-# Example: Test that tool can perform its main function
-assert_command "[tool] [basic-operation]" "[tool] can perform basic operation"
-
-print_summary
-```
-
-### Level 3 Template
-
-```bash
-#!/usr/bin/env bash
-# Test [tool name] installation, functionality, and integration
-# Usage: bash tests/[tool]-test.sh
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/lib/helpers.sh"
-
-echo "=========================================="
-echo "Testing [tool name]"
-echo "=========================================="
-
-# Ensure PATH includes tool location
-case ":$PATH:" in
-  *":$HOME/.local/bin:"*) : ;;
-  *) PATH="$HOME/.local/bin:$PATH" ;;
-esac
-
-# Level 1: Basic verification
-assert_executable "[tool]" "[tool] installed"
-assert_command "[tool] --version" "[tool] version prints"
-
-# Level 2: Config validation (if applicable)
-# ...
-
-# Level 3: Integration test
-# Example: Test integration with another tool
-tmprepo="$(setup_tmpdir)"
-trap 'rm -rf "$tmprepo"' EXIT
-cd "$tmprepo"
-
-# Setup integration environment
-# ...
-
-# Test integration
-assert_command "[tool] [integration-operation]" "[tool] works with integration"
-
-# Level 3: Error handling (verify it doesn't crash)
-set +e
-output=$([tool] --invalid-option 2>&1)
-exit_code=$?
-set -e
-if [ $exit_code -gt 1 ]; then
-  fail "[tool] crashed on invalid input (exit code: $exit_code)"
-else
-  pass "[tool] handles invalid input gracefully"
-fi
-
-print_summary
-```
-
-## Future Enhancements
-
-Potential future test additions:
-- Integration tests across multiple tools
-- Performance tests (startup time, PATH building performance)
-- Security tests (file permission checks, secure configuration verification)
-
-## Related Documentation
-
-- [README.md](../README.md): General repository information
-
+### Writing Tests
+
+1. **Use test helpers**: Always use functions from `tests/lib/helpers.sh` instead of raw assertions
+2. **Fail-fast**: Use `fail()` for critical errors (immediate exit)
+3. **Non-fatal warnings**: Use `warn()` for non-critical issues (does not exit)
+4. **Descriptive messages**: Provide clear descriptions in assertions
+5. **PATH handling**: Ensure PATH includes required directories (e.g., `~/.local/bin`, `~/.cargo/bin`)
+6. **Timeout handling**: Use `timeout` command for commands that may hang (e.g., `zellij setup --check`)
+
+### Test Execution
+
+1. **Change detection first**: Use `make test` during development (faster)
+2. **Full test suite**: Use `make test-all` before commits or releases
+3. **Baseline updates**: Update baseline after major changes (`make test-all BASELINE=1`)
+4. **Interactive debugging**: Use `make dev` for manual testing
+
+### Maintenance
+
+1. **Update mappings**: Add new test mappings to `.test-mapping.json` when adding new tools
+2. **Test standards**: Follow 3-level testing standard (Level 1 minimum, Level 2 recommended, Level 3 when needed)
+3. **Result analysis**: Regularly compare results with baseline to detect regressions
+4. **Snapshot management**: Recreate snapshots after major environment changes

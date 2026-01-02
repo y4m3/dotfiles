@@ -12,7 +12,7 @@ Concise notes focused on environment-specific behavior. See official docs for ge
 Managed by `run_once_110-runtimes-nodejs.sh.tmpl`:
 - Installs Volta and latest LTS Node.js
 - Installs npm, yarn, pnpm as needed
-- Shell integration defined in `home/dot_bashrc.d/40-runtimes.sh`
+- Shell integration defined in `home/dot_bashrc.d/200-runtimes.sh`
 
 ## Environment-specific Configuration
 
