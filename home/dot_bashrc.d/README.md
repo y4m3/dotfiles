@@ -8,19 +8,38 @@ Guiding principles
     configuration belongs in `~/.bashrc.local` or `~/.bashrc.$HOSTNAME`.
 - Files should be small shell snippets (typically `*.sh`) that perform
     safe, existence-checked initializations.
+- Files are numbered with 3-digit prefixes to ensure execution order.
+- One tool per file: each tool's configuration (environment variables, aliases,
+    initialization, completion) is kept in a single file for cohesion.
 
-Recommended repository-managed files (minimal):
+Numbering system
 
-- `10-user-preferences.sh` — personal preferences: editor, readline mode,
-    safety aliases. Intended as a per-user starting point.
-- `20-paths.sh` — PATH additions with deduplication logic.
-- `30-completion.sh` — shell completion setup (currently empty, ready for
-    bash-completion or fzf configuration).
-- `40-runtimes.sh` — language runtime initializers (pyenv/nvm/asdf),
-    kept minimal and conditional (currently empty, ready for runtime setup).
-- `60-utils.sh` — small interactive helpers and aliases (includes
-    optional `cd` → `ls` helper; enable via `ENABLE_CD_LS=1` in
-    `~/.bashrc.local`).
+Files are loaded in lexicographic (numerical) order:
+
+- **000-099**: Core functionality and foundation
+  - `000-aliases-helper.sh`: Helper functions for alias management
+  - `010-user-preferences.sh`: Basic environment variables and settings
+  - `020-paths.sh`: PATH management
+  - `030-security-permissions.sh`: Security settings (file permissions)
+
+- **100-199**: Tool configuration (one tool per file, sequential numbering)
+  - `100-eza.sh`: eza configuration
+  - `101-bat.sh`: bat configuration
+  - `102-ripgrep.sh`: ripgrep configuration
+  - `103-fd.sh`: fd configuration
+  - `105-direnv.sh`: direnv configuration
+  - `106-fzf.sh`: fzf configuration
+  - `107-completion.sh`: Other completion features (bash-completion, gh, etc.)
+
+- **200-299**: Runtime initialization
+  - `200-runtimes.sh`: Language runtime initialization (Rust, Node.js, Python, etc.)
+  - `299-zoxide.sh`: zoxide configuration (loaded last to avoid conflicts with other tools)
+
+Interactive vs non-interactive
+
+- Aliases are set only in interactive shells (using `is_interactive()` helper)
+- Environment variables needed by non-interactive scripts are set unconditionally
+- User-defined aliases in `~/.bashrc.local` take precedence (via `alias_if_not_set()`)
 
 Host-local and experimental helpers
 
@@ -35,13 +54,13 @@ Place the following in `~/.bashrc.local` to opt in:
 ENABLE_CD_LS=1
 ```
 
-The repository provides the implementation inside `60-utils.sh` but the
+The repository provides the implementation inside `299-zoxide.sh` but the
 feature is disabled by default so each host can opt in.
 
 Workflow
 
 1. This repo guarantees `~/.bashrc` and `~/.bashrc.d/` exist.
-2. Edit `~/.bashrc.d/10-user-preferences.sh` or create `~/.bashrc.local`
+2. Edit `~/.bashrc.d/010-user-preferences.sh` or create `~/.bashrc.local`
      for personal settings.
 3. Use `~/.bashrc.$HOSTNAME` for strict host-specific tweaks.
 
