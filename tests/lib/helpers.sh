@@ -17,46 +17,30 @@ else
   NC=''
 fi
 
-# Global test counters
+# Global test counters (best-effort; tests are fail-fast)
 TEST_PASS=0
-TEST_FAIL=0
 TEST_WARN=0
-
-# Array to store warning messages for summary display
-declare -a TEST_WARN_MESSAGES=()
-
-# Test log file (if TEST_LOG_FILE is set, all output will be logged there)
-TEST_LOG_FILE="${TEST_LOG_FILE:-}"
 
 # fail: Print error message and increment counter
 # Usage: fail "Error message"
 fail() {
-  echo -e "${RED}FAIL${NC}: $*" >&2
-  TEST_FAIL=$((TEST_FAIL + 1))
-  # Log to file if TEST_LOG_FILE is set
-  if [ -n "$TEST_LOG_FILE" ]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] FAIL: $*" >> "$TEST_LOG_FILE" 2>&1 || true
-  fi
+  echo -e "${RED}[TEST] FAIL${NC}: $*" >&2
+  # Fail-fast: stop immediately
+  exit 1
 }
 
 # pass: Print success message
 # Usage: pass "Success message"
 pass() {
-  echo -e "${GREEN}PASS${NC}: $*"
+  echo -e "${GREEN}[TEST] PASS${NC}: $*"
   TEST_PASS=$((TEST_PASS + 1))
 }
 
 # warn: Print warning message (non-fatal)
 # Usage: warn "Warning message"
 warn() {
-  echo -e "${YELLOW}WARN${NC}: $*" >&2
+  echo -e "${YELLOW}[TEST] WARN${NC}: $*" >&2
   TEST_WARN=$((TEST_WARN + 1))
-  # Store warning message for summary display
-  TEST_WARN_MESSAGES+=("$*")
-  # Log to file if TEST_LOG_FILE is set
-  if [ -n "$TEST_LOG_FILE" ]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN: $*" >> "$TEST_LOG_FILE" 2>&1 || true
-  fi
 }
 
 # assert_command: Assert that a command succeeds
@@ -69,8 +53,10 @@ assert_command() {
 
   local output
   local exit_code
+  set +e
   output=$(eval "$cmd" 2>&1)
   exit_code=$?
+  set -e
 
   if [ $exit_code -eq 0 ]; then
     pass "$desc"
@@ -147,8 +133,10 @@ assert_command_fails() {
 
   local output
   local exit_code
+  set +e
   output=$(eval "$cmd" 2>&1)
   exit_code=$?
+  set -e
 
   if [ $exit_code -eq 0 ]; then
     fail "$desc (command succeeded but should have failed: $cmd)"
@@ -168,8 +156,10 @@ assert_exit_code() {
 
   local output
   local exit_code
+  set +e
   output=$(eval "$cmd" 2>&1)
   exit_code=$?
+  set -e
 
   if [ $exit_code -eq "$expected_exit" ]; then
     pass "$desc"
@@ -194,8 +184,10 @@ assert_output_contains() {
 
   local output
   local exit_code
+  set +e
   output=$(eval "$cmd" 2>&1)
   exit_code=$?
+  set -e
 
   if echo "$output" | grep -qF "$expected"; then
     pass "$desc"
@@ -211,23 +203,17 @@ assert_output_contains() {
   fi
 }
 
-# print_summary: Print test summary
+# print_summary: Print test summary (best-effort)
 # Usage: print_summary
-# Determines success based on absence of FAIL and WARN
+# Note: Tests are fail-fast, so this is mainly for successful runs.
 print_summary() {
-  local total=$((TEST_PASS + TEST_FAIL))
+  local total=$((TEST_PASS + TEST_WARN))
   local test_script_name="${0:-unknown}"
-  local summary_msg=""
 
   echo ""
   echo "================================"
   echo "Test Summary:"
   echo "  Passed: ${GREEN}$TEST_PASS${NC}"
-  if [ $TEST_FAIL -gt 0 ]; then
-    echo "  Failed: ${RED}$TEST_FAIL${NC}"
-  else
-    echo "  Failed: ${GREEN}0${NC}"
-  fi
   if [ $TEST_WARN -gt 0 ]; then
     echo "  Warnings: ${YELLOW}$TEST_WARN${NC}"
   else
@@ -235,79 +221,12 @@ print_summary() {
   fi
   echo "  Total:  $total"
   echo "================================"
-
-  # Log summary to file if TEST_LOG_FILE is set
-  if [ -n "$TEST_LOG_FILE" ]; then
-    {
-      echo ""
-      echo "================================"
-      echo "Test Summary for $test_script_name:"
-      echo "  Passed: $TEST_PASS"
-      echo "  Failed: $TEST_FAIL"
-      echo "  Warnings: $TEST_WARN"
-      echo "  Total: $total"
-      echo "================================"
-    } >> "$TEST_LOG_FILE" 2>&1 || true
-  fi
-
-  # Test passes only if there are no FAIL (WARN is non-fatal)
-  if [ $TEST_FAIL -eq 0 ]; then
-    if [ $TEST_WARN -eq 0 ]; then
-      summary_msg="${GREEN}All tests passed! (No FAIL, No WARN)${NC}"
-      echo -e "$summary_msg"
-      if [ -n "$TEST_LOG_FILE" ]; then
-        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $test_script_name: All tests passed! (No FAIL, No WARN)" >> "$TEST_LOG_FILE" 2>&1 || true
-      fi
-    else
-      # TEST_WARN > 0 but TEST_FAIL == 0
-      summary_msg="${YELLOW}Tests passed with warnings! (WARN: $TEST_WARN)${NC}"
-      echo -e "$summary_msg"
-      echo ""
-      echo "${YELLOW}Warning Details:${NC}"
-      local i=1
-      for warn_msg in "${TEST_WARN_MESSAGES[@]}"; do
-        echo "  ${YELLOW}[$i]${NC} $warn_msg"
-        i=$((i + 1))
-      done
-      if [ -n "$TEST_LOG_FILE" ]; then
-        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $test_script_name: Tests passed with warnings! (WARN: $TEST_WARN)" >> "$TEST_LOG_FILE" 2>&1 || true
-        echo "" >> "$TEST_LOG_FILE" 2>&1 || true
-        echo "Warning Details:" >> "$TEST_LOG_FILE" 2>&1 || true
-        i=1
-        for warn_msg in "${TEST_WARN_MESSAGES[@]}"; do
-          echo "  [$i] $warn_msg" >> "$TEST_LOG_FILE" 2>&1 || true
-          i=$((i + 1))
-        done
-      fi
-    fi
-    exit 0
+  if [ $TEST_WARN -eq 0 ]; then
+    echo -e "${GREEN}$test_script_name: PASS (No WARN)${NC}"
   else
-    # TEST_FAIL > 0
-    summary_msg="${RED}Some tests failed! (FAIL: $TEST_FAIL)${NC}"
-    echo -e "$summary_msg"
-    if [ $TEST_WARN -gt 0 ]; then
-      echo ""
-      echo "${YELLOW}Warning Details (also occurred):${NC}"
-      local i=1
-      for warn_msg in "${TEST_WARN_MESSAGES[@]}"; do
-        echo "  ${YELLOW}[$i]${NC} $warn_msg"
-        i=$((i + 1))
-      done
-    fi
-    if [ -n "$TEST_LOG_FILE" ]; then
-      echo "[$(date '+%Y-%m-%d %H:%M:%S')] $test_script_name: Some tests failed! (FAIL: $TEST_FAIL)" >> "$TEST_LOG_FILE" 2>&1 || true
-      if [ $TEST_WARN -gt 0 ]; then
-        echo "" >> "$TEST_LOG_FILE" 2>&1 || true
-        echo "Warning Details (also occurred):" >> "$TEST_LOG_FILE" 2>&1 || true
-        i=1
-        for warn_msg in "${TEST_WARN_MESSAGES[@]}"; do
-          echo "  [$i] $warn_msg" >> "$TEST_LOG_FILE" 2>&1 || true
-          i=$((i + 1))
-        done
-      fi
-    fi
-    exit 1
+    echo -e "${YELLOW}$test_script_name: PASS (WARN: $TEST_WARN)${NC}"
   fi
+  exit 0
 }
 
 # Create temporary directory with cleanup trap
@@ -318,4 +237,4 @@ setup_tmpdir() {
   echo "$tmpdir"
 }
 
-export RED GREEN YELLOW NC TEST_PASS TEST_FAIL TEST_WARN TEST_LOG_FILE
+export RED GREEN YELLOW NC TEST_PASS TEST_WARN
