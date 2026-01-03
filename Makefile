@@ -322,11 +322,17 @@ lint: build-lint
 	@echo "==> Running shellcheck on all shell scripts..."
 	@$(DOCKER_RUN_BASE_USER) $(IMAGE_LINT) \
 	  shellcheck -e SC1090,SC1091 \
-	             home/run_once_*.sh.tmpl \
 	             home/dot_bashrc.d/*.sh \
 	             home/dot_bash_prompt.d/*.sh \
 	             scripts/*.sh \
 	             tests/*.sh tests/lib/*.sh
+	@echo "==> Running shellcheck on .chezmoiscripts (template-aware)..."
+	@$(DOCKER_RUN_BASE_USER) $(IMAGE_LINT) bash -c '\
+	  for f in home/.chezmoiscripts/*.sh.tmpl; do \
+	    if ! sed "/^{{-.*-}}$$/d" "$$f" | shellcheck -e SC1090,SC1091 -; then \
+	      echo "shellcheck failed: $$f"; exit 1; \
+	    fi; \
+	  done'
 	@echo "✓ All shell scripts passed shellcheck"
 
 # format: Format all shell scripts with shfmt
@@ -335,10 +341,16 @@ lint: build-lint
 format: build-lint
 	@echo "==> Formatting shell scripts with shfmt..."
 	@$(DOCKER_RUN_BASE_USER) $(IMAGE_LINT) \
-	  shfmt -w home/run_once_*.sh.tmpl \
-	           home/dot_bashrc.d/*.sh \
+	  shfmt -w home/dot_bashrc.d/*.sh \
 	           home/dot_bash_prompt.d/*.sh \
 	           scripts/*.sh \
 	           tests/*.sh tests/lib/*.sh
+	@echo "==> Formatting .chezmoiscripts (preserving template guards)..."
+	@$(DOCKER_RUN_BASE_USER) $(IMAGE_LINT) bash -c '\
+	  for f in home/.chezmoiscripts/*.sh.tmpl; do \
+	    head -1 "$$f" > "$$f.tmp"; \
+	    tail -n +2 "$$f" | head -n -1 | shfmt >> "$$f.tmp"; \
+	    tail -1 "$$f" >> "$$f.tmp"; \
+	    mv "$$f.tmp" "$$f"; \
+	  done'
 	@echo "✓ Shell scripts formatted"
-	@echo "  Next 'make dev' or 'make test' will re-run all run_once_* scripts."

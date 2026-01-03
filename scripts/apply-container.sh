@@ -4,6 +4,10 @@ set -euo pipefail
 SRC=${1:-/workspace}
 DEST=${2:-/root}
 
+# Initialize chezmoi configuration
+# This generates ~/.config/chezmoi/chezmoi.toml from .chezmoi.toml.tmpl
+chezmoi init --source="$SRC"
+
 # Apply dotfiles configuration
 # Clean up any stale lock files
 if [ -d "$HOME/.config/chezmoi" ]; then
@@ -39,41 +43,6 @@ fi
 # Also ensure common paths are in PATH (in case .bash_profile doesn't load .bashrc)
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:${PATH:-}"
 
-# Execute run_once_* scripts that haven't been executed yet
-echo "==> Checking and executing run_once scripts..."
-
-for script in "$SRC"/home/run_once_[0-9]*.sh.tmpl; do
-  if [ ! -f "$script" ]; then
-    continue
-  fi
-
-  script_name=$(basename "$script" .tmpl)
-  # Use script content hash as state key (chezmoi's approach)
-  # This ensures scripts are re-executed if their content changes
-  script_hash=$(chezmoi execute-template --source="$SRC" --destination="$DEST" < "$script" 2> /dev/null | sha256sum | cut -d' ' -f1)
-  script_key="run_once_${script_hash}"
-
-  # Check if script has already been executed
-  if chezmoi state get --bucket=scriptState --key="$script_key" --source="$SRC" --destination="$DEST" > /dev/null 2>&1; then
-    echo "  Skipping $script_name (already executed)"
-    continue
-  fi
-
-  # Execute the script
-  echo "  Executing $script_name..."
-  if script_output=$(chezmoi execute-template --source="$SRC" --destination="$DEST" < "$script" 2>&1 | bash 2>&1); then
-    echo "  ✓ $script_name completed successfully"
-    # Record script execution in chezmoi state
-    if chezmoi state set --bucket=scriptState --key="$script_key" --value="executed" --source="$SRC" --destination="$DEST" > /dev/null 2>&1; then
-      : # State recorded successfully
-    else
-      echo "  Warning: Failed to record script execution state for $script_name" >&2
-    fi
-  else
-    echo "  Error: Failed to execute $script_name" >&2
-    echo "$script_output" >&2
-    exit 1
-  fi
-done
-
-echo "✓ All run_once scripts processed"
+# Note: .chezmoiscripts/run_onchange_* scripts are automatically executed by chezmoi apply
+# No manual script execution needed - chezmoi handles this natively
+echo "✓ chezmoi apply completed (.chezmoiscripts/ executed automatically)"
