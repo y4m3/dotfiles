@@ -70,7 +70,7 @@ test: build
 	           echo "Test results file: $$TEST_RESULTS_JSONL"; \
 	           echo "[$$(date +%H:%M:%S)] Starting apply-container.sh..." | tee -a "$$TEST_LOG_FILE"; \
 	           APPLY_START=$$(date +%s); \
-	           bash scripts/apply-container.sh >> "$$TEST_LOG_FILE" 2>&1; \
+	           source scripts/apply-container.sh >> "$$TEST_LOG_FILE" 2>&1; \
 	           APPLY_STATUS=$$?; \
 	           APPLY_END=$$(date +%s); \
 	           APPLY_DURATION=$$((APPLY_END - APPLY_START)); \
@@ -80,7 +80,6 @@ test: build
 	             echo "[$$(date +%H:%M:%S)] apply-container.sh failed after $$APPLY_DURATION seconds (exit $$APPLY_STATUS)" | tee -a "$$TEST_LOG_FILE"; \
 	             exit $$APPLY_STATUS; \
 	           fi; \
-	           [ -f ~/.bashrc ] && source ~/.bashrc; \
 	           TESTS_START=$$(date +%s); \
 	           tests_to_run=$$(bash scripts/detect-changes.sh); \
 	           if [ -z "$$tests_to_run" ]; then \
@@ -185,7 +184,7 @@ test-all: build
 	           : > "$$TEST_RESULTS_JSONL"; \
 	           echo "Test log file: $$TEST_LOG_FILE"; \
 	           echo "Test results file: $$TEST_RESULTS_JSONL"; \
-	           bash scripts/apply-container.sh && \
+	           source scripts/apply-container.sh && \
 	           echo "Running all tests..." && \
 	           warn_count=0; \
 	           fail_count=0; \
