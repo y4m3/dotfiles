@@ -1,0 +1,36 @@
+{{- if and (eq .chezmoi.os "linux") (eq .profile "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Install ghq using Go (no binary downloads)
+set -euo pipefail
+
+echo "==> Installing ghq via Go ..."
+
+if command -v ghq >/dev/null 2>&1; then
+  echo "✓ ghq already installed: $(ghq --version || echo ghq)"
+  exit 0
+fi
+
+if ! command -v go >/dev/null 2>&1; then
+  echo "Error: Go (golang-go) not found in PATH." >&2
+  echo "Hint: Ensure prerequisites ran successfully: run_once_00-prerequisites.sh installs golang-go." >&2
+  exit 1
+fi
+
+# Install ghq via Go modules
+GO111MODULE=on go install github.com/x-motemen/ghq@latest
+
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
+
+# Copy built binary to ~/.local/bin
+if [ -x "$HOME/go/bin/ghq" ]; then
+  install -m 0755 "$HOME/go/bin/ghq" "$INSTALL_DIR/ghq"
+elif [ -n "${GOPATH:-}" ] && [ -x "$GOPATH/bin/ghq" ]; then
+  install -m 0755 "$GOPATH/bin/ghq" "$INSTALL_DIR/ghq"
+else
+  echo "Error: go install did not produce ghq binary." >&2
+  exit 1
+fi
+
+echo "✓ ghq installed: $INSTALL_DIR/ghq"
+{{- end -}}

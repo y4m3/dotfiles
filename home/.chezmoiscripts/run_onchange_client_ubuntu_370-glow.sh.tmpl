@@ -1,0 +1,74 @@
+{{- if and (eq .chezmoi.os "linux") (eq .profile "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Install glow from GitHub releases
+set -euo pipefail
+
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
+
+# Check if already installed
+if [ -f "$INSTALL_DIR/glow" ]; then
+  echo "✓ glow already installed: $("$INSTALL_DIR/glow" --version 2>/dev/null || echo "version unknown")"
+  exit 0
+fi
+
+# Detect architecture
+case "$(uname -m)" in
+x86_64 | amd64) arch="x86_64" ;;
+aarch64 | arm64) arch="arm64" ;;
+*)
+  echo "Unsupported architecture: $(uname -m)" >&2
+  exit 1
+  ;;
+esac
+
+# Resolve version
+if [ -n "${GLOW_VERSION:-}" ]; then
+  version="$GLOW_VERSION"
+else
+  # Use GitHub token if available (from gh auth token or GITHUB_TOKEN env var)
+  # This increases rate limit from 60/hour (unauthenticated) to 5000/hour (authenticated)
+  github_token=""
+  if command -v gh >/dev/null 2>&1 && gh auth token >/dev/null 2>&1; then
+    github_token=$(gh auth token 2>/dev/null || echo "")
+  fi
+  if [ -z "$github_token" ] && [ -n "${GITHUB_TOKEN:-}" ]; then
+    github_token="$GITHUB_TOKEN"
+  fi
+
+  if [ -n "$github_token" ]; then
+    version=$(curl -fsSL -H "Authorization: token $github_token" https://api.github.com/repos/charmbracelet/glow/releases/latest | jq -r '.tag_name')
+  else
+    version=$(curl -fsSL https://api.github.com/repos/charmbracelet/glow/releases/latest | jq -r '.tag_name')
+  fi
+fi
+
+if [ -z "$version" ] || [ "$version" = "null" ]; then
+  echo "Failed to resolve glow version" >&2
+  exit 1
+fi
+
+# Remove 'v' prefix if present
+version_trimmed="${version#v}"
+
+# glow uses format: glow_{version}_Linux_{arch}.tar.gz
+asset="glow_${version_trimmed}_Linux_${arch}.tar.gz"
+url="https://github.com/charmbracelet/glow/releases/download/${version}/${asset}"
+
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+curl -fsSL "$url" -o "$tmpdir/glow.tar.gz"
+tar -xzf "$tmpdir/glow.tar.gz" -C "$tmpdir"
+
+# Find the glow binary in the extracted directory
+binary_path=$(find "$tmpdir" -maxdepth 2 -type f -name glow | head -n 1)
+if [ -z "$binary_path" ]; then
+  echo "glow binary not found in archive" >&2
+  exit 1
+fi
+
+install -m 0755 "$binary_path" "$INSTALL_DIR/glow"
+
+echo "==> glow version: $("$INSTALL_DIR/glow" --version 2>/dev/null || echo "installed")"
+{{- end -}}
