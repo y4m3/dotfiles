@@ -2,17 +2,69 @@
 # Install Docker Engine and Docker Compose on host system
 set -euo pipefail
 
+# Temporary file for Docker installation script
+TEMP_DOCKER_SCRIPT="/tmp/get-docker.sh"
+
+# Cleanup function for signal handling and error exits
+cleanup() {
+  local exit_code=${1:-130}
+  local is_interrupt=${2:-false}
+  
+  # Remove temporary file if it exists (safe even if already deleted)
+  rm -f "$TEMP_DOCKER_SCRIPT"
+  
+  # Only show interrupt message for SIGINT/SIGTERM
+  if [ "$is_interrupt" = true ]; then
+    echo "" >&2
+    echo "==> Script interrupted by user (Ctrl-C)" >&2
+    echo "    Cleanup completed. chezmoi apply will continue with next script." >&2
+  fi
+  
+  # Disable EXIT trap to prevent infinite loop
+  trap - EXIT
+  
+  exit "$exit_code"
+}
+
+# Trap signals for cleanup (interrupts)
+trap 'cleanup 130 true' INT TERM
+
+# Trap EXIT for cleanup on normal exit or error
+# Note: rm -f is safe even if file doesn't exist, so this works for all exit scenarios
+# For early exits (like Docker container skip below), cleanup is harmless since
+# no temporary files have been created yet
+trap 'cleanup ${?} false' EXIT
+
 # Skip in Docker containers (Docker-in-Docker is complex and not needed for testing)
+# Note: EXIT trap will be triggered here, but cleanup is safe since TEMP_DOCKER_SCRIPT
+# doesn't exist at this point. The script exits with code 0, allowing chezmoi apply
+# to continue with the next script.
 if [ -f /.dockerenv ]; then
   echo "==> Running in Docker, skipping Docker installation (use host system)"
   exit 0
 fi
 
-# Check if already installed
-if command -v docker >/dev/null 2>&1 && command -v docker-compose >/dev/null 2>&1; then
-  echo "✓ Docker already installed:"
-  echo "  Docker: $(docker --version)"
-  echo "  Docker Compose: $(docker-compose --version)"
+# Check Docker and Docker Compose separately
+DOCKER_INSTALLED=false
+COMPOSE_INSTALLED=false
+
+if command -v docker >/dev/null 2>&1; then
+  DOCKER_INSTALLED=true
+  echo "✓ Docker already installed: $(docker --version)"
+else
+  echo "==> Docker not found, will install"
+fi
+
+if command -v docker-compose >/dev/null 2>&1; then
+  COMPOSE_INSTALLED=true
+  echo "✓ Docker Compose already installed: $(docker-compose --version)"
+else
+  echo "==> Docker Compose not found, will install"
+fi
+
+# If both are installed, skip installation
+if [ "$DOCKER_INSTALLED" = true ] && [ "$COMPOSE_INSTALLED" = true ]; then
+  echo "✓ Docker and Docker Compose are already installed, skipping installation"
   exit 0
 fi
 
@@ -28,60 +80,88 @@ if ! command -v sudo >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "==> Installing Docker Engine and Docker Compose..."
+# Install Docker Engine if not already installed
+if [ "$DOCKER_INSTALLED" = false ]; then
+  echo "==> Installing Docker Engine..."
 
-# Install prerequisites
-sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  ca-certificates \
-  curl \
-  gnupg \
-  lsb-release
+  # Double-check Docker is not installed (get.docker.com script should handle this, but we check explicitly)
+  if command -v docker >/dev/null 2>&1; then
+    echo "✓ Docker was installed by another process, skipping installation"
+    DOCKER_INSTALLED=true
+  else
+    # Install prerequisites
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      ca-certificates \
+      curl \
+      gnupg \
+      lsb-release
 
-# Install Docker Engine using official script
-echo "==> Installing Docker Engine..."
-if ! curl -fsSL https://get.docker.com -o /tmp/get-docker.sh; then
-  echo "Error: Failed to download Docker installation script" >&2
-  exit 1
+    # Download Docker installation script
+    if ! curl -fsSL https://get.docker.com -o "$TEMP_DOCKER_SCRIPT"; then
+      echo "Error: Failed to download Docker installation script" >&2
+      exit 1
+    fi
+
+    # Run Docker installation script (non-interactive)
+    # Note: get.docker.com script is idempotent and will skip if Docker is already installed
+    if ! sudo sh "$TEMP_DOCKER_SCRIPT"; then
+      echo "Error: Docker installation failed" >&2
+      exit 1
+    fi
+
+    # Verify Docker installation
+    if ! command -v docker >/dev/null 2>&1; then
+      echo "Error: Docker installation completed but docker command not found" >&2
+      exit 1
+    fi
+
+    # Clean up temporary script after successful installation
+    rm -f "$TEMP_DOCKER_SCRIPT"
+
+    echo "✓ Docker Engine installed: $(docker --version)"
+  fi
 fi
 
-# Run Docker installation script (non-interactive)
-if ! sudo sh /tmp/get-docker.sh; then
-  echo "Error: Docker installation failed" >&2
-  rm -f /tmp/get-docker.sh
-  exit 1
-fi
+# Install Docker Compose standalone binary if not already installed
+if [ "$COMPOSE_INSTALLED" = false ]; then
+  echo "==> Installing Docker Compose..."
 
-rm -f /tmp/get-docker.sh
+  # Double-check Docker Compose is not installed
+  if command -v docker-compose >/dev/null 2>&1; then
+    echo "✓ Docker Compose was installed by another process, skipping installation"
+    COMPOSE_INSTALLED=true
+  else
+    COMPOSE_VERSION="v2.24.5" # Latest stable version as of 2024
 
-# Install Docker Compose standalone binary
-echo "==> Installing Docker Compose..."
-COMPOSE_VERSION="v2.24.5" # Latest stable version as of 2024
+    # Detect architecture for Docker Compose
+    case "$(uname -m)" in
+    x86_64 | amd64) compose_arch="x86_64" ;;
+    aarch64 | arm64) compose_arch="aarch64" ;;
+    *)
+      echo "Error: Unsupported architecture for Docker Compose: $(uname -m)" >&2
+      exit 1
+      ;;
+    esac
 
-# Detect architecture for Docker Compose
-case "$(uname -m)" in
-x86_64 | amd64) compose_arch="x86_64" ;;
-aarch64 | arm64) compose_arch="aarch64" ;;
-*)
-  echo "Error: Unsupported architecture for Docker Compose: $(uname -m)" >&2
-  exit 1
-  ;;
-esac
+    COMPOSE_URL="https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-${compose_arch}"
 
-COMPOSE_URL="https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-${compose_arch}"
+    # Download and install Docker Compose
+    if ! sudo curl -fsSL "$COMPOSE_URL" -o /usr/local/bin/docker-compose; then
+      echo "Error: Failed to download Docker Compose" >&2
+      exit 1
+    fi
 
-# Download and install Docker Compose
-if ! sudo curl -fsSL "$COMPOSE_URL" -o /usr/local/bin/docker-compose; then
-  echo "Error: Failed to download Docker Compose" >&2
-  exit 1
-fi
+    sudo chmod +x /usr/local/bin/docker-compose
 
-sudo chmod +x /usr/local/bin/docker-compose
+    # Verify Docker Compose installation
+    if ! /usr/local/bin/docker-compose --version >/dev/null 2>&1; then
+      echo "Error: Docker Compose installation verification failed" >&2
+      exit 1
+    fi
 
-# Verify Docker Compose installation
-if ! /usr/local/bin/docker-compose --version >/dev/null 2>&1; then
-  echo "Error: Docker Compose installation verification failed" >&2
-  exit 1
+    echo "✓ Docker Compose installed: $(docker-compose --version)"
+  fi
 fi
 
 # Add current user to docker group (if not root)
