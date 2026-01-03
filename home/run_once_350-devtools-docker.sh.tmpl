@@ -2,8 +2,8 @@
 # Install Docker Engine and Docker Compose on host system
 set -euo pipefail
 
-# Temporary file for Docker installation script
-TEMP_DOCKER_SCRIPT="/tmp/get-docker.sh"
+# Temporary file for Docker installation script (created with mktemp for security)
+TEMP_DOCKER_SCRIPT=""
 
 # Cleanup function for signal handling and error exits
 cleanup() {
@@ -11,7 +11,9 @@ cleanup() {
   local is_interrupt=${2:-false}
   
   # Remove temporary file if it exists (safe even if already deleted)
-  rm -f "$TEMP_DOCKER_SCRIPT"
+  if [ -n "$TEMP_DOCKER_SCRIPT" ]; then
+    rm -f "$TEMP_DOCKER_SCRIPT"
+  fi
   
   # Only show interrupt message for SIGINT/SIGTERM
   if [ "$is_interrupt" = true ]; then
@@ -82,13 +84,12 @@ fi
 
 # Install Docker Engine if not already installed
 if [ "$DOCKER_INSTALLED" = false ]; then
-  echo "==> Installing Docker Engine..."
-
   # Double-check Docker is not installed (get.docker.com script should handle this, but we check explicitly)
   if command -v docker >/dev/null 2>&1; then
     echo "✓ Docker was installed by another process, skipping installation"
     DOCKER_INSTALLED=true
   else
+    echo "==> Installing Docker Engine..."
     # Install prerequisites
     sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -97,7 +98,13 @@ if [ "$DOCKER_INSTALLED" = false ]; then
       gnupg \
       lsb-release
 
+    # Create temporary file securely using mktemp
+    TEMP_DOCKER_SCRIPT=$(mktemp)
+
     # Download Docker installation script
+    # Note: get.docker.com is served over HTTPS from official Docker infrastructure.
+    # While checksum verification would be ideal, this matches the pattern used
+    # in other run_once scripts. Consider adding verification in future improvements.
     if ! curl -fsSL https://get.docker.com -o "$TEMP_DOCKER_SCRIPT"; then
       echo "Error: Failed to download Docker installation script" >&2
       exit 1
@@ -125,28 +132,38 @@ fi
 
 # Install Docker Compose standalone binary if not already installed
 if [ "$COMPOSE_INSTALLED" = false ]; then
-  echo "==> Installing Docker Compose..."
-
   # Double-check Docker Compose is not installed
   if command -v docker-compose >/dev/null 2>&1; then
     echo "✓ Docker Compose was installed by another process, skipping installation"
     COMPOSE_INSTALLED=true
   else
-    COMPOSE_VERSION="v2.24.5" # Latest stable version as of 2024
+    echo "==> Installing Docker Compose..."
+
+    # Ensure curl is available (required for downloading Docker Compose)
+    if ! command -v curl >/dev/null 2>&1; then
+      echo "==> Installing curl (required for Docker Compose installation)..."
+      sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y curl
+    fi
+
+    COMPOSE_VERSION="v2.24.5" # Pinned known-good version; update as needed
 
     # Detect architecture for Docker Compose
     case "$(uname -m)" in
-    x86_64 | amd64) compose_arch="x86_64" ;;
-    aarch64 | arm64) compose_arch="aarch64" ;;
+    x86_64 | amd64) COMPOSE_ARCH="x86_64" ;;
+    aarch64 | arm64) COMPOSE_ARCH="aarch64" ;;
     *)
       echo "Error: Unsupported architecture for Docker Compose: $(uname -m)" >&2
       exit 1
       ;;
     esac
 
-    COMPOSE_URL="https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-${compose_arch}"
+    COMPOSE_URL="https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-${COMPOSE_ARCH}"
 
     # Download and install Docker Compose
+    # Note: Binary is downloaded from GitHub Releases over HTTPS.
+    # While checksum verification would be ideal, this matches the pattern used
+    # in other run_once scripts. Consider adding verification in future improvements.
     if ! sudo curl -fsSL "$COMPOSE_URL" -o /usr/local/bin/docker-compose; then
       echo "Error: Failed to download Docker Compose" >&2
       exit 1
