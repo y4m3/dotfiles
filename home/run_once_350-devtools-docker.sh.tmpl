@@ -35,7 +35,7 @@ trap 'cleanup 130 true' INT TERM
 # Note: rm -f is safe even if file doesn't exist, so this works for all exit scenarios
 # For early exits (like Docker container skip below), cleanup is harmless since
 # no temporary files have been created yet
-trap 'cleanup ${?} false' EXIT
+trap 'cleanup "${?}" false' EXIT
 
 # Skip in Docker containers (Docker-in-Docker is complex and not needed for testing)
 # Note: EXIT trap will be triggered here, but cleanup is safe since TEMP_DOCKER_SCRIPT
@@ -123,9 +123,7 @@ if [ "$DOCKER_INSTALLED" = false ]; then
       exit 1
     fi
 
-    # Clean up temporary script after successful installation
-    rm -f "$TEMP_DOCKER_SCRIPT"
-
+    # Note: Temporary script will be cleaned up by EXIT trap
     echo "✓ Docker Engine installed: $(docker --version)"
   fi
 fi
@@ -139,11 +137,15 @@ if [ "$COMPOSE_INSTALLED" = false ]; then
   else
     echo "==> Installing Docker Compose..."
 
-    # Ensure curl is available (required for downloading Docker Compose)
+    # Ensure curl and ca-certificates are available (required for downloading Docker Compose over HTTPS)
     if ! command -v curl >/dev/null 2>&1; then
-      echo "==> Installing curl (required for Docker Compose installation)..."
+      echo "==> Installing curl and ca-certificates (required for Docker Compose installation)..."
       sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
-      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y curl
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl
+    elif ! dpkg -l | grep -q "^ii.*ca-certificates"; then
+      echo "==> Installing ca-certificates (required for HTTPS connections)..."
+      sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates
     fi
 
     COMPOSE_VERSION="v2.24.5" # Pinned known-good version; update as needed
