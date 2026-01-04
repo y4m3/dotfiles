@@ -3,21 +3,51 @@
 # Install shellcheck (shell script linter) and shfmt (shell script formatter)
 set -euo pipefail
 
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
+
 echo "==> Installing shellcheck and shfmt..."
 
-# Install shellcheck via apt
-if command -v shellcheck >/dev/null 2>&1; then
-  echo "✓ shellcheck already installed: $(shellcheck --version | head -2 | tail -1)"
+# Install shellcheck from GitHub releases to ~/.local/bin
+if [ -x "$INSTALL_DIR/shellcheck" ]; then
+  echo "✓ shellcheck already installed: $("$INSTALL_DIR/shellcheck" --version | head -2 | tail -1)"
 else
-  echo "==> Installing shellcheck via apt..."
-  sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
-  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y shellcheck
-  echo "✓ shellcheck installed: $(shellcheck --version | head -2 | tail -1)"
+  echo "==> Installing shellcheck from GitHub releases..."
+
+  case "$(uname -m)" in
+    x86_64 | amd64) arch="x86_64" ;;
+    aarch64 | arm64) arch="aarch64" ;;
+    *)
+      echo "Unsupported architecture: $(uname -m)" >&2
+      exit 1
+      ;;
+  esac
+
+  # Get latest version from GitHub API
+  version=$(curl -fsSL https://api.github.com/repos/koalaman/shellcheck/releases/latest | jq -r '.tag_name')
+
+  if [ -z "$version" ] || [ "$version" = "null" ]; then
+    echo "Failed to get latest shellcheck version" >&2
+    exit 1
+  fi
+
+  url="https://github.com/koalaman/shellcheck/releases/download/${version}/shellcheck-${version}.linux.${arch}.tar.xz"
+
+  tmpdir=$(mktemp -d)
+  trap 'rm -rf "$tmpdir"' EXIT
+
+  echo "==> Downloading shellcheck ${version}..."
+  curl -fsSL "$url" -o "$tmpdir/shellcheck.tar.xz"
+  tar -xJf "$tmpdir/shellcheck.tar.xz" -C "$tmpdir"
+
+  install -m 0755 "$tmpdir/shellcheck-${version}/shellcheck" "$INSTALL_DIR/shellcheck"
+
+  echo "✓ shellcheck installed: $("$INSTALL_DIR/shellcheck" --version | head -2 | tail -1)"
 fi
 
 # shfmt - install via Go (requires golang-go from prerequisites)
-if command -v shfmt >/dev/null 2>&1; then
-  echo "✓ shfmt already installed: $(shfmt --version)"
+if [ -x "$INSTALL_DIR/shfmt" ]; then
+  echo "✓ shfmt already installed: $("$INSTALL_DIR/shfmt" --version)"
 else
   if ! command -v go >/dev/null 2>&1; then
     echo "Error: Go not found. Install prerequisites first (run_once_000-prerequisites.sh)." >&2
@@ -26,9 +56,6 @@ else
 
   echo "==> Installing shfmt via Go..."
   GO111MODULE=on go install mvdan.cc/sh/v3/cmd/shfmt@latest
-
-  INSTALL_DIR="$HOME/.local/bin"
-  mkdir -p "$INSTALL_DIR"
 
   # Copy built binary to ~/.local/bin
   if [ -x "$HOME/go/bin/shfmt" ]; then
@@ -40,7 +67,7 @@ else
     exit 1
   fi
 
-  echo "✓ shfmt installed: $INSTALL_DIR/shfmt ($(shfmt --version))"
+  echo "✓ shfmt installed: $INSTALL_DIR/shfmt ($("$INSTALL_DIR/shfmt" --version))"
 fi
 
 echo "✓ Shell linting and formatting tools ready"

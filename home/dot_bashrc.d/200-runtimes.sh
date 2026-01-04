@@ -26,6 +26,13 @@ if [ -z "${CARGO_BUILD_JOBS:-}" ]; then
   fi
 fi
 
+# fnm (Fast Node Manager) - Node.js version manager
+FNM_DIR="${FNM_DIR:-$HOME/.local/share/fnm}"
+if [ -x "$FNM_DIR/fnm" ]; then
+  export PATH="$FNM_DIR:$PATH"
+  eval "$("$FNM_DIR/fnm" env)"
+fi
+
 # Starship prompt (enabled via PROMPT_STYLE=starship)
 # Interactive only (prompt is interactive-only)
 if is_interactive; then
