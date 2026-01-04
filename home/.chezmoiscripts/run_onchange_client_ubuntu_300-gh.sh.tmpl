@@ -1,33 +1,57 @@
 {{- if and (eq .chezmoi.os "linux") (eq .profile "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
-# Install GitHub CLI (gh) via official apt repository on Ubuntu/WSL
+# Install GitHub CLI (gh) from GitHub releases to ~/.local/bin
 set -euo pipefail
 
-# In Docker, install gh to verify installer works during dev/testing
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
 
-if command -v gh >/dev/null 2>&1; then
-  echo "✓ gh already installed: $(gh --version | head -1)"
+if [ -x "$INSTALL_DIR/gh" ]; then
+  echo "✓ gh already installed: $("$INSTALL_DIR/gh" --version | head -1)"
   exit 0
 fi
 
-# Require apt-based systems
-if ! command -v apt-get >/dev/null 2>&1; then
-  echo "Error: apt-get not found. Please install gh manually: https://cli.github.com/" >&2
+echo "==> Installing GitHub CLI (gh)..."
+
+case "$(uname -m)" in
+  x86_64 | amd64) arch="amd64" ;;
+  aarch64 | arm64) arch="arm64" ;;
+  *)
+    echo "Unsupported architecture: $(uname -m)" >&2
+    exit 1
+    ;;
+esac
+
+# Get latest version from GitHub API
+github_token=""
+if command -v gh >/dev/null 2>&1 && gh auth token >/dev/null 2>&1; then
+  github_token=$(gh auth token 2>/dev/null || echo "")
+fi
+if [ -z "$github_token" ] && [ -n "${GITHUB_TOKEN:-}" ]; then
+  github_token="$GITHUB_TOKEN"
+fi
+
+if [ -n "$github_token" ]; then
+  version=$(curl -fsSL -H "Authorization: token $github_token" https://api.github.com/repos/cli/cli/releases/latest | jq -r '.tag_name' | sed 's/^v//')
+else
+  version=$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | jq -r '.tag_name' | sed 's/^v//')
+fi
+
+if [ -z "$version" ] || [ "$version" = "null" ]; then
+  echo "Failed to get latest gh version" >&2
   exit 1
 fi
 
-echo "==> Installing GitHub CLI (gh)"
-sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y curl gnupg
+url="https://github.com/cli/cli/releases/download/v${version}/gh_${version}_linux_${arch}.tar.gz"
 
-sudo mkdir -p -m 0755 /etc/apt/keyrings
-curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/etc/apt/keyrings/githubcli-archive-keyring.gpg
-sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
 
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+echo "==> Downloading gh v${version}..."
+curl -fsSL "$url" -o "$tmpdir/gh.tar.gz"
+tar -xzf "$tmpdir/gh.tar.gz" -C "$tmpdir"
 
-sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y gh
+install -m 0755 "$tmpdir/gh_${version}_linux_${arch}/bin/gh" "$INSTALL_DIR/gh"
 
-echo "✓ gh installed: $(gh --version | head -1)"
+echo "✓ gh installed: $("$INSTALL_DIR/gh" --version | head -1)"
 {{- end -}}

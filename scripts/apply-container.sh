@@ -43,6 +43,13 @@ fi
 # Also ensure common paths are in PATH (in case .bash_profile doesn't load .bashrc)
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:${PATH:-}"
 
+# Setup fnm (Fast Node Manager) if installed
+FNM_PATH="$HOME/.local/share/fnm"
+if [ -x "$FNM_PATH/fnm" ]; then
+  export PATH="$FNM_PATH:$PATH"
+  eval "$("$FNM_PATH/fnm" env)"
+fi
+
 # Note: .chezmoiscripts/run_onchange_* scripts are automatically executed by chezmoi apply
 # No manual script execution needed - chezmoi handles this natively
 echo "✓ chezmoi apply completed (.chezmoiscripts/ executed automatically)"

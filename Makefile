@@ -22,11 +22,12 @@ VOLUME_SNAPSHOT := -v env-snapshot:/root/.local/share/env-snapshot
 VOLUME_VIM := -v vim-data:/root/.vim
 VOLUME_LOCAL_BIN := -v local-bin-data:/root/.local/bin
 VOLUME_FZF := -v fzf-data:/root/.fzf
+VOLUME_FNM := -v fnm-data:/root/.local/share/fnm
 # Mount gh config from host if available (for GitHub API authentication)
 # Use $$HOME to reference shell variable, not Make variable
 VOLUME_GH := $(shell test -d ~/.config/gh && echo "-v $$HOME/.config/gh:/root/.config/gh:ro" || echo "")
 VOLUMES_MINIMAL := $(VOLUME_DOTFILES)
-VOLUMES_FULL := $(VOLUME_DOTFILES) $(VOLUME_CARGO) $(VOLUME_RUSTUP) $(VOLUME_SNAPSHOT) $(VOLUME_VIM) $(VOLUME_LOCAL_BIN) $(VOLUME_FZF) $(VOLUME_GH)
+VOLUMES_FULL := $(VOLUME_DOTFILES) $(VOLUME_CARGO) $(VOLUME_RUSTUP) $(VOLUME_SNAPSHOT) $(VOLUME_VIM) $(VOLUME_LOCAL_BIN) $(VOLUME_FZF) $(VOLUME_FNM) $(VOLUME_GH)
 
 # Get GitHub token from host if gh is available
 # This allows authenticated GitHub API requests in Docker (5000/hour vs 60/hour unauthenticated)
@@ -251,7 +252,7 @@ clean:
 		echo; \
 		if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
 			volume_errors=0; \
-			for vol in dotfiles-state cargo-data rustup-data env-snapshot local-bin-data fzf-data; do \
+			for vol in dotfiles-state cargo-data rustup-data env-snapshot local-bin-data fzf-data fnm-data; do \
 				if docker volume inspect "$$vol" >/dev/null 2>&1; then \
 					error_msg=$$(docker volume rm "$$vol" 2>&1); \
 					exit_code=$$?; \
@@ -279,7 +280,7 @@ clean:
 	else \
 		echo "==> Removing persistent volumes..."; \
 		volume_errors=0; \
-		for vol in dotfiles-state cargo-data rustup-data env-snapshot vim-data local-bin-data fzf-data; do \
+		for vol in dotfiles-state cargo-data rustup-data env-snapshot vim-data local-bin-data fzf-data fnm-data; do \
 			if docker volume inspect "$$vol" >/dev/null 2>&1; then \
 				error_msg=$$(docker volume rm "$$vol" 2>&1); \
 				exit_code=$$?; \
@@ -295,7 +296,7 @@ clean:
 			fi; \
 		done; \
 		if [ $$volume_errors -eq 0 ]; then \
-			echo "✓ Persistent state cleared (dotfiles-state, cargo-data, rustup-data, env-snapshot, vim-data, local-bin-data, fzf-data)."; \
+			echo "✓ Persistent state cleared (dotfiles-state, cargo-data, rustup-data, env-snapshot, vim-data, local-bin-data, fzf-data, fnm-data)."; \
 			echo "  Next 'make dev' or 'make test' will rebuild the environment."; \
 		else \
 			echo "Error: Some volumes could not be removed. Please stop any running containers first." >&2; \
