@@ -23,13 +23,9 @@ else
       ;;
   esac
 
-  # Get latest version from GitHub API
-  version=$(curl -fsSL https://api.github.com/repos/koalaman/shellcheck/releases/latest | jq -r '.tag_name')
-
-  if [ -z "$version" ] || [ "$version" = "null" ]; then
-    echo "Failed to get latest shellcheck version" >&2
-    exit 1
-  fi
+  # Use pinned version by default, allow override via SHELLCHECK_VERSION env var
+  # Pinned version helps prevent supply chain attacks
+  version="${SHELLCHECK_VERSION:-v0.10.0}"
 
   url="https://github.com/koalaman/shellcheck/releases/download/${version}/shellcheck-${version}.linux.${arch}.tar.xz"
 
@@ -38,6 +34,13 @@ else
 
   echo "==> Downloading shellcheck ${version}..."
   curl -fsSL "$url" -o "$tmpdir/shellcheck.tar.xz"
+  
+  # Verify download succeeded and file is not empty
+  if [ ! -s "$tmpdir/shellcheck.tar.xz" ]; then
+    echo "Error: Failed to download shellcheck" >&2
+    exit 1
+  fi
+  
   tar -xJf "$tmpdir/shellcheck.tar.xz" -C "$tmpdir"
 
   install -m 0755 "$tmpdir/shellcheck-${version}/shellcheck" "$INSTALL_DIR/shellcheck"

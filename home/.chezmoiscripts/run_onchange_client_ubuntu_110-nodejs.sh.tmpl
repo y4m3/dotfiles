@@ -23,7 +23,38 @@ echo "==> Installing fnm (Fast Node Manager)..."
 
 # Install fnm if not present
 if [ ! -x "$FNM_DIR/fnm" ]; then
-  curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$FNM_DIR" --skip-shell
+  case "$(uname -m)" in
+    x86_64 | amd64) arch="linux" ;;
+    aarch64 | arm64) arch="linux-arm64" ;;
+    *)
+      echo "Unsupported architecture: $(uname -m)" >&2
+      exit 1
+      ;;
+  esac
+
+  # Use pinned version by default, allow override via FNM_VERSION env var
+  # Pinned version helps prevent supply chain attacks
+  version="${FNM_VERSION:-v1.38.1}"
+
+  url="https://github.com/Schniz/fnm/releases/download/${version}/fnm-${arch}.zip"
+
+  tmpdir=$(mktemp -d)
+  trap 'rm -rf "$tmpdir"' EXIT
+
+  echo "==> Downloading fnm ${version}..."
+  curl -fsSL "$url" -o "$tmpdir/fnm.zip"
+  
+  # Verify download succeeded and file is not empty
+  if [ ! -s "$tmpdir/fnm.zip" ]; then
+    echo "Error: Failed to download fnm" >&2
+    exit 1
+  fi
+
+  mkdir -p "$FNM_DIR"
+  unzip -q "$tmpdir/fnm.zip" -d "$FNM_DIR"
+  chmod +x "$FNM_DIR/fnm"
+
+  echo "✓ fnm installed: $("$FNM_DIR/fnm" --version)"
 fi
 
 # Setup fnm for current shell
