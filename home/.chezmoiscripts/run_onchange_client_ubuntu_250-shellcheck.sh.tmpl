@@ -34,13 +34,13 @@ else
 
   echo "==> Downloading shellcheck ${version}..."
   curl -fsSL "$url" -o "$tmpdir/shellcheck.tar.xz"
-  
+
   # Verify download succeeded and file is not empty
   if [ ! -s "$tmpdir/shellcheck.tar.xz" ]; then
     echo "Error: Failed to download shellcheck" >&2
     exit 1
   fi
-  
+
   tar -xJf "$tmpdir/shellcheck.tar.xz" -C "$tmpdir"
 
   install -m 0755 "$tmpdir/shellcheck-${version}/shellcheck" "$INSTALL_DIR/shellcheck"

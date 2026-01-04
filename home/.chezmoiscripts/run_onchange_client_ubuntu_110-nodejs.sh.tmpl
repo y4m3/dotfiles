@@ -43,7 +43,7 @@ if [ ! -x "$FNM_DIR/fnm" ]; then
 
   echo "==> Downloading fnm ${version}..."
   curl -fsSL "$url" -o "$tmpdir/fnm.zip"
-  
+
   # Verify download succeeded and file is not empty
   if [ ! -s "$tmpdir/fnm.zip" ]; then
     echo "Error: Failed to download fnm" >&2
