@@ -22,12 +22,14 @@ if [ -f "$FZF_BIN" ] || command -v fzf >/dev/null 2>&1; then
   exit 0
 fi
 
-if [ -d "$FZF_DIR" ]; then
+if [ -d "$FZF_DIR/.git" ]; then
   echo "Updating existing fzf installation..."
   cd "$FZF_DIR"
   git pull
 else
   echo "Cloning fzf repository..."
+  # Clear directory contents (but not the directory itself, as it may be a mount point)
+  rm -rf "${FZF_DIR:?}"/* "${FZF_DIR:?}"/.[!.]* 2>/dev/null || true
   git clone --depth 1 https://github.com/junegunn/fzf.git "$FZF_DIR"
 fi
 
