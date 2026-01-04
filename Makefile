@@ -73,12 +73,15 @@ test: build
 	           echo "Test results file: $$TEST_RESULTS_JSONL"; \
 	           echo "[$$(date +%H:%M:%S)] Starting apply-container.sh..." | tee -a "$$TEST_LOG_FILE"; \
 	           APPLY_START=$$(date +%s); \
-	           source scripts/apply-container.sh >> "$$TEST_LOG_FILE" 2>&1; \
+	           bash scripts/apply-container.sh >> "$$TEST_LOG_FILE" 2>&1; \
 	           APPLY_STATUS=$$?; \
 	           APPLY_END=$$(date +%s); \
 	           APPLY_DURATION=$$((APPLY_END - APPLY_START)); \
 	           if [ "$$APPLY_STATUS" -eq 0 ]; then \
 	             echo "[$$(date +%H:%M:%S)] apply-container.sh completed in $$APPLY_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
+	             export PATH="$$HOME/.local/bin:$$HOME/.cargo/bin:$$PATH"; \
+	             FNM_PATH="$$HOME/.local/share/fnm"; \
+	             if [ -x "$$FNM_PATH/fnm" ]; then export PATH="$$FNM_PATH:$$PATH"; eval "$$($$FNM_PATH/fnm env)"; fi; \
 	           else \
 	             echo "[$$(date +%H:%M:%S)] apply-container.sh failed after $$APPLY_DURATION seconds (exit $$APPLY_STATUS)" | tee -a "$$TEST_LOG_FILE"; \
 	             exit $$APPLY_STATUS; \
@@ -187,7 +190,10 @@ test-all: build
 	           : > "$$TEST_RESULTS_JSONL"; \
 	           echo "Test log file: $$TEST_LOG_FILE"; \
 	           echo "Test results file: $$TEST_RESULTS_JSONL"; \
-	           source scripts/apply-container.sh && \
+	           bash scripts/apply-container.sh && \
+	           export PATH="$$HOME/.local/bin:$$HOME/.cargo/bin:$$PATH" && \
+	           FNM_PATH="$$HOME/.local/share/fnm" && \
+	           if [ -x "$$FNM_PATH/fnm" ]; then export PATH="$$FNM_PATH:$$PATH"; eval "$$($$FNM_PATH/fnm env)"; fi && \
 	           echo "Running all tests..." && \
 	           warn_count=0; \
 	           fail_count=0; \
@@ -252,7 +258,7 @@ clean:
 		echo; \
 		if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
 			volume_errors=0; \
-			for vol in dotfiles-state cargo-data rustup-data env-snapshot local-bin-data fzf-data fnm-data; do \
+			for vol in dotfiles-state cargo-data rustup-data env-snapshot vim-data local-bin-data fzf-data fnm-data; do \
 				if docker volume inspect "$$vol" >/dev/null 2>&1; then \
 					error_msg=$$(docker volume rm "$$vol" 2>&1); \
 					exit_code=$$?; \

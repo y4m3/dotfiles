@@ -1,4 +1,4 @@
-{{- if and (eq .chezmoi.os "linux") (eq .profile "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # Install Tokyo Night colorscheme for vim
 # Downloads colorscheme file directly from ghifarit53/tokyonight-vim

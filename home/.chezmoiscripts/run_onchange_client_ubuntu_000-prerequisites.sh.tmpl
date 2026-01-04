@@ -1,4 +1,4 @@
-{{- if and (eq .chezmoi.os "linux") (eq .profile "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # run_once_000-prerequisites.sh.tmpl
 # Install prerequisite system tools (skipped in Docker containers)

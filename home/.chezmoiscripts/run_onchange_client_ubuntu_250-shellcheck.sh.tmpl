@@ -1,4 +1,4 @@
-{{- if and (eq .chezmoi.os "linux") (eq .profile "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # Install shellcheck (shell script linter) and shfmt (shell script formatter)
 set -euo pipefail
@@ -50,7 +50,7 @@ if [ -x "$INSTALL_DIR/shfmt" ]; then
   echo "✓ shfmt already installed: $("$INSTALL_DIR/shfmt" --version)"
 else
   if ! command -v go >/dev/null 2>&1; then
-    echo "Error: Go not found. Install prerequisites first (run_once_000-prerequisites.sh)." >&2
+    echo "Error: Go not found. Install prerequisites first." >&2
     exit 1
   fi
 

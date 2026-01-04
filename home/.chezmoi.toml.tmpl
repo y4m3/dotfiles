@@ -1,9 +1,9 @@
-{{- /* 環境タイプの決定（優先順位：環境変数 > デフォルト） */ -}}
+{{- /* Determine environment type (priority: environment variable > default) */ -}}
 {{- $profile := env "DOTFILES_PROFILE" -}}
 {{- if not $profile -}}
 {{-   $profile = "client" -}}
 {{- end -}}
 
 [data]
-    # 環境タイプ: client（デフォルト） または server
+    # Environment type: client (default) or server
     profile = "{{ $profile }}"
