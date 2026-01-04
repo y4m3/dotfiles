@@ -4,8 +4,12 @@
 
 # Source PATH and runtime configurations for non-interactive login shells
 # These should work without requiring interactive shell features
-if [ -f "$HOME/.bashrc.d/20-paths.sh" ]; then
-    source "$HOME/.bashrc.d/20-paths.sh"
+if [ -f "$HOME/.bashrc.d/000-aliases-helper.sh" ]; then
+    source "$HOME/.bashrc.d/000-aliases-helper.sh"
+fi
+
+if [ -f "$HOME/.bashrc.d/020-paths.sh" ]; then
+    source "$HOME/.bashrc.d/020-paths.sh"
 fi
 
 if [ -f "$HOME/.bashrc.d/200-runtimes.sh" ]; then
