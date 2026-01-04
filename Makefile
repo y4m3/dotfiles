@@ -337,7 +337,7 @@ lint: build-lint
 	@echo "==> Running shellcheck on .chezmoiscripts (template-aware)..."
 	@$(DOCKER_RUN_BASE_USER) $(IMAGE_LINT) bash -c '\
 	  for f in home/.chezmoiscripts/*.sh.tmpl; do \
-	    if ! sed "/^{{-.*-}}$$/d" "$$f" | shellcheck -e SC1090,SC1091 -; then \
+	    if ! sed -E "/^\{\{-.*-\}\}[[:space:]]*$$/d" "$$f" | shellcheck -e SC1090,SC1091 -; then \
 	      echo "shellcheck failed: $$f"; exit 1; \
 	    fi; \
 	  done'
@@ -356,9 +356,15 @@ format: build-lint
 	@echo "==> Formatting .chezmoiscripts (preserving template guards)..."
 	@$(DOCKER_RUN_BASE_USER) $(IMAGE_LINT) bash -c '\
 	  for f in home/.chezmoiscripts/*.sh.tmpl; do \
-	    head -1 "$$f" > "$$f.tmp"; \
-	    tail -n +2 "$$f" | head -n -1 | shfmt >> "$$f.tmp"; \
-	    tail -1 "$$f" >> "$$f.tmp"; \
-	    mv "$$f.tmp" "$$f"; \
+	    lines=$$(wc -l < "$$f"); \
+	    if [ "$$lines" -ge 3 ]; then \
+	      head -1 "$$f" > "$$f.tmp"; \
+	      tail -n +2 "$$f" | head -n -1 | shfmt >> "$$f.tmp"; \
+	      tail -1 "$$f" >> "$$f.tmp"; \
+	      mv "$$f.tmp" "$$f"; \
+	    else \
+	      cp "$$f" "$$f.tmp"; \
+	      mv "$$f.tmp" "$$f"; \
+	    fi; \
 	  done'
 	@echo "✓ Shell scripts formatted"
