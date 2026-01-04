@@ -1,0 +1,42 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Install WezTerm nightly via apt
+set -euo pipefail
+
+# Check if already installed
+if command -v wezterm >/dev/null 2>&1; then
+    echo "✓ wezterm already installed: $(wezterm --version 2>/dev/null || echo "version unknown")"
+    exit 0
+fi
+
+echo "==> Installing WezTerm (nightly) via apt..."
+
+# Add WezTerm apt repository
+KEYRING_PATH="/usr/share/keyrings/wezterm-fury.gpg"
+REPO_PATH="/etc/apt/sources.list.d/wezterm.list"
+
+if [ ! -f "$KEYRING_PATH" ]; then
+    echo "==> Adding WezTerm GPG key..."
+    curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o "$KEYRING_PATH"
+    sudo chmod 644 "$KEYRING_PATH"
+fi
+
+if [ ! -f "$REPO_PATH" ]; then
+    echo "==> Adding WezTerm repository..."
+    echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee "$REPO_PATH"
+fi
+
+# Install wezterm-nightly
+echo "==> Installing wezterm-nightly package..."
+sudo apt-get update
+sudo apt-get install -y wezterm-nightly
+
+# Enable systemd user service (if systemd is available)
+if command -v systemctl >/dev/null 2>&1 && systemctl --user >/dev/null 2>&1; then
+    echo "==> Enabling WezTerm mux server service..."
+    systemctl --user daemon-reload
+    systemctl --user enable wezterm-mux.service
+fi
+
+echo "==> wezterm version: $(wezterm --version)"
+{{- end -}}
