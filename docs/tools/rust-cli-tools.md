@@ -2,14 +2,14 @@
 
 Rust-based CLI tools for enhanced terminal experience.
 
-All tools installed via cargo in `run_once_210-shell-cargo-tools.sh.tmpl`.
+All tools installed via cargo in `run_onchange_client_ubuntu_210-cargo-tools.sh.tmpl`.
 
 ## bat
 
 **Official**: https://github.com/sharkdp/bat
 
 **Environment-specific**:
-- Tokyo Night themes installed via `run_once_215-shell-bat-tokyonight.sh`
+- Tokyo Night themes installed via `run_onchange_client_ubuntu_215-bat-tokyonight.sh.tmpl`
 - Default: `tokyonight_night` (override via `BAT_THEME` in `~/.bashrc.local`)
 - Smart `cat` function: uses bat for interactive viewing, real cat for pipes/redirects
 

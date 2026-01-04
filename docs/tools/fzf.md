@@ -8,7 +8,7 @@ https://github.com/junegunn/fzf
 
 ## Installation
 
-Managed by `run_once_200-shell-fzf.sh.tmpl`
+Managed by `run_onchange_client_ubuntu_200-fzf.sh.tmpl`
 
 ## Environment-specific Configuration
 

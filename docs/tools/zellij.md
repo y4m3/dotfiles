@@ -8,7 +8,7 @@ https://github.com/zellij-org/zellij
 
 ## Installation
 
-Managed by `run_once_265-terminal-zellij.sh.tmpl`. Configuration: `~/.config/zellij/config.kdl`.
+Managed by `run_onchange_client_ubuntu_265-zellij.sh.tmpl`. Configuration: `~/.config/zellij/config.kdl`.
 
 ## Environment-specific Configuration
 

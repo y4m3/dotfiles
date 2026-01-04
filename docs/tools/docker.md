@@ -9,7 +9,7 @@ Concise notes focused on environment-specific configuration. Refer to official d
 
 ## Installation
 
-Installed via `run_once_350-devtools-docker.sh.tmpl` using official installation script.
+Installed via `run_onchange_client_ubuntu_350-docker.sh.tmpl` using official installation script.
 
 **Important**: Run `chezmoi apply` on the host system (not inside a Docker container). Installation is automatically skipped in containers.
 

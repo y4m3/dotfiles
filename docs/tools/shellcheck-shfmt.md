@@ -9,7 +9,7 @@ Concise notes focused on environment-specific behavior. See official docs for us
 
 ## Installation
 
-Managed by `run_once_250-shell-shellcheck.sh.tmpl`:
+Managed by `run_onchange_client_ubuntu_250-shellcheck.sh.tmpl`:
 - Installs `shellcheck` and `shfmt` to `~/.local/bin/`
 
 ## Environment-specific Integration

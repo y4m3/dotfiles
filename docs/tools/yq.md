@@ -8,7 +8,7 @@ https://github.com/mikefarah/yq
 
 ## Installation
 
-Managed by `run_once_275-utils-yq.sh.tmpl`:
+Managed by `run_onchange_client_ubuntu_275-yq.sh.tmpl`:
 - Installs binary to `~/.local/bin/yq`
 - Adds Bash completion to `~/.bash_completion.d/yq`
 

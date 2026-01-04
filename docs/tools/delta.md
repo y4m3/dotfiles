@@ -8,7 +8,7 @@ https://github.com/dandavison/delta
 
 ## Installation
 
-Managed by `run_once_320-devtools-delta.sh.tmpl`. Installs to `~/.local/bin/delta`. Configured in `~/.gitconfig`.
+Managed by `run_onchange_client_ubuntu_320-delta.sh.tmpl`. Installs to `~/.local/bin/delta`. Configured in `~/.gitconfig`.
 
 ## Environment-specific Configuration
 

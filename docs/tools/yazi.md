@@ -8,7 +8,7 @@ https://github.com/sxyazi/yazi
 
 ## Installation
 
-Managed by `run_once_285-utils-yazi.sh.tmpl`:
+Managed by `run_onchange_client_ubuntu_285-yazi.sh.tmpl`:
 - Installs to `~/.local/bin/yazi`
 - Configuration in `~/.config/yazi/`
 

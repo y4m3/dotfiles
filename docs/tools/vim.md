@@ -8,9 +8,9 @@ https://www.vim.org/
 
 ## Installation
 
-- **vim-gtk3** installed via `run_once_000-prerequisites.sh.tmpl` (provides `+clipboard` support)
+- **vim-gtk3** installed via `run_onchange_client_ubuntu_000-prerequisites.sh.tmpl` (provides `+clipboard` support)
 - Configuration template: `home/dot_vimrc.tmpl`
-- Colorscheme installed via `run_once_220-shell-vim-tokyonight.sh.tmpl`
+- Colorscheme installed via `run_onchange_client_ubuntu_220-vim-tokyonight.sh.tmpl`
 
 ## Environment-specific Configuration
 

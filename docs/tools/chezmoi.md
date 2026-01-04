@@ -4,7 +4,7 @@ chezmoi is a dotfiles manager written in Go. It manages dotfiles across multiple
 
 ## Installation
 
-This repository includes automated installation via `run_once_010-chezmoi.sh.tmpl`.
+This repository includes automated installation via `run_onchange_client_ubuntu_010-chezmoi.sh.tmpl`.
 
 For installation instructions, see the [official chezmoi installation guide](https://www.chezmoi.io/install/).
 
@@ -18,7 +18,8 @@ This dotfiles repository is configured with chezmoi. Configuration files are sto
 - `home/dot_gitconfig` → `~/.gitconfig`
 - `home/dot_tmux.conf` → `~/.tmux.conf`
 - `home/dot_config/` → `~/.config/`
-- `home/run_once_*.sh.tmpl` - Scripts that run once per machine (installers, initial setup, etc.)
+- `home/.chezmoiscripts/run_onchange_*.sh.tmpl` - Install scripts (re-run when content changes)
+- `home/.chezmoi.toml.tmpl` - Profile variable (client/server)
 
 ## Common Commands
 

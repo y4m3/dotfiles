@@ -8,7 +8,7 @@ https://github.com/tmux/tmux
 
 ## Installation
 
-Installed via apt in `run_once_000-prerequisites.sh.tmpl`.
+Installed via apt in `run_onchange_client_ubuntu_000-prerequisites.sh.tmpl`.
 Configuration template: `home/create_dot_tmux.conf.tmpl`.
 
 ## Environment-specific Configuration
