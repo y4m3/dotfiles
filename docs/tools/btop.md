@@ -8,7 +8,7 @@ https://github.com/aristocratos/btop
 
 ## Installation
 
-Managed by `run_once_280-utils-btop.sh.tmpl`:
+Managed by `run_onchange_client_ubuntu_280-btop.sh.tmpl`:
 - Installs binary to `~/.local/bin/btop`
 - Configuration at `~/.config/btop/btop.conf`
 

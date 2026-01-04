@@ -1,3 +1,4 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # Install yq (mikefarah) from GitHub releases
 set -euo pipefail
@@ -49,3 +50,4 @@ curl -fsSL "$url" -o "$tmpdir/yq"
 install -m 0755 "$tmpdir/yq" "$INSTALL_DIR/yq"
 
 echo "==> yq version: $("$INSTALL_DIR/yq" --version)"
+{{- end -}}

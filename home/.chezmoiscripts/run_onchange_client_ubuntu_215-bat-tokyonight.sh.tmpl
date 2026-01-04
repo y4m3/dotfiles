@@ -1,3 +1,4 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # Install Tokyo Night themes for bat
 # Uses bat-into-tokyonight script from https://github.com/0xTadash1/bat-into-tokyonight
@@ -107,3 +108,4 @@ else
   err "Tokyo Night themes installation verification failed"
   exit 1
 fi
+{{- end -}}

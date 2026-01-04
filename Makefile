@@ -20,11 +20,14 @@ VOLUME_CARGO := -v cargo-data:/root/.cargo
 VOLUME_RUSTUP := -v rustup-data:/root/.rustup
 VOLUME_SNAPSHOT := -v env-snapshot:/root/.local/share/env-snapshot
 VOLUME_VIM := -v vim-data:/root/.vim
+VOLUME_LOCAL_BIN := -v local-bin-data:/root/.local/bin
+VOLUME_FZF := -v fzf-data:/root/.fzf
+VOLUME_FNM := -v fnm-data:/root/.local/share/fnm
 # Mount gh config from host if available (for GitHub API authentication)
 # Use $$HOME to reference shell variable, not Make variable
 VOLUME_GH := $(shell test -d ~/.config/gh && echo "-v $$HOME/.config/gh:/root/.config/gh:ro" || echo "")
 VOLUMES_MINIMAL := $(VOLUME_DOTFILES)
-VOLUMES_FULL := $(VOLUME_DOTFILES) $(VOLUME_CARGO) $(VOLUME_RUSTUP) $(VOLUME_SNAPSHOT) $(VOLUME_VIM) $(VOLUME_GH)
+VOLUMES_FULL := $(VOLUME_DOTFILES) $(VOLUME_CARGO) $(VOLUME_RUSTUP) $(VOLUME_SNAPSHOT) $(VOLUME_VIM) $(VOLUME_LOCAL_BIN) $(VOLUME_FZF) $(VOLUME_FNM) $(VOLUME_GH)
 
 # Get GitHub token from host if gh is available
 # This allows authenticated GitHub API requests in Docker (5000/hour vs 60/hour unauthenticated)
@@ -76,11 +79,13 @@ test: build
 	           APPLY_DURATION=$$((APPLY_END - APPLY_START)); \
 	           if [ "$$APPLY_STATUS" -eq 0 ]; then \
 	             echo "[$$(date +%H:%M:%S)] apply-container.sh completed in $$APPLY_DURATION seconds" | tee -a "$$TEST_LOG_FILE"; \
+	             export PATH="$$HOME/.local/bin:$$HOME/.cargo/bin:$$PATH"; \
+	             FNM_PATH="$$HOME/.local/share/fnm"; \
+	             if [ -x "$$FNM_PATH/fnm" ]; then export PATH="$$FNM_PATH:$$PATH"; eval "$$($$FNM_PATH/fnm env)"; fi; \
 	           else \
 	             echo "[$$(date +%H:%M:%S)] apply-container.sh failed after $$APPLY_DURATION seconds (exit $$APPLY_STATUS)" | tee -a "$$TEST_LOG_FILE"; \
 	             exit $$APPLY_STATUS; \
 	           fi; \
-	           [ -f ~/.bashrc ] && source ~/.bashrc; \
 	           TESTS_START=$$(date +%s); \
 	           tests_to_run=$$(bash scripts/detect-changes.sh); \
 	           if [ -z "$$tests_to_run" ]; then \
@@ -186,6 +191,9 @@ test-all: build
 	           echo "Test log file: $$TEST_LOG_FILE"; \
 	           echo "Test results file: $$TEST_RESULTS_JSONL"; \
 	           bash scripts/apply-container.sh && \
+	           export PATH="$$HOME/.local/bin:$$HOME/.cargo/bin:$$PATH" && \
+	           FNM_PATH="$$HOME/.local/share/fnm" && \
+	           if [ -x "$$FNM_PATH/fnm" ]; then export PATH="$$FNM_PATH:$$PATH"; eval "$$($$FNM_PATH/fnm env)"; fi && \
 	           echo "Running all tests..." && \
 	           warn_count=0; \
 	           fail_count=0; \
@@ -250,7 +258,7 @@ clean:
 		echo; \
 		if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
 			volume_errors=0; \
-			for vol in dotfiles-state cargo-data rustup-data env-snapshot; do \
+			for vol in dotfiles-state cargo-data rustup-data env-snapshot vim-data local-bin-data fzf-data fnm-data; do \
 				if docker volume inspect "$$vol" >/dev/null 2>&1; then \
 					error_msg=$$(docker volume rm "$$vol" 2>&1); \
 					exit_code=$$?; \
@@ -278,7 +286,7 @@ clean:
 	else \
 		echo "==> Removing persistent volumes..."; \
 		volume_errors=0; \
-		for vol in dotfiles-state cargo-data rustup-data env-snapshot vim-data; do \
+		for vol in dotfiles-state cargo-data rustup-data env-snapshot vim-data local-bin-data fzf-data fnm-data; do \
 			if docker volume inspect "$$vol" >/dev/null 2>&1; then \
 				error_msg=$$(docker volume rm "$$vol" 2>&1); \
 				exit_code=$$?; \
@@ -294,7 +302,7 @@ clean:
 			fi; \
 		done; \
 		if [ $$volume_errors -eq 0 ]; then \
-			echo "✓ Persistent state cleared (dotfiles-state, cargo-data, rustup-data, env-snapshot, vim-data)."; \
+			echo "✓ Persistent state cleared (dotfiles-state, cargo-data, rustup-data, env-snapshot, vim-data, local-bin-data, fzf-data, fnm-data)."; \
 			echo "  Next 'make dev' or 'make test' will rebuild the environment."; \
 		else \
 			echo "Error: Some volumes could not be removed. Please stop any running containers first." >&2; \
@@ -322,11 +330,17 @@ lint: build-lint
 	@echo "==> Running shellcheck on all shell scripts..."
 	@$(DOCKER_RUN_BASE_USER) $(IMAGE_LINT) \
 	  shellcheck -e SC1090,SC1091 \
-	             home/run_once_*.sh.tmpl \
 	             home/dot_bashrc.d/*.sh \
 	             home/dot_bash_prompt.d/*.sh \
 	             scripts/*.sh \
 	             tests/*.sh tests/lib/*.sh
+	@echo "==> Running shellcheck on .chezmoiscripts (template-aware)..."
+	@$(DOCKER_RUN_BASE_USER) $(IMAGE_LINT) bash -c '\
+	  for f in home/.chezmoiscripts/*.sh.tmpl; do \
+	    if ! sed "/^{{-.*-}}$$/d" "$$f" | shellcheck -e SC1090,SC1091 -; then \
+	      echo "shellcheck failed: $$f"; exit 1; \
+	    fi; \
+	  done'
 	@echo "✓ All shell scripts passed shellcheck"
 
 # format: Format all shell scripts with shfmt
@@ -335,10 +349,16 @@ lint: build-lint
 format: build-lint
 	@echo "==> Formatting shell scripts with shfmt..."
 	@$(DOCKER_RUN_BASE_USER) $(IMAGE_LINT) \
-	  shfmt -w home/run_once_*.sh.tmpl \
-	           home/dot_bashrc.d/*.sh \
+	  shfmt -w home/dot_bashrc.d/*.sh \
 	           home/dot_bash_prompt.d/*.sh \
 	           scripts/*.sh \
 	           tests/*.sh tests/lib/*.sh
+	@echo "==> Formatting .chezmoiscripts (preserving template guards)..."
+	@$(DOCKER_RUN_BASE_USER) $(IMAGE_LINT) bash -c '\
+	  for f in home/.chezmoiscripts/*.sh.tmpl; do \
+	    head -1 "$$f" > "$$f.tmp"; \
+	    tail -n +2 "$$f" | head -n -1 | shfmt >> "$$f.tmp"; \
+	    tail -1 "$$f" >> "$$f.tmp"; \
+	    mv "$$f.tmp" "$$f"; \
+	  done'
 	@echo "✓ Shell scripts formatted"
-	@echo "  Next 'make dev' or 'make test' will re-run all run_once_* scripts."

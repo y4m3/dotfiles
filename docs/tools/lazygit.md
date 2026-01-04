@@ -8,7 +8,7 @@ https://github.com/jesseduffield/lazygit
 
 ## Installation
 
-- Managed by `run_once_330-devtools-lazygit.sh.tmpl`
+- Managed by `run_onchange_client_ubuntu_330-lazygit.sh.tmpl`
 - Config template: `home/dot_config/lazygit/create_config.yml.tmpl`
 
 ## Environment-specific Configuration

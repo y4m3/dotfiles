@@ -8,7 +8,7 @@ https://github.com/charmbracelet/glow
 
 ## Installation
 
-Installed via `run_once_370-utils-glow.sh.tmpl` from GitHub releases. Installs to `~/.local/bin/glow`.
+Installed via `run_onchange_client_ubuntu_370-glow.sh.tmpl` from GitHub releases. Installs to `~/.local/bin/glow`.
 
 ## Environment-specific Configuration
 

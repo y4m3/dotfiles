@@ -1,0 +1,9 @@
+{{- /* Determine environment type (priority: environment variable > default) */ -}}
+{{- $profile := env "DOTFILES_PROFILE" -}}
+{{- if not $profile -}}
+{{-   $profile = "client" -}}
+{{- end -}}
+
+[data]
+    # Environment type: client (default) or server
+    profile = "{{ $profile }}"

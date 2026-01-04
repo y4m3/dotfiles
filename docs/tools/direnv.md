@@ -8,7 +8,7 @@ https://direnv.net/
 
 ## Installation
 
-Managed by `run_once_240-shell-direnv.sh.tmpl`:
+Managed by `run_onchange_client_ubuntu_240-direnv.sh.tmpl`:
 - Downloads latest release from GitHub
 - Installs to `~/.local/bin/direnv`
 - Shell hook added in `~/.bashrc.d/105-direnv.sh`

@@ -1,3 +1,4 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # Install direnv from GitHub releases (skipped inside Docker)
 set -euo pipefail
@@ -62,3 +63,4 @@ if ! command -v direnv >/dev/null 2>&1; then
 fi
 
 echo "==> direnv version: $(direnv version)"
+{{- end -}}

@@ -1,3 +1,4 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # Install Tokyo Night colorscheme for vim
 # Downloads colorscheme file directly from ghifarit53/tokyonight-vim
@@ -37,3 +38,4 @@ fi
 log "✓ Tokyo Night colorscheme installed successfully"
 log "  File: $TOKYONIGHT_COLOR_FILE"
 log "  Set 'colorscheme tokyonight' and 'let g:tokyonight_style = \"storm\"' in ~/.vimrc"
+{{- end -}}

@@ -1,3 +1,4 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # Install uv (Python package and project manager)
 # uv installs Python itself and manages Python environments
@@ -29,3 +30,4 @@ fi
 # Optional: Install a Python version via uv (can be done later)
 # echo "==> Installing Python via uv..."
 # uv python install 3.12
+{{- end -}}

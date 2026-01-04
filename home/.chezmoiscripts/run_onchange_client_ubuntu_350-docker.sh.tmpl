@@ -1,3 +1,4 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # Install Docker Engine and Docker Compose on host system
 set -euo pipefail
@@ -230,3 +231,4 @@ else
   echo "Error: Installation verification failed" >&2
   exit 1
 fi
+{{- end -}}

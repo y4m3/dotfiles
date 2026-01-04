@@ -1,3 +1,4 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # Install glow from GitHub releases
 set -euo pipefail
@@ -70,3 +71,4 @@ fi
 install -m 0755 "$binary_path" "$INSTALL_DIR/glow"
 
 echo "==> glow version: $("$INSTALL_DIR/glow" --version 2>/dev/null || echo "installed")"
+{{- end -}}

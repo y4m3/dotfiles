@@ -1,0 +1,74 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Install shellcheck (shell script linter) and shfmt (shell script formatter)
+set -euo pipefail
+
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
+
+echo "==> Installing shellcheck and shfmt..."
+
+# Install shellcheck from GitHub releases to ~/.local/bin
+if [ -x "$INSTALL_DIR/shellcheck" ]; then
+  echo "✓ shellcheck already installed: $("$INSTALL_DIR/shellcheck" --version | head -2 | tail -1)"
+else
+  echo "==> Installing shellcheck from GitHub releases..."
+
+  case "$(uname -m)" in
+    x86_64 | amd64) arch="x86_64" ;;
+    aarch64 | arm64) arch="aarch64" ;;
+    *)
+      echo "Unsupported architecture: $(uname -m)" >&2
+      exit 1
+      ;;
+  esac
+
+  # Get latest version from GitHub API
+  version=$(curl -fsSL https://api.github.com/repos/koalaman/shellcheck/releases/latest | jq -r '.tag_name')
+
+  if [ -z "$version" ] || [ "$version" = "null" ]; then
+    echo "Failed to get latest shellcheck version" >&2
+    exit 1
+  fi
+
+  url="https://github.com/koalaman/shellcheck/releases/download/${version}/shellcheck-${version}.linux.${arch}.tar.xz"
+
+  tmpdir=$(mktemp -d)
+  trap 'rm -rf "$tmpdir"' EXIT
+
+  echo "==> Downloading shellcheck ${version}..."
+  curl -fsSL "$url" -o "$tmpdir/shellcheck.tar.xz"
+  tar -xJf "$tmpdir/shellcheck.tar.xz" -C "$tmpdir"
+
+  install -m 0755 "$tmpdir/shellcheck-${version}/shellcheck" "$INSTALL_DIR/shellcheck"
+
+  echo "✓ shellcheck installed: $("$INSTALL_DIR/shellcheck" --version | head -2 | tail -1)"
+fi
+
+# shfmt - install via Go (requires golang-go from prerequisites)
+if [ -x "$INSTALL_DIR/shfmt" ]; then
+  echo "✓ shfmt already installed: $("$INSTALL_DIR/shfmt" --version)"
+else
+  if ! command -v go >/dev/null 2>&1; then
+    echo "Error: Go not found. Install prerequisites first." >&2
+    exit 1
+  fi
+
+  echo "==> Installing shfmt via Go..."
+  GO111MODULE=on go install mvdan.cc/sh/v3/cmd/shfmt@latest
+
+  # Copy built binary to ~/.local/bin
+  if [ -x "$HOME/go/bin/shfmt" ]; then
+    install -m 0755 "$HOME/go/bin/shfmt" "$INSTALL_DIR/shfmt"
+  elif [ -n "${GOPATH:-}" ] && [ -x "$GOPATH/bin/shfmt" ]; then
+    install -m 0755 "$GOPATH/bin/shfmt" "$INSTALL_DIR/shfmt"
+  else
+    echo "Error: go install did not produce shfmt binary." >&2
+    exit 1
+  fi
+
+  echo "✓ shfmt installed: $INSTALL_DIR/shfmt ($("$INSTALL_DIR/shfmt" --version))"
+fi
+
+echo "✓ Shell linting and formatting tools ready"
+{{- end -}}

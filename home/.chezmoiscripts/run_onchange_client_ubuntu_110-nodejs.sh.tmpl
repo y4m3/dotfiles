@@ -1,0 +1,46 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Install Node.js LTS via fnm (Fast Node Manager) to ~/.local/share/fnm
+set -euo pipefail
+
+FNM_DIR="${FNM_DIR:-$HOME/.local/share/fnm}"
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
+
+# Setup fnm environment for this script
+export PATH="$FNM_DIR:$INSTALL_DIR:$PATH"
+
+# Check if node is already available via fnm
+if [ -x "$FNM_DIR/fnm" ]; then
+  eval "$("$FNM_DIR/fnm" env)"
+  if command -v node >/dev/null 2>&1; then
+    echo "✓ Node.js already installed: $(node --version)"
+    exit 0
+  fi
+fi
+
+echo "==> Installing fnm (Fast Node Manager)..."
+
+# Install fnm if not present
+if [ ! -x "$FNM_DIR/fnm" ]; then
+  curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$FNM_DIR" --skip-shell
+fi
+
+# Setup fnm for current shell
+eval "$("$FNM_DIR/fnm" env)"
+
+echo "==> Installing Node.js LTS..."
+"$FNM_DIR/fnm" install --lts
+"$FNM_DIR/fnm" default lts-latest
+
+# Verify installation
+if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+  echo "✓ Node.js installed successfully"
+  echo "  Node: $(node --version)"
+  echo "  npm: $(npm --version)"
+  echo "  fnm: $("$FNM_DIR/fnm" --version)"
+else
+  echo "Error: Node.js installation failed" >&2
+  exit 1
+fi
+{{- end -}}

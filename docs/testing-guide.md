@@ -53,7 +53,7 @@ make test
 **Purpose**: Run all tests regardless of changes. Used for initial setup, after major changes, or before releases.
 
 **How it works**:
-1. **Apply Configuration**: Runs `scripts/apply-container.sh` (applies chezmoi configuration, executes run_once scripts)
+1. **Apply Configuration**: Runs `scripts/apply-container.sh` (applies chezmoi configuration, executes run_onchange scripts)
 2. **Test Execution**: Runs all test files (all `*-test.sh` files in `tests/` directory)
 3. **Snapshot Creation**: Creates environment snapshot on success (no FAIL) via `scripts/create-snapshot.sh`
 4. **Result Recording**: Records test results in JSON format via `scripts/record-test-results.sh`

@@ -1,3 +1,4 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # Install lazydocker from GitHub releases
 set -euo pipefail
@@ -58,3 +59,4 @@ tar -xzf "$tmpdir/lazydocker.tar.gz" -C "$tmpdir" lazydocker
 install -m 0755 "$tmpdir/lazydocker" "$INSTALL_DIR/lazydocker"
 
 echo "==> lazydocker version: $("$INSTALL_DIR/lazydocker" --version)"
+{{- end -}}

@@ -8,7 +8,7 @@ https://lnav.org/
 
 ## Installation
 
-Managed by `run_once_360-utils-lnav.sh.tmpl`. Installs to `~/.local/bin/lnav`.
+Managed by `run_onchange_client_ubuntu_360-lnav.sh.tmpl`. Installs to `~/.local/bin/lnav`.
 
 ## Environment-specific Configuration
 

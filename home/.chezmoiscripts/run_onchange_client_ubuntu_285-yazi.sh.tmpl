@@ -1,3 +1,4 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # Install yazi from official GitHub releases
 set -euo pipefail
@@ -57,3 +58,4 @@ fi
 install -m 0755 "$binary_path" "$INSTALL_DIR/yazi"
 
 echo "==> yazi version: $("$INSTALL_DIR/yazi" --version)"
+{{- end -}}

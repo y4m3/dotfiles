@@ -1,3 +1,4 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # run_once_010-chezmoi.sh.tmpl
 # Install or upgrade chezmoi (dotfiles manager)
@@ -76,3 +77,4 @@ else
   echo "    $CORRECT_LOCATION exists: $([ -f "$CORRECT_LOCATION" ] && echo "yes" || echo "no")"
   exit 1
 fi
+{{- end -}}
