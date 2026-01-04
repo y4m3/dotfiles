@@ -27,7 +27,8 @@ chezmoi update
 ## What chezmoi manages here
 
 - `home/` dotfiles (`dot_*`, `dot_*/*.sh`, `create_*` templates)
-- `run_once_*.sh.tmpl`: first-run install scripts (numbered by category)
+- `home/.chezmoiscripts/run_onchange_client_ubuntu_*.sh.tmpl`: install scripts (re-run on content change)
+- `home/.chezmoi.toml.tmpl`: profile variable (`client` or `server`)
 - Themed configs (delta, lazygit, zellij, yazi)
 
 ## Optional: Docker for testing
@@ -62,6 +63,7 @@ The snapshot system automatically tracks run_once-installed tools, so you don't 
 ## Directory quick reference
 
 - `home/`: dotfiles sources (e.g., dot_bashrc, dot_bashrc.d/*)
+- `home/.chezmoiscripts/`: install scripts (`run_onchange_client_ubuntu_*.sh.tmpl`)
 - `tests/`: tool smoke tests
 - `docs/`: policy and templates (e.g., docs/templates/envrc-examples.md, docs/testing-guide.md)
 - `Dockerfile`, `Makefile`: container validation & automation

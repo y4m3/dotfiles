@@ -22,8 +22,10 @@ chezmoi diff                # Show differences
 
 ```
 .
-├── home/                    # Files to be copied to ~/ (dot_*, run_once_*)
-├── .chezmoiscripts/         # Setup scripts (future: run_onchange_*)
+├── home/                    # Files to be copied to ~/
+│   ├── .chezmoi.toml.tmpl   # Profile variable (client/server)
+│   ├── .chezmoiscripts/     # Install scripts (run_onchange_client_ubuntu_*)
+│   └── dot_*                # Dotfiles (dot_bashrc, dot_bashrc.d/, etc.)
 ├── scripts/                 # Helper scripts for Makefile
 ├── tests/                   # Test scripts
 ├── Dockerfile               # Test environment
