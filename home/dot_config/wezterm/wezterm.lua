@@ -388,8 +388,10 @@ for _, env in ipairs(local_config.environments or {}) do
             spawn_config.domain = { DomainName = env.workspace_name }
         elseif env.connection == "ssh" then
             spawn_config.args = { "ssh", env.username .. "@" .. env.remote_address }
+            spawn_config.domain = { DomainName = "local" }
         else -- local
             spawn_config.args = env.args
+            spawn_config.domain = { DomainName = "local" }
         end
 
         table.insert(config.keys, {
