@@ -1,0 +1,11 @@
+{
+  "description": "apt packages that need verification in Docker (packages installed to /usr/bin don't persist)",
+  "packages": [
+    {
+      "name": "wezterm",
+      "command": "wezterm",
+      "script": "home/.chezmoiscripts/run_onchange_client_ubuntu_260-wezterm.sh.tmpl",
+      "description": "WezTerm terminal emulator"
+    }
+  ]
+}

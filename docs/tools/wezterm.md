@@ -17,6 +17,34 @@ Managed by `run_onchange_client_ubuntu_260-wezterm.sh.tmpl`. Configuration: `~/.
 - **Keybindings**: All pane/tab operations use LEADER prefix
 - **Mux Server**: systemd user service (`wezterm-mux.service`)
 
+## Local Configuration (`wezterm.local.lua`)
+
+All workspace and connection settings are configured in `~/.config/wezterm/wezterm.local.lua` using the `environments` array:
+
+```lua
+environments = {
+    {
+        key = "1",                    -- LEADER + key
+        workspace_name = "wsl",       -- Workspace name
+        connection = "connect",       -- "local" | "connect" | "ssh"
+        remote_address = "127.0.0.1",
+        username = "dev",
+        is_default = true,
+    },
+    {
+        key = "2",
+        workspace_name = "posh",
+        connection = "local",
+        args = { "pwsh.exe", "-NoLogo" },
+    },
+}
+```
+
+**connection types:**
+- `"local"` - Run local command (uses `args`)
+- `"connect"` - WezTerm SSH domain (`wezterm connect <workspace_name>`)
+- `"ssh"` - System SSH command (`ssh user@host`)
+
 ## Critical Warning: Shell Integration Issue
 
 **WezTerm apt package breaks bash/starship prompts on WSL/Ubuntu.**

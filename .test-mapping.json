@@ -93,6 +93,16 @@
       "description": "lazydocker installation"
     },
     {
+      "pattern": "home/.chezmoiscripts/run_onchange_client_ubuntu_260-wezterm.sh.tmpl",
+      "tests": ["tests/wezterm-test.sh"],
+      "description": "wezterm installation"
+    },
+    {
+      "pattern": "home/dot_config/wezterm/**",
+      "tests": ["tests/wezterm-test.sh"],
+      "description": "wezterm configuration"
+    },
+    {
       "pattern": "home/dot_config/zellij/**",
       "tests": ["tests/zellij-test.sh"],
       "description": "zellij configuration"

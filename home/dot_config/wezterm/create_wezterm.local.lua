@@ -2,70 +2,54 @@
 -- Local Configuration Template
 -- =========================================================
 --
--- ssh_domains: List of SSH connections
+-- environments: Unified configuration for workspaces and connections
 --   {
---     name = "wsl-dev",            -- Domain name (used in environments)
---     remote_address = "127.0.0.1", -- Host address (IP or hostname)
---     username = "dev",             -- SSH username
---     default_prog = { "/bin/bash", "-l" }, -- Optional: default shell
+--     key = "1",                    -- LEADER + key for quick switch (optional)
+--     workspace_name = "wsl",       -- Workspace name (used everywhere)
+--     connection = "connect",       -- "local" | "connect" | "ssh"
+--     -- For "connect" or "ssh":
+--     remote_address = "127.0.0.1",
+--     username = "dev",
+--     default_prog = { "/bin/bash", "-l" },  -- Optional
+--     -- For "local":
+--     args = { "pwsh.exe", "-NoLogo" },
+--     is_default = true,            -- Set as default startup (optional)
 --   }
 --
--- environments: Unified config for workspaces and launch_menu
---   {
---     key = "1",                  -- LEADER + key for quick switch (optional)
---     name = "workspace_name",    -- Workspace name
---     label = "Display Name",     -- Launch menu label (defaults to name)
---     domain = "domain_name",     -- Domain to spawn in
---     args = { "cmd", "arg" },    -- Optional: command to run
---     is_default = true,          -- Set as default startup (optional)
---   }
---
---   - With "key": added to both workspaces (LEADER + N) and launch_menu
---   - Without "key": added to launch_menu only
---   - With "is_default": sets default startup and default_workspace
+-- connection types:
+--   "local"   - Run local command (uses args)
+--   "connect" - WezTerm SSH domain (wezterm connect <workspace_name>)
+--   "ssh"     - System SSH command (ssh user@host)
 --
 -- font: Font configuration (optional)
---   {
---     family = "UDEV Gothic 35NFLG",  -- Font family name
---     size = 12,                       -- Font size
---   }
+--   { family = "...", size = 12 }
 --
 -- =========================================================
 
 -- =========================================================
--- Example Configurations
+-- Example: WSL + PowerShell (Windows host)
 -- =========================================================
-
--- Example 1: WSL + PowerShell (Windows host)
 -- return {
---     ssh_domains = {
---         {
---             name = "wsl-dev",
---             remote_address = "127.0.0.1",
---             username = "dev",
---             default_prog = { "/bin/bash", "-l" },
---         },
---     },
 --     environments = {
 --         {
 --             key = "1",
---             name = "wsl",
---             label = "WSL Development",
---             domain = "wsl-dev",
+--             workspace_name = "wsl",
+--             connection = "connect",
+--             remote_address = "127.0.0.1",
+--             username = "dev",
+--             default_prog = { "/bin/bash", "-l" },
 --             is_default = true,
 --         },
 --         {
 --             key = "2",
---             name = "posh",
---             label = "PowerShell 7",
---             domain = "local",
+--             workspace_name = "posh",
+--             connection = "local",
 --             args = { "pwsh.exe", "-NoLogo" },
 --         },
 --         {
 --             -- No key = launch_menu only
---             name = "cmd",
---             label = "Command Prompt",
---             domain = "local",
+--             workspace_name = "cmd",
+--             connection = "local",
 --             args = { "cmd.exe" },
 --         },
 --     },
@@ -75,28 +59,24 @@
 --     },
 -- }
 
--- Example 2: SSH to remote server
+-- =========================================================
+-- Example: SSH to remote server
+-- =========================================================
 -- return {
---     ssh_domains = {
---         {
---             name = "prod-server",
---             remote_address = "192.168.1.100",
---             username = "admin",
---         },
---     },
 --     environments = {
 --         {
 --             key = "1",
---             name = "local",
---             label = "Local Shell",
---             domain = "local",
+--             workspace_name = "local",
+--             connection = "local",
+--             args = { "pwsh.exe", "-NoLogo" },
 --             is_default = true,
 --         },
 --         {
 --             key = "2",
---             name = "prod",
---             label = "Production Server",
---             domain = "prod-server",
+--             workspace_name = "prod",
+--             connection = "ssh",  -- Uses system ssh command
+--             remote_address = "192.168.1.100",
+--             username = "admin",
 --         },
 --     },
 -- }
@@ -104,29 +84,20 @@
 -- =========================================================
 
 return {
-    ssh_domains = {
-        -- {
-        --     name = "your-domain",
-        --     remote_address = "127.0.0.1",
-        --     username = "your-username",
-        --     default_prog = { "/bin/bash", "-l" },
-        -- },
-    },
-
     environments = {
         {
             key = "1",
-            name = "default",
-            label = "PowerShell 7",
-            domain = "local",
+            workspace_name = "default",
+            connection = "local",
             args = { "pwsh.exe", "-NoLogo" },
             is_default = true,
         },
         -- {
         --     key = "2",
-        --     name = "wsl",
-        --     label = "WSL Development",
-        --     domain = "your-domain",  -- Must match ssh_domains.name
+        --     workspace_name = "wsl",
+        --     connection = "connect",
+        --     remote_address = "127.0.0.1",
+        --     username = "dev",
         -- },
     },
 

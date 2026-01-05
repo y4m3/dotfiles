@@ -22,6 +22,9 @@ assert_file_exists "$HOME/.config/systemd/user/wezterm-mux.service" "wezterm mux
 # Test: wezterm config file exists
 assert_file_exists "$HOME/.config/wezterm/wezterm.lua" "wezterm config file exists"
 
+# Test: wezterm local config file exists
+assert_file_exists "$HOME/.config/wezterm/wezterm.local.lua" "wezterm local config file exists"
+
 # Note: systemd service functionality cannot be tested in Docker (no systemd)
 # The service file existence is verified above
 

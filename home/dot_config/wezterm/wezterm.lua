@@ -64,10 +64,8 @@ local config = wezterm.config_builder()
 -- Local Configuration
 -- =========================================================
 local local_config = {
-    ssh_domains = {},
-    default_startup = nil,
-    launch_menu = {},
-    workspaces = {},
+    environments = {},
+    font = nil,
 }
 
 local local_config_path = wezterm.config_dir .. "/wezterm.local.lua"
@@ -158,22 +156,16 @@ wezterm.on("format-tab-title", function(tab)
 end)
 
 -- Status Bar
--- Find default workspace from environments or workspaces
+-- Find default workspace from environments
 local function find_default_workspace()
-    if local_config.default_workspace then
-        return local_config.default_workspace
-    end
-    -- Check environments for is_default
     for _, env in ipairs(local_config.environments or {}) do
         if env.is_default then
-            return env.name
+            return env.workspace_name
         end
     end
-    -- Fallback to first environment or workspace
+    -- Fallback to first environment
     if local_config.environments and #local_config.environments > 0 then
-        return local_config.environments[1].name
-    elseif local_config.workspaces and #local_config.workspaces > 0 then
-        return local_config.workspaces[1].name
+        return local_config.environments[1].workspace_name
     end
     return nil
 end
@@ -183,38 +175,38 @@ if default_ws then
     config.default_workspace = default_ws
 end
 
+-- Helper: get OS label
+local function get_os_label()
+    if wezterm.target_triple:match("windows") then
+        return "Win"
+    elseif wezterm.target_triple:match("darwin") then
+        return "Mac"
+    else
+        return "Local"
+    end
+end
+
 wezterm.on("update-status", function(window, pane)
-    local domain = pane:get_domain_name()
     local workspace = window:active_workspace()
 
-    local domain_label
-    if domain == "local" then
-        if wezterm.target_triple:match("windows") then
-            domain_label = "Win"
-        elseif wezterm.target_triple:match("darwin") then
-            domain_label = "Mac"
-        else
-            domain_label = "Local"
-        end
-    elseif domain:match("^WSL:") then
-        domain_label = "WSL"
-    else
-        local is_local_ssh = false
-        for _, ssh in ipairs(local_config.ssh_domains or {}) do
-            if ssh.name == domain and ssh.remote_address == "127.0.0.1" then
-                is_local_ssh = true
-                break
+    -- Find domain_label from environments based on workspace name
+    local domain_label = nil
+    for _, env in ipairs(local_config.environments or {}) do
+        if env.workspace_name == workspace then
+            if env.connection == "connect" or env.connection == "ssh" then
+                if env.remote_address == "127.0.0.1" then
+                    domain_label = "WSL"
+                else
+                    domain_label = "SSH"
+                end
             end
+            break
         end
-        if is_local_ssh then
-            if wezterm.target_triple:match("windows") then
-                domain_label = "WSL"
-            else
-                domain_label = "Local"
-            end
-        else
-            domain_label = "SSH"
-        end
+    end
+
+    -- Fallback to OS label if not found or local connection
+    if not domain_label then
+        domain_label = get_os_label()
     end
 
     window:set_left_status(wezterm.format({
@@ -342,78 +334,73 @@ config.hyperlink_rules = wezterm.default_hyperlink_rules()
 -- =========================================================
 -- Apply Local Configuration
 -- =========================================================
-config.ssh_domains = local_config.ssh_domains
 
--- Process environments: generate launch_menu and workspace keybindings
-local generated_launch_menu = {}
-local generated_workspaces = {}
-local default_env = nil
-
+-- 1. Generate ssh_domains from environments (connection == "connect" only)
+local ssh_domains = {}
 for _, env in ipairs(local_config.environments or {}) do
-    -- Add to launch_menu
-    table.insert(generated_launch_menu, {
-        label = env.label or env.name,
-        args = env.args,
-        domain = { DomainName = env.domain },
-    })
-
-    -- If key is specified, add to workspaces
-    if env.key then
-        table.insert(generated_workspaces, {
-            key = env.key,
-            name = env.name,
-            domain = env.domain,
-            args = env.args,
+    if env.connection == "connect" then
+        table.insert(ssh_domains, {
+            name = env.workspace_name,
+            remote_address = env.remote_address,
+            username = env.username,
+            default_prog = env.default_prog,
         })
     end
-
-    -- Track default environment
-    if env.is_default then
-        default_env = env
-    end
 end
+config.ssh_domains = ssh_domains
 
--- Use generated or fallback to legacy config
-local launch_menu = #generated_launch_menu > 0 and generated_launch_menu or local_config.launch_menu or {}
-local workspaces = #generated_workspaces > 0 and generated_workspaces or local_config.workspaces or {}
-
+-- 2. Generate launch_menu from environments
+local launch_menu = {}
+for _, env in ipairs(local_config.environments or {}) do
+    local entry = { label = env.workspace_name }
+    if env.connection == "connect" then
+        entry.domain = { DomainName = env.workspace_name }
+    elseif env.connection == "ssh" then
+        entry.args = { "ssh", env.username .. "@" .. env.remote_address }
+        entry.domain = { DomainName = "local" }
+    else -- local
+        entry.args = env.args
+        entry.domain = { DomainName = "local" }
+    end
+    table.insert(launch_menu, entry)
+end
 config.launch_menu = launch_menu
 
--- Set default startup from is_default environment or legacy config
-if default_env then
-    -- Check if domain is in ssh_domains (use connect method) or local (use args)
-    local is_ssh_domain = false
-    for _, ssh in ipairs(local_config.ssh_domains or {}) do
-        if ssh.name == default_env.domain then
-            is_ssh_domain = true
-            break
+-- 3. Set default_startup from is_default environment
+for _, env in ipairs(local_config.environments or {}) do
+    if env.is_default then
+        if env.connection == "connect" then
+            config.default_gui_startup_args = { "connect", env.workspace_name }
+        elseif env.connection == "ssh" then
+            config.default_gui_startup_args = { "ssh", env.username .. "@" .. env.remote_address }
+        elseif env.args then
+            config.default_gui_startup_args = env.args
         end
+        break
     end
-
-    if is_ssh_domain then
-        config.default_gui_startup_args = { "connect", default_env.domain }
-    elseif default_env.args then
-        config.default_gui_startup_args = default_env.args
-    end
-elseif local_config.default_startup then
-    config.default_gui_startup_args = local_config.default_startup
 end
 
--- Workspace Quick Switch: LEADER + 1-9
-for _, ws in ipairs(workspaces) do
-    local spawn_config = { domain = { DomainName = ws.domain } }
-    if ws.args then
-        spawn_config.args = ws.args
-    end
+-- 4. Workspace Quick Switch: LEADER + key
+for _, env in ipairs(local_config.environments or {}) do
+    if env.key then
+        local spawn_config = {}
+        if env.connection == "connect" then
+            spawn_config.domain = { DomainName = env.workspace_name }
+        elseif env.connection == "ssh" then
+            spawn_config.args = { "ssh", env.username .. "@" .. env.remote_address }
+        else -- local
+            spawn_config.args = env.args
+        end
 
-    table.insert(config.keys, {
-        key = ws.key,
-        mods = "LEADER",
-        action = act.SwitchToWorkspace({
-            name = ws.name,
-            spawn = spawn_config,
-        }),
-    })
+        table.insert(config.keys, {
+            key = env.key,
+            mods = "LEADER",
+            action = act.SwitchToWorkspace({
+                name = env.workspace_name,
+                spawn = spawn_config,
+            }),
+        })
+    end
 end
 
 return config
