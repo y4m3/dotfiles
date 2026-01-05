@@ -16,5 +16,31 @@ Managed by `run_onchange_client_ubuntu_265-zellij.sh.tmpl`. Configuration: `~/.c
 - **Scroll Buffer**: 1,000,000 lines
 - **Pane Frames**: Disabled (`pane_frames false`)
 - **Theme**: Tokyo Night Storm
-- **Keybindings**: All use `Alt` modifier to avoid conflicts with vim/bash (`Alt h/j/k/l` for pane navigation, `Alt [`/`]` for tabs, `Alt t` for new tab)
+
+### Keybindings (all Alt-based to avoid conflicts)
+
+| Key | Action |
+|-----|--------|
+| `Alt g` | Lock/Unlock mode toggle |
+| `Alt h/j/k/l` | Pane navigation (vim-style) |
+| `Alt ←↓↑→` | Pane navigation (arrow keys) |
+| `Alt [` / `]` | Previous/Next tab |
+| `Alt 1-9` | Go to tab N |
+| `Alt t` | New tab |
+| `Alt x` | Close pane |
+| `Alt -` / `\` | Split pane down/right |
+| `Alt f` | Toggle floating panes |
+| `Alt e` | Toggle floating ⇔ embedded |
+| `Alt z` | Toggle fullscreen |
+| `Alt s` | Scroll mode (then `s` for search) |
+| `Alt r` | Rename pane |
+| `Alt w` | Session manager |
+
+Note: `Ctrl+g` is intentionally unbound to allow Claude Code to use it.
+
+### Mode Navigation
+
+- **Scroll/Search mode** (`Alt s`): Exit with `Esc` or `Enter` → Normal mode → `Alt g` → Locked
+- **Rename mode** (`Alt r`): Exit with `Esc` (cancel) or `Enter` (confirm) → `Alt g` → Locked
+- **Session Manager** (`Alt w`): Close plugin → `Alt g` → Locked
 
