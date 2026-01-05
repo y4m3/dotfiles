@@ -158,10 +158,29 @@ wezterm.on("format-tab-title", function(tab)
 end)
 
 -- Status Bar
-if local_config.default_workspace then
-    config.default_workspace = local_config.default_workspace
-elseif local_config.workspaces and #local_config.workspaces > 0 then
-    config.default_workspace = local_config.workspaces[1].name
+-- Find default workspace from environments or workspaces
+local function find_default_workspace()
+    if local_config.default_workspace then
+        return local_config.default_workspace
+    end
+    -- Check environments for is_default
+    for _, env in ipairs(local_config.environments or {}) do
+        if env.is_default then
+            return env.name
+        end
+    end
+    -- Fallback to first environment or workspace
+    if local_config.environments and #local_config.environments > 0 then
+        return local_config.environments[1].name
+    elseif local_config.workspaces and #local_config.workspaces > 0 then
+        return local_config.workspaces[1].name
+    end
+    return nil
+end
+
+local default_ws = find_default_workspace()
+if default_ws then
+    config.default_workspace = default_ws
 end
 
 wezterm.on("update-status", function(window, pane)
@@ -325,14 +344,63 @@ config.hyperlink_rules = wezterm.default_hyperlink_rules()
 -- =========================================================
 config.ssh_domains = local_config.ssh_domains
 
-if local_config.default_startup then
+-- Process environments: generate launch_menu and workspace keybindings
+local generated_launch_menu = {}
+local generated_workspaces = {}
+local default_env = nil
+
+for _, env in ipairs(local_config.environments or {}) do
+    -- Add to launch_menu
+    table.insert(generated_launch_menu, {
+        label = env.label or env.name,
+        args = env.args,
+        domain = { DomainName = env.domain },
+    })
+
+    -- If key is specified, add to workspaces
+    if env.key then
+        table.insert(generated_workspaces, {
+            key = env.key,
+            name = env.name,
+            domain = env.domain,
+            args = env.args,
+        })
+    end
+
+    -- Track default environment
+    if env.is_default then
+        default_env = env
+    end
+end
+
+-- Use generated or fallback to legacy config
+local launch_menu = #generated_launch_menu > 0 and generated_launch_menu or local_config.launch_menu or {}
+local workspaces = #generated_workspaces > 0 and generated_workspaces or local_config.workspaces or {}
+
+config.launch_menu = launch_menu
+
+-- Set default startup from is_default environment or legacy config
+if default_env then
+    -- Check if domain is in ssh_domains (use connect method) or local (use args)
+    local is_ssh_domain = false
+    for _, ssh in ipairs(local_config.ssh_domains or {}) do
+        if ssh.name == default_env.domain then
+            is_ssh_domain = true
+            break
+        end
+    end
+
+    if is_ssh_domain then
+        config.default_gui_startup_args = { "connect", default_env.domain }
+    elseif default_env.args then
+        config.default_gui_startup_args = default_env.args
+    end
+elseif local_config.default_startup then
     config.default_gui_startup_args = local_config.default_startup
 end
 
-config.launch_menu = local_config.launch_menu
-
 -- Workspace Quick Switch: LEADER + 1-9
-for _, ws in ipairs(local_config.workspaces) do
+for _, ws in ipairs(workspaces) do
     local spawn_config = { domain = { DomainName = ws.domain } }
     if ws.args then
         spawn_config.args = ws.args
