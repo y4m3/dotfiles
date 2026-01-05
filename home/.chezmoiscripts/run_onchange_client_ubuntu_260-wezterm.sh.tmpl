@@ -3,35 +3,38 @@
 # Install WezTerm nightly via apt
 set -euo pipefail
 
-# Check if already installed
+# Install if not already installed
 if command -v wezterm >/dev/null 2>&1; then
     echo "✓ wezterm already installed: $(wezterm --version 2>/dev/null || echo "version unknown")"
-    exit 0
+else
+    echo "==> Installing WezTerm (nightly) via apt..."
+
+    # Add WezTerm apt repository
+    KEYRING_PATH="/usr/share/keyrings/wezterm-fury.gpg"
+    REPO_PATH="/etc/apt/sources.list.d/wezterm.list"
+
+    if [ ! -f "$KEYRING_PATH" ]; then
+        echo "==> Adding WezTerm GPG key..."
+        curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o "$KEYRING_PATH"
+        sudo chmod 644 "$KEYRING_PATH"
+    fi
+
+    if [ ! -f "$REPO_PATH" ]; then
+        echo "==> Adding WezTerm repository..."
+        echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee "$REPO_PATH"
+    fi
+
+    # Install wezterm-nightly
+    echo "==> Installing wezterm-nightly package..."
+    sudo apt-get update
+    sudo apt-get install -y wezterm-nightly
+
+    echo "==> wezterm version: $(wezterm --version)"
 fi
 
-echo "==> Installing WezTerm (nightly) via apt..."
+# Post-install configuration (always run to ensure correct state)
 
-# Add WezTerm apt repository
-KEYRING_PATH="/usr/share/keyrings/wezterm-fury.gpg"
-REPO_PATH="/etc/apt/sources.list.d/wezterm.list"
-
-if [ ! -f "$KEYRING_PATH" ]; then
-    echo "==> Adding WezTerm GPG key..."
-    curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o "$KEYRING_PATH"
-    sudo chmod 644 "$KEYRING_PATH"
-fi
-
-if [ ! -f "$REPO_PATH" ]; then
-    echo "==> Adding WezTerm repository..."
-    echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee "$REPO_PATH"
-fi
-
-# Install wezterm-nightly
-echo "==> Installing wezterm-nightly package..."
-sudo apt-get update
-sudo apt-get install -y wezterm-nightly
-
-# IMPORTANT: Disable WezTerm shell integration
+# Disable WezTerm shell integration
 # wezterm-nightly installs /etc/profile.d/wezterm.sh which:
 # - Overwrites PROMPT_COMMAND
 # - Injects OSC 133 sequences into PS1
@@ -48,10 +51,10 @@ fi
 
 # Enable systemd user service (if systemd is available)
 if command -v systemctl >/dev/null 2>&1 && systemctl --user >/dev/null 2>&1; then
-    echo "==> Enabling WezTerm mux server service..."
     systemctl --user daemon-reload
-    systemctl --user enable wezterm-mux.service
+    if ! systemctl --user is-enabled wezterm-mux.service >/dev/null 2>&1; then
+        echo "==> Enabling WezTerm mux server service..."
+        systemctl --user enable wezterm-mux.service
+    fi
 fi
-
-echo "==> wezterm version: $(wezterm --version)"
 {{- end -}}

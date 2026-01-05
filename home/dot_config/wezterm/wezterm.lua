@@ -335,7 +335,7 @@ config.hyperlink_rules = wezterm.default_hyperlink_rules()
 -- Apply Local Configuration
 -- =========================================================
 
--- 1. Generate ssh_domains from environments (connection == "connect" only)
+-- 1. Generate ssh_domains from environments (connection == "connect" uses WezTerm's mux protocol)
 local ssh_domains = {}
 for _, env in ipairs(local_config.environments or {}) do
     if env.connection == "connect" then
