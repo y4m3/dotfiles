@@ -14,8 +14,16 @@ theme "tokyo-night-storm"
 
 // Keybindings
 keybinds {
-  // Step 1: Add Alt keybindings for pane navigation in locked mode
   locked {
+    // Unlock with Alt+g (instead of Ctrl+g to avoid conflict with Claude Code)
+    bind "Alt g" { SwitchToMode "Normal"; }
+
+    // Floating pane toggle
+    bind "Alt f" { ToggleFloatingPanes; }
+
+    // Scroll/Search mode (press 's' in scroll mode to search)
+    bind "Alt s" { SwitchToMode "Scroll"; }
+
     // Pane navigation with Alt + hjkl (vim-style)
     bind "Alt h" { MoveFocusOrTab "Left"; }
     bind "Alt j" { MoveFocus "Down"; }
@@ -50,5 +58,11 @@ keybinds {
     bind "Alt 7" { GoToTab 7; }
     bind "Alt 8" { GoToTab 8; }
     bind "Alt 9" { GoToTab 9; }
+  }
+
+  // Use Alt+g instead of Ctrl+g to lock (for consistency)
+  shared_except "locked" {
+    unbind "Ctrl g"
+    bind "Alt g" { SwitchToMode "Locked"; }
   }
 }
