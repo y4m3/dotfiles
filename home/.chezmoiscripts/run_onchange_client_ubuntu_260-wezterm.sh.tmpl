@@ -31,6 +31,21 @@ echo "==> Installing wezterm-nightly package..."
 sudo apt-get update
 sudo apt-get install -y wezterm-nightly
 
+# IMPORTANT: Disable WezTerm shell integration
+# wezterm-nightly installs /etc/profile.d/wezterm.sh which:
+# - Overwrites PROMPT_COMMAND
+# - Injects OSC 133 sequences into PS1
+# - Breaks starship/bash prompts even when not using WezTerm terminal
+# - Affects all login shells including WSL via wsl.exe
+WEZTERM_SHELL_INTEGRATION="/etc/profile.d/wezterm.sh"
+if [ -f "$WEZTERM_SHELL_INTEGRATION" ]; then
+    echo "==> [WARNING] Disabling WezTerm shell integration..."
+    echo "    WezTerm apt package installs $WEZTERM_SHELL_INTEGRATION"
+    echo "    This breaks PS1/starship prompts. Disabling it now."
+    sudo mv "$WEZTERM_SHELL_INTEGRATION" "${WEZTERM_SHELL_INTEGRATION}.disabled"
+    echo "==> Shell integration disabled: ${WEZTERM_SHELL_INTEGRATION}.disabled"
+fi
+
 # Enable systemd user service (if systemd is available)
 if command -v systemctl >/dev/null 2>&1 && systemctl --user >/dev/null 2>&1; then
     echo "==> Enabling WezTerm mux server service..."
