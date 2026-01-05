@@ -24,6 +24,23 @@ keybinds {
     // Scroll/Search mode (press 's' in scroll mode to search)
     bind "Alt s" { SwitchToMode "Scroll"; }
 
+    // Fullscreen toggle
+    bind "Alt z" { ToggleFocusFullscreen; }
+
+    // Floating <-> Embedded toggle
+    bind "Alt e" { TogglePaneEmbedOrFloating; }
+
+    // Pane rename
+    bind "Alt r" { SwitchToMode "RenamePane"; PaneNameInput 0; }
+
+    // Session manager
+    bind "Alt w" {
+      LaunchOrFocusPlugin "session-manager" {
+        floating true
+        move_to_focused_tab true
+      };
+    }
+
     // Pane navigation with Alt + hjkl (vim-style)
     bind "Alt h" { MoveFocusOrTab "Left"; }
     bind "Alt j" { MoveFocus "Down"; }

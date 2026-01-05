@@ -29,8 +29,12 @@ Managed by `run_onchange_client_ubuntu_265-zellij.sh.tmpl`. Configuration: `~/.c
 | `Alt t` | New tab |
 | `Alt x` | Close pane |
 | `Alt -` / `\` | Split pane down/right |
-| `Alt f` | Toggle floating pane |
+| `Alt f` | Toggle floating panes |
+| `Alt e` | Toggle floating ⇔ embedded |
+| `Alt z` | Toggle fullscreen |
 | `Alt s` | Scroll mode (then `s` for search) |
+| `Alt r` | Rename pane |
+| `Alt w` | Session manager |
 
 Note: `Ctrl+g` is intentionally unbound to allow Claude Code to use it.
 
