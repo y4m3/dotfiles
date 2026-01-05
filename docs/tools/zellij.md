@@ -38,3 +38,9 @@ Managed by `run_onchange_client_ubuntu_265-zellij.sh.tmpl`. Configuration: `~/.c
 
 Note: `Ctrl+g` is intentionally unbound to allow Claude Code to use it.
 
+### Mode Navigation
+
+- **Scroll/Search mode** (`Alt s`): Exit with `Esc` or `Enter` → Normal mode → `Alt g` → Locked
+- **Rename mode** (`Alt r`): Exit with `Esc` (cancel) or `Enter` (confirm) → `Alt g` → Locked
+- **Session Manager** (`Alt w`): Close plugin → `Alt g` → Locked
+
