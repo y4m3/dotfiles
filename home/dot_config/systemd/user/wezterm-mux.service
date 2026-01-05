@@ -2,7 +2,7 @@
 Description=WezTerm Mux Server
 
 [Service]
-ExecStart=%h/.local/bin/wezterm.AppImage start-mux-server
+ExecStart=/usr/bin/wezterm-mux-server
 Restart=on-failure
 
 [Install]

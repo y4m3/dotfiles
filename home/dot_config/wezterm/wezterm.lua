@@ -96,13 +96,18 @@ config.window_background_gradient = {
 config.macos_window_background_blur = 20
 config.win32_system_backdrop = "Acrylic"
 
--- Font
-config.font = wezterm.font("UDEV Gothic 35NFLG", {
-    weight = "Regular",
-    stretch = "Normal",
-    style = "Normal",
-})
-config.font_size = 12
+-- Font (configurable via local_config.font)
+-- If not configured, WezTerm uses its built-in default font
+if local_config.font and local_config.font.family then
+    config.font = wezterm.font(local_config.font.family, {
+        weight = local_config.font.weight or "Regular",
+        stretch = local_config.font.stretch or "Normal",
+        style = local_config.font.style or "Normal",
+    })
+    if local_config.font.size then
+        config.font_size = local_config.font.size
+    end
+end
 config.adjust_window_size_when_changing_font_size = true
 
 -- Colors
