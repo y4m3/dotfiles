@@ -4,6 +4,55 @@ set -euo pipefail
 SRC=${1:-/workspace}
 DEST=${2:-/root}
 
+# Verify and reinstall missing apt packages
+# apt packages install to /usr/bin which doesn't persist in Docker volumes
+# This function checks if expected packages are installed and reinstalls if missing
+verify_apt_packages() {
+    local config_file="$SRC/scripts/apt-packages.json"
+    if [ ! -f "$config_file" ]; then
+        return 0
+    fi
+
+    # Check if jq is available
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "Warning: jq not available, skipping apt package verification" >&2
+        return 0
+    fi
+
+    local missing_count=0
+    local packages
+    packages=$(jq -r '.packages[] | "\(.command)|\(.script)|\(.name)"' "$config_file")
+
+    while IFS='|' read -r cmd script name; do
+        [ -z "$cmd" ] && continue
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            echo "==> Reinstalling missing apt package: $name"
+            local script_path="$SRC/$script"
+            if [ -f "$script_path" ]; then
+                # Use chezmoi execute-template to properly process template variables
+                # This respects conditional guards and template variables
+                local processed_script
+                processed_script=$(chezmoi execute-template < "$script_path" 2>/dev/null)
+                if [ -n "$processed_script" ]; then
+                    if bash <(echo "$processed_script"); then
+                        echo "==> $name reinstalled successfully"
+                    else
+                        echo "Warning: Failed to reinstall $name" >&2
+                        missing_count=$((missing_count + 1))
+                    fi
+                else
+                    echo "Warning: Template condition not met for $name (skipping)" >&2
+                fi
+            else
+                echo "Warning: Script not found: $script_path" >&2
+                missing_count=$((missing_count + 1))
+            fi
+        fi
+    done <<< "$packages"
+
+    return $missing_count
+}
+
 # Initialize chezmoi configuration
 # This generates ~/.config/chezmoi/chezmoi.toml from .chezmoi.toml.tmpl
 chezmoi init --source="$SRC"
@@ -53,3 +102,6 @@ fi
 # Note: .chezmoiscripts/run_onchange_* scripts are automatically executed by chezmoi apply
 # No manual script execution needed - chezmoi handles this natively
 echo "✓ chezmoi apply completed (.chezmoiscripts/ executed automatically)"
+
+# Verify apt packages (may need reinstall in Docker where /usr/bin doesn't persist)
+verify_apt_packages || echo "Warning: Some apt packages could not be verified" >&2
