@@ -15,6 +15,9 @@ theme "tokyo-night-storm"
 // Keybindings
 keybinds {
   locked {
+    // Unbind Ctrl+g to allow Claude Code to use it
+    unbind "Ctrl g"
+
     // Unlock with Alt+g (instead of Ctrl+g to avoid conflict with Claude Code)
     bind "Alt g" { SwitchToMode "Normal"; }
 
