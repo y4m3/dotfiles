@@ -15,24 +15,29 @@ _open_editor() {
     local editor_bin="$1"
     shift
 
-    # Non-path arguments (e.g., --help, --version): pass through
-    if [[ $# -gt 0 && "$1" != "." && ! -e "$1" ]]; then
+    # Flags (e.g., --help, --version): pass through without --remote
+    if [[ $# -gt 0 && "$1" == -* ]]; then
         WSL_DISTRO_NAME="$WSL_DISTRO" "$editor_bin" "$@"
         return
     fi
 
     local remote_spec
-    if _editor_is_ssh_access && [[ -n "$SSH_HOST" ]]; then
-        remote_spec="ssh-remote+${SSH_HOST}"
+    if _editor_is_ssh_access; then
+        if [[ -n "$SSH_HOST" ]]; then
+            remote_spec="ssh-remote+${SSH_HOST}"
+        else
+            echo "warning: SSH access detected but SSH_HOST not set, falling back to WSL mode" >&2
+            remote_spec="wsl+${WSL_DISTRO}"
+        fi
     else
         remote_spec="wsl+${WSL_DISTRO}"
     fi
 
     # Set WSL_DISTRO_NAME to help CLI detect WSL environment correctly
-    # Filter out the "defined more than once" warning (CLI adds --remote internally)
+    # Filter out the "defined more than once" warning from stderr only
     WSL_DISTRO_NAME="$WSL_DISTRO" "$editor_bin" \
-        --remote "$remote_spec" "$(realpath "${1:-.}")" 2>&1 \
-        | grep -v "Option 'remote' is defined more than once"
+        --remote "$remote_spec" "$(realpath -m "${1:-.}")" \
+        2> >(grep -v "Option 'remote' is defined more than once" >&2)
 }
 
 [[ -n "$CURSOR_BIN" ]] && cursor() { _open_editor "$CURSOR_BIN" "$@"; }
