@@ -15,6 +15,15 @@ export ENABLE_CD_LS=1
 # Default: 1800 (30 minutes). Adjust as needed for your workflow.
 export GIT_CREDENTIAL_CACHE_TIMEOUT=1800
 
+# WSL Editor Configuration (uncomment and customize for WSL)
+# The generated file ~/.bashrc.d/50-wsl-editors.sh (from a chezmoi template) is
+# auto-sourced on WSL; these variables control whether cursor()/code() helper
+# functions are defined.
+# CURSOR_BIN="/mnt/c/Program Files/cursor/resources/app/bin/cursor"
+# VSCODE_BIN="/mnt/c/Users/<username>/AppData/Local/Programs/Microsoft VS Code/bin/code"
+# WSL_DISTRO="Ubuntu"      # WSL distribution name (wsl -l -v)
+# SSH_HOST="wsl-ubuntu"    # SSH host defined in ~/.ssh/config
+
 # Aliases
 # alias v='vim'
 # alias vi='vim'
@@ -24,22 +33,6 @@ alias gl='git log --oneline --graph --decorate --all'
 # Functions
 # my_function() {
 #   echo "Hello from ~/.bashrc.local"
-# }
-
-# WSL: Cursor editor integration for SSH sessions
-# When SSH'd into WSL, the `cursor` command doesn't work by default.
-# This function provides a workaround using --remote flag.
-# CURSOR_BIN="/mnt/c/Program Files/cursor/resources/app/bin/cursor"
-# WSL_DISTRO="Ubuntu"
-# 
-# cursor() {
-#     if [[ $# -eq 0 ]] || [[ "$1" == "." ]]; then
-#         "$CURSOR_BIN" --remote "wsl+${WSL_DISTRO}" "$(pwd)"
-#     elif [[ -e "$1" ]]; then
-#         "$CURSOR_BIN" --remote "wsl+${WSL_DISTRO}" "$(realpath "$1")"
-#     else
-#         "$CURSOR_BIN" "$@"
-#     fi
 # }
 
 # Machine-specific settings
