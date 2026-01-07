@@ -68,7 +68,7 @@ _open_editor() {
     tmp_stderr="$(mktemp)"
     WSL_DISTRO_NAME="$WSL_DISTRO" "$editor_bin" \
         --remote "$remote_spec" "${resolved_paths[@]}" \
-        2> "$tmp_stderr"
+        2>| "$tmp_stderr"
     editor_status=$?
     if [[ -s "$tmp_stderr" ]]; then
         grep -v "Option 'remote' is defined more than once" "$tmp_stderr" >&2 || true
