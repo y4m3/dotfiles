@@ -10,21 +10,32 @@ if ! command -v snap >/dev/null 2>&1; then
     exit 0
 fi
 
-# btop
-if ! command -v btop >/dev/null 2>&1; then
-    log "Installing btop..."
-    sudo snap install btop
-else
-    log "skip (exists): btop"
-fi
+LOCAL_BIN="$HOME/.local/bin"
 
-# glow
-if ! command -v glow >/dev/null 2>&1; then
-    log "Installing glow..."
-    sudo snap install glow
-else
-    log "skip (exists): glow"
-fi
+# Install or migrate a tool to snap
+# Usage: install_snap_tool <name>
+install_snap_tool() {
+    local name="$1"
+    local local_bin="$LOCAL_BIN/$name"
+
+    # Check if already installed via snap
+    if snap list "$name" >/dev/null 2>&1; then
+        log "skip (snap): $name"
+        return 0
+    fi
+
+    # Remove old local binary if exists (migration from GitHub release)
+    if [ -x "$local_bin" ]; then
+        log "Migrating $name from local binary to snap..."
+        rm -f "$local_bin"
+    fi
+
+    log "Installing $name..."
+    sudo snap install "$name"
+}
+
+install_snap_tool btop
+install_snap_tool glow
 
 log "Snap tools installation complete"
 {{- end -}}

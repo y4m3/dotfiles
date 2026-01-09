@@ -11,13 +11,18 @@ if ! command -v systemctl >/dev/null 2>&1; then
     exit 0
 fi
 
-if ! systemctl is-system-running >/dev/null 2>&1; then
-    log "systemd not running, skipping snapd installation"
-    log "To enable systemd in WSL2, add to /etc/wsl.conf:"
-    log "  [boot]"
-    log "  systemd=true"
-    exit 0
-fi
+# Check systemd state (accept running, degraded, starting)
+state=$(systemctl is-system-running 2>/dev/null || echo "unknown")
+case "$state" in
+    running | degraded | starting) ;;
+    *)
+        log "systemd not running (state: $state), skipping snapd installation"
+        log "To enable systemd in WSL2, add to /etc/wsl.conf:"
+        log "  [boot]"
+        log "  systemd=true"
+        exit 0
+        ;;
+esac
 
 if command -v snap >/dev/null 2>&1; then
     log "snapd already installed"
