@@ -1,0 +1,45 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Install Go tools via go install
+set -euo pipefail
+
+log() { printf '%s\n' "==> $*"; }
+err() { printf '%s\n' "Error: $*" >&2; }
+
+GOROOT="$HOME/.local/go"
+GO="$GOROOT/bin/go"
+GOBIN="${GOBIN:-$HOME/go/bin}"
+export PATH="$GOROOT/bin:$GOBIN:$PATH"
+
+# Require Go under ~/.local/go (not just in PATH)
+if [ ! -x "$GO" ]; then
+    err "go not found at $GO. Install Go first."
+    exit 1
+fi
+
+# lazygit
+if [ ! -x "$GOBIN/lazygit" ]; then
+    log "Installing lazygit..."
+    go install github.com/jesseduffield/lazygit@latest
+else
+    log "skip (exists): $GOBIN/lazygit"
+fi
+
+# lazydocker
+if [ ! -x "$GOBIN/lazydocker" ]; then
+    log "Installing lazydocker..."
+    go install github.com/jesseduffield/lazydocker@latest
+else
+    log "skip (exists): $GOBIN/lazydocker"
+fi
+
+# yq
+if [ ! -x "$GOBIN/yq" ]; then
+    log "Installing yq..."
+    go install github.com/mikefarah/yq/v4@latest
+else
+    log "skip (exists): $GOBIN/yq"
+fi
+
+log "Go tools installation complete"
+{{- end -}}

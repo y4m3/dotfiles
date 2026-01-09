@@ -1,0 +1,45 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Install Go (latest stable) to ~/.local/go
+set -euo pipefail
+
+GOROOT="$HOME/.local/go"
+
+echo "==> Checking Go installation..."
+
+# Skip if Go is already installed
+if [ -x "$GOROOT/bin/go" ]; then
+    echo "✓ Go already installed: $("$GOROOT/bin/go" version)"
+    exit 0
+fi
+
+echo "==> Installing Go..."
+
+# Get latest stable version from go.dev
+GO_VERSION=$(curl -fsSL https://go.dev/VERSION?m=text | head -1)
+echo "  Latest version: $GO_VERSION"
+
+# Detect architecture
+case "$(uname -m)" in
+    x86_64) ARCH="amd64" ;;
+    aarch64) ARCH="arm64" ;;
+    *)
+        echo "Error: Unsupported architecture: $(uname -m)" >&2
+        exit 1
+        ;;
+esac
+
+# Download and extract
+mkdir -p "$HOME/.local"
+curl -fsSL "https://go.dev/dl/${GO_VERSION}.linux-${ARCH}.tar.gz" | tar -C "$HOME/.local" -xz
+
+# Verify installation
+if [ -x "$GOROOT/bin/go" ]; then
+    echo "✓ Go installed successfully"
+    echo "  $("$GOROOT/bin/go" version)"
+    echo "  GOROOT: $GOROOT"
+else
+    echo "Error: Go installation failed" >&2
+    exit 1
+fi
+{{- end -}}

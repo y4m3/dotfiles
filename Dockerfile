@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     gnupg \
-    golang-go \
     direnv \
     jq \
     locales \

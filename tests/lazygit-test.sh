@@ -10,10 +10,11 @@ echo "=========================================="
 echo "Testing lazygit"
 echo "=========================================="
 
-# Ensure ~/.local/bin is in PATH
+# Ensure Go bin directory is in PATH
+GOBIN="${GOBIN:-$HOME/go/bin}"
 case ":$PATH:" in
-  *":$HOME/.local/bin:"*) : ;;
-  *) PATH="$HOME/.local/bin:$PATH" ;;
+    *":$GOBIN:"*) : ;;
+    *) PATH="$GOBIN:$PATH" ;;
 esac
 
 assert_executable "lazygit" "lazygit installed"
