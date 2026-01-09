@@ -1,0 +1,20 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Install yazi plugins using ya pkg
+set -euo pipefail
+
+if ! command -v ya >/dev/null 2>&1; then
+    echo "ya command not found, skipping plugin installation" >&2
+    exit 0
+fi
+
+echo "==> Installing yazi plugins..."
+
+ya pkg add yazi-rs/plugins:toggle-pane
+ya pkg add yazi-rs/plugins:smart-enter
+ya pkg add yazi-rs/plugins:smart-paste
+ya pkg add yazi-rs/plugins:git
+ya pkg add yazi-rs/plugins:zoom
+
+echo "==> yazi plugins installed successfully"
+{{- end -}}

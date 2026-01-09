@@ -1,6 +1,20 @@
 # Yazi general configuration
-# Minimal configuration - uses defaults for most settings
 # See: https://yazi-rs.github.io/docs/configuration/yazi
+
+[mgr]
+ratio = [1, 3, 5]
+sort_by = "natural"
+sort_dir_first = true
+show_hidden = false
+show_symlink = true
+scrolloff = 5
+linemode = "size"
+title_format = "Yazi: {cwd}"
+
+[preview]
+max_width = 1920
+max_height = 1920
+wrap = "yes"
 
 [opener]
 # Use $EDITOR for text files
