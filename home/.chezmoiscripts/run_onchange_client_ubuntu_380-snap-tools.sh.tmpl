@@ -24,14 +24,14 @@ install_snap_tool() {
         return 0
     fi
 
-    # Remove old local binary if exists (migration from GitHub release)
-    if [ -x "$local_bin" ]; then
-        log "Migrating $name from local binary to snap..."
-        rm -f "$local_bin"
-    fi
-
     log "Installing $name..."
     sudo snap install "$name"
+
+    # Remove old local binary after successful snap install (migration from GitHub release)
+    if [ -x "$local_bin" ]; then
+        log "Removing old local binary: $local_bin"
+        rm -f "$local_bin"
+    fi
 }
 
 install_snap_tool btop
