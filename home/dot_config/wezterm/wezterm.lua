@@ -1,58 +1,83 @@
--- =========================================================
--- Key Bindings Cheat Sheet
--- =========================================================
+-- ============================================================
+-- WezTerm Configuration
+-- ============================================================
 --
--- LEADER = Ctrl + \
+-- KEY BINDINGS CHEAT SHEET
+-- ============================================================
+--
+-- LEADER = Ctrl + \  (timeout: 1000ms)
 --
 -- ┌─────────────────────────────────────────────────────────
--- │ PANE
+-- │ PANE NAVIGATION
 -- ├─────────────────────────────────────────────────────────
--- │ LEADER + -           Split down
--- │ LEADER + \           Split right
--- │ LEADER + CTRL + d    Close pane
--- │ LEADER + hjkl        Move focus
--- │ LEADER + SHIFT + hjkl  Resize
--- │ LEADER + z           Toggle zoom
--- │ LEADER + s           Swap panes
+-- │ LEADER + h/j/k/l       Move focus (left/down/up/right)
+-- │ LEADER + SHIFT + HJKL  Resize pane
+-- │ LEADER + f             Toggle pane zoom
 -- │
 -- ├─────────────────────────────────────────────────────────
--- │ TAB
+-- │ PANE SPLIT
 -- ├─────────────────────────────────────────────────────────
--- │ LEADER + t           Tab list
--- │ LEADER + CTRL + t    New tab
--- │ LEADER + SHIFT + t   Close tab
--- │ LEADER + n           Next tab
--- │ LEADER + SHIFT + n   Previous tab
+-- │ LEADER + v             Split right (horizontal layout)
+-- │ LEADER + s             Split down (vertical layout)
+-- │ LEADER + x             Close pane
 -- │
 -- ├─────────────────────────────────────────────────────────
--- │ WORKSPACE
+-- │ TAB NAVIGATION
 -- ├─────────────────────────────────────────────────────────
--- │ LEADER + w           Workspace list
--- │ LEADER + CTRL + w    New workspace
--- │ LEADER + [ / ]       Previous / Next workspace
--- │ LEADER + 1-9         Quick switch (defined in local.lua)
+-- │ LEADER + i             Previous tab
+-- │ LEADER + o             Next tab
+-- │ LEADER + SHIFT + I     Move tab left
+-- │ LEADER + SHIFT + O     Move tab right
+-- │ LEADER + 1-9           Activate tab by number
+-- │
+-- ├─────────────────────────────────────────────────────────
+-- │ TAB MANAGEMENT
+-- ├─────────────────────────────────────────────────────────
+-- │ LEADER + c             New tab
+-- │ LEADER + X             Close tab
+-- │
+-- ├─────────────────────────────────────────────────────────
+-- │ SCROLL / COPY MODE
+-- ├─────────────────────────────────────────────────────────
+-- │ LEADER + [             Enter copy mode
+-- │ LEADER + /             Search
 -- │
 -- ├─────────────────────────────────────────────────────────
 -- │ UTILITY
 -- ├─────────────────────────────────────────────────────────
--- │ LEADER + Space       Launcher
--- │ LEADER + d           Domain list
--- │ LEADER + c           Copy mode
--- │ LEADER + f           Quick select
--- │ LEADER + r           Reload config
--- │ CTRL + SHIFT + v     Paste from clipboard
+-- │ LEADER + Space         Quick select
+-- │ LEADER + :             Command palette
+-- │ LEADER + ?             Debug overlay
+-- │ LEADER + N             New window
+-- │ CTRL + SHIFT + C/V     Copy / Paste
+-- │ CTRL + -/=/0           Font size (decrease/increase/reset)
 -- │
 -- ├─────────────────────────────────────────────────────────
--- │ COPY MODE (after LEADER + c)
+-- │ WORKSPACE (from local.lua)
 -- ├─────────────────────────────────────────────────────────
--- │ hjkl                 Move cursor
--- │ w / b                Forward / Backward word
--- │ 0 / $                Start / End of line
--- │ g / G                Top / Bottom of scrollback
--- │ v / V                Select char / line
--- │ y                    Yank and exit
--- │ /                    Search
--- │ q / Escape           Exit copy mode
+-- │ LEADER + w             Workspace list
+-- │ LEADER + CTRL + w      New workspace
+-- │ LEADER + ALT + [ / ]   Previous / Next workspace
+-- │ LEADER + d             Domain list
+-- │ LEADER + r             Reload config
+-- │
+-- │ NOTE: Workspace quick switch (LEADER + 1/2/...) defined
+-- │       in local.lua will OVERRIDE tab number bindings.
+-- │
+-- ├─────────────────────────────────────────────────────────
+-- │ COPY MODE (after LEADER + [)
+-- ├─────────────────────────────────────────────────────────
+-- │ hjkl                   Move cursor
+-- │ w / b / e              Word movement
+-- │ 0 / ^ / $              Line start / content start / end
+-- │ g / G                  Top / Bottom of scrollback
+-- │ Ctrl+f / Ctrl+b        Page down / up
+-- │ Ctrl+d / Ctrl+u        Half page down / up
+-- │ v / V / Ctrl+v         Select char / line / block
+-- │ y                      Yank and exit
+-- │ /                      Search
+-- │ n / N                  Next / Previous match
+-- │ q / Escape             Exit copy mode
 -- └─────────────────────────────────────────────────────────
 
 local wezterm = require("wezterm")
@@ -60,15 +85,15 @@ local act = wezterm.action
 
 local config = wezterm.config_builder()
 
--- =========================================================
+-- ============================================================
 -- Local Configuration
--- =========================================================
+-- ============================================================
 local local_config = {
     environments = {},
     font = nil,
 }
 
-local local_config_path = wezterm.config_dir .. "/wezterm.local.lua"
+local local_config_path = wezterm.config_dir .. "/.wezterm.local.lua"
 local ok, result = pcall(dofile, local_config_path)
 if ok and result then
     local_config = result
@@ -77,9 +102,9 @@ else
     wezterm.log_warn("Local config not found or error: " .. local_config_path)
 end
 
--- =========================================================
+-- ============================================================
 -- Appearance
--- =========================================================
+-- ============================================================
 
 -- Scrollback
 config.scrollback_lines = 50000
@@ -141,8 +166,8 @@ config.visual_bell = {
 }
 
 -- Performance
-config.max_fps = 30
-config.animation_fps = 30
+config.max_fps = 120
+config.animation_fps =120 
 
 -- Tab Bar
 config.use_fancy_tab_bar = false
@@ -186,21 +211,52 @@ local function get_os_label()
     end
 end
 
+-- Helper: find environment config by workspace name
+-- Returns the environment table or nil if not found
+local function find_env_by_workspace(workspace_name)
+    for _, env in ipairs(local_config.environments or {}) do
+        if env.workspace_name == workspace_name then
+            return env
+        end
+    end
+    return nil
+end
+
+-- ============================================================
+-- Dynamic default_prog based on active workspace
+-- ============================================================
+-- This mechanism ensures that new panes/tabs spawn the correct shell
+-- for "local" connection workspaces (e.g., powershell.exe instead of cmd.exe).
+--
+-- How it works:
+--   1. update-status event fires frequently (on focus, resize, etc.)
+--   2. We track the last workspace per window to avoid redundant updates
+--   3. When workspace changes, we call window:set_config_overrides()
+--      to set default_prog for "local" connections or clear it otherwise
+--
+-- DEBUG: Enable logging to see when overrides are applied
+-- Set to true and check logs with CTRL+SHIFT+L (or LEADER + ?)
+local DEBUG_DEFAULT_PROG = false
+
+-- Cache to track last workspace per window (keyed by window object id)
+local last_workspace_cache = {}
+
 wezterm.on("update-status", function(window, pane)
     local workspace = window:active_workspace()
+    local window_id = tostring(window:window_id())
 
-    -- Find domain_label from environments based on workspace name
+    -- Find environment config for current workspace
+    local env = find_env_by_workspace(workspace)
+
+    -- Determine domain_label for status bar
     local domain_label = nil
-    for _, env in ipairs(local_config.environments or {}) do
-        if env.workspace_name == workspace then
-            if env.connection == "connect" or env.connection == "ssh" then
-                if env.remote_address == "127.0.0.1" then
-                    domain_label = "WSL"
-                else
-                    domain_label = "SSH"
-                end
+    if env then
+        if env.connection == "connect" or env.connection == "ssh" then
+            if env.remote_address == "127.0.0.1" then
+                domain_label = "WSL"
+            else
+                domain_label = "SSH"
             end
-            break
         end
     end
 
@@ -209,59 +265,216 @@ wezterm.on("update-status", function(window, pane)
         domain_label = get_os_label()
     end
 
+    -- Update status bar
     window:set_left_status(wezterm.format({
         { Foreground = { Color = "#7aa2f7" } },
         { Text = string.format("  %s ", workspace) },
         { Foreground = { Color = "#565f89" } },
         { Text = string.format("[%s] ", domain_label) },
     }))
+
+    -- ------------------------------------------------------------
+    -- Dynamic default_prog update
+    -- ------------------------------------------------------------
+    if last_workspace_cache[window_id] == workspace then
+        return
+    end
+    last_workspace_cache[window_id] = workspace
+
+    local new_default_prog = nil
+    if env and env.connection == "local" and env.args then
+        new_default_prog = env.args
+    end
+
+    local overrides = window:get_config_overrides() or {}
+    overrides.default_prog = new_default_prog
+    window:set_config_overrides(overrides)
+
+    if DEBUG_DEFAULT_PROG then
+        local prog_str = new_default_prog and table.concat(new_default_prog, " ") or "nil"
+        wezterm.log_info(string.format(
+            "[default_prog] window=%s workspace=%s -> default_prog=%s",
+            window_id, workspace, prog_str
+        ))
+    end
 end)
 
--- =========================================================
+-- ============================================================
 -- Protocols
--- =========================================================
+-- ============================================================
 config.enable_kitty_keyboard = true
 config.enable_kitty_graphics = true
 config.enable_wayland = false
 
--- =========================================================
--- Key Bindings
--- =========================================================
+-- ============================================================
+-- Key Bindings-- ============================================================
 
--- Leader Key
+-- Disable all default key bindings
+config.disable_default_key_bindings = true
+
+-- Leader Key: Ctrl+\ with 1000ms timeout
+-- After timeout, key input passes through to the terminal
 config.leader = {
     key = "\\",
     mods = "CTRL",
     timeout_milliseconds = 1000,
 }
 
--- Keys
+-- ============================================================
+-- Helper: Create split action with workspace-aware args
+-- ============================================================
+-- Problem: "CurrentPaneDomain" ignores config.default_prog and uses
+--          the domain's default shell (cmd.exe for local domain).
+-- Solution: Use action_callback to dynamically set args based on
+--           the current workspace's environment configuration.
+--
+-- @param direction "Vertical" or "Horizontal"
+local function create_split_action(direction)
+    return wezterm.action_callback(function(window, pane)
+        local workspace = window:active_workspace()
+        local env = find_env_by_workspace(workspace)
+
+        local spawn_cmd = {}
+
+        if env and env.connection == "local" and env.args then
+            spawn_cmd.args = env.args
+            spawn_cmd.domain = { DomainName = "local" }
+            if DEBUG_DEFAULT_PROG then
+                wezterm.log_info(string.format(
+                    "[split] workspace=%s direction=%s args=%s domain=local",
+                    workspace, direction, table.concat(env.args, " ")
+                ))
+            end
+        else
+            spawn_cmd.domain = "CurrentPaneDomain"
+            if DEBUG_DEFAULT_PROG then
+                wezterm.log_info(string.format(
+                    "[split] workspace=%s direction=%s domain=CurrentPaneDomain",
+                    workspace, direction
+                ))
+            end
+        end
+
+        local action = direction == "Vertical"
+            and act.SplitVertical(spawn_cmd)
+            or act.SplitHorizontal(spawn_cmd)
+        window:perform_action(action, pane)
+    end)
+end
+
+-- ============================================================
+-- Keys-- ============================================================
 config.keys = {
-    -- Pane
-    { key = "-",          mods = "LEADER",       action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
-    { key = "\\",         mods = "LEADER",       action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-    { key = "d",          mods = "LEADER|CTRL",  action = act.CloseCurrentPane({ confirm = true }) },
-    { key = "h",          mods = "LEADER",       action = act.ActivatePaneDirection("Left") },
-    { key = "l",          mods = "LEADER",       action = act.ActivatePaneDirection("Right") },
-    { key = "k",          mods = "LEADER",       action = act.ActivatePaneDirection("Up") },
-    { key = "j",          mods = "LEADER",       action = act.ActivatePaneDirection("Down") },
-    { key = "z",          mods = "LEADER",       action = act.TogglePaneZoomState },
-    { key = "s",          mods = "LEADER",       action = act.PaneSelect({ mode = "SwapWithActive" }) },
+    -- ------------------------------------------------------------
+    -- Direct Keys (no leader required)
+    -- ------------------------------------------------------------
 
-    { key = "h",          mods = "LEADER|SHIFT", action = act.AdjustPaneSize({ "Left", 5 }) },
-    { key = "l",          mods = "LEADER|SHIFT", action = act.AdjustPaneSize({ "Right", 5 }) },
-    { key = "k",          mods = "LEADER|SHIFT", action = act.AdjustPaneSize({ "Up", 3 }) },
-    { key = "j",          mods = "LEADER|SHIFT", action = act.AdjustPaneSize({ "Down", 3 }) },
+    -- Clipboard operations
+    { key = "C", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
+    { key = "V", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
 
-    -- Tab
-    { key = "t",          mods = "LEADER",       action = act.ShowTabNavigator },
-    { key = "t",          mods = "LEADER|CTRL",  action = act.SpawnTab("CurrentPaneDomain") },
-    { key = "t",          mods = "LEADER|SHIFT", action = act.CloseCurrentTab({ confirm = true }) },
-    { key = "n",          mods = "LEADER",       action = act.ActivateTabRelative(1) },
-    { key = "n",          mods = "LEADER|SHIFT", action = act.ActivateTabRelative(-1) },
+    -- Font size controls
+    { key = "-", mods = "CTRL", action = act.DecreaseFontSize },
+    { key = "=", mods = "CTRL", action = act.IncreaseFontSize },
+    { key = "0", mods = "CTRL", action = act.ResetFontSize },
 
-    -- Workspace
-    { key = "w",          mods = "LEADER",       action = act.ShowLauncherArgs({ flags = "WORKSPACES" }) },
+    -- ------------------------------------------------------------
+    -- Pane Navigation: LEADER + h/j/k/l
+    -- ------------------------------------------------------------
+    { key = "h", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
+    { key = "j", mods = "LEADER", action = act.ActivatePaneDirection("Down") },
+    { key = "k", mods = "LEADER", action = act.ActivatePaneDirection("Up") },
+    { key = "l", mods = "LEADER", action = act.ActivatePaneDirection("Right") },
+
+    -- ------------------------------------------------------------
+    -- Pane Resize: LEADER + SHIFT + H/J/K/L
+    -- ------------------------------------------------------------
+    { key = "H", mods = "LEADER|SHIFT", action = act.AdjustPaneSize({ "Left", 5 }) },
+    { key = "J", mods = "LEADER|SHIFT", action = act.AdjustPaneSize({ "Down", 5 }) },
+    { key = "K", mods = "LEADER|SHIFT", action = act.AdjustPaneSize({ "Up", 5 }) },
+    { key = "L", mods = "LEADER|SHIFT", action = act.AdjustPaneSize({ "Right", 5 }) },
+
+    -- ------------------------------------------------------------
+    -- Pane Split    -- v: SplitHorizontal (left|right layout) - new pane on right
+    -- s: SplitVertical (top/bottom layout) - new pane on bottom
+    -- ------------------------------------------------------------
+    { key = "v", mods = "LEADER", action = create_split_action("Horizontal") },
+    { key = "s", mods = "LEADER", action = create_split_action("Vertical") },
+
+    -- ------------------------------------------------------------
+    -- Pane Management
+    -- ------------------------------------------------------------
+    -- Close pane (with confirmation)
+    { key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = true }) },
+
+    -- Pane zoom (toggle fullscreen for current pane)
+    { key = "f", mods = "LEADER", action = act.TogglePaneZoomState },
+
+    -- ------------------------------------------------------------
+    -- Tab Navigation: LEADER + i/o (previous/next)
+    -- ------------------------------------------------------------
+    { key = "i", mods = "LEADER", action = act.ActivateTabRelative(-1) },
+    { key = "o", mods = "LEADER", action = act.ActivateTabRelative(1) },
+
+    -- ------------------------------------------------------------
+    -- Tab Reorder: LEADER + SHIFT + I/O
+    -- ------------------------------------------------------------
+    { key = "I", mods = "LEADER|SHIFT", action = act.MoveTabRelative(-1) },
+    { key = "O", mods = "LEADER|SHIFT", action = act.MoveTabRelative(1) },
+
+    -- ------------------------------------------------------------
+    -- Tab Selection by Number: LEADER + 1-9
+    -- Note: WezTerm is 0-indexed, so key "1" maps to ActivateTab=0
+    -- WARNING: These may be overridden by workspace quick switch from local.lua
+    -- ------------------------------------------------------------
+    { key = "1", mods = "LEADER", action = act.ActivateTab(0) },
+    { key = "2", mods = "LEADER", action = act.ActivateTab(1) },
+    { key = "3", mods = "LEADER", action = act.ActivateTab(2) },
+    { key = "4", mods = "LEADER", action = act.ActivateTab(3) },
+    { key = "5", mods = "LEADER", action = act.ActivateTab(4) },
+    { key = "6", mods = "LEADER", action = act.ActivateTab(5) },
+    { key = "7", mods = "LEADER", action = act.ActivateTab(6) },
+    { key = "8", mods = "LEADER", action = act.ActivateTab(7) },
+    { key = "9", mods = "LEADER", action = act.ActivateTab(8) },
+
+    -- ------------------------------------------------------------
+    -- Tab Management
+    -- ------------------------------------------------------------
+    -- New tab
+    { key = "c", mods = "LEADER", action = act.SpawnTab("CurrentPaneDomain") },
+
+    -- Close tab (with confirmation)
+    { key = "X", mods = "LEADER|SHIFT", action = act.CloseCurrentTab({ confirm = true }) },
+
+    -- ------------------------------------------------------------
+    -- Scroll/Copy Mode
+    -- ------------------------------------------------------------
+    { key = "[", mods = "LEADER", action = act.ActivateCopyMode },
+
+    -- ------------------------------------------------------------
+    -- Search
+    -- ------------------------------------------------------------
+    { key = "/", mods = "LEADER", action = act.Search({ CaseSensitiveString = "" }) },
+
+    -- ------------------------------------------------------------
+    -- Utility
+    -- ------------------------------------------------------------
+    -- Quick select mode
+    { key = "Space", mods = "LEADER", action = act.QuickSelect },
+
+    -- Command palette
+    { key = ":", mods = "LEADER|SHIFT", action = act.ActivateCommandPalette },
+
+    -- Debug overlay (help/troubleshooting)
+    { key = "?", mods = "LEADER|SHIFT", action = act.ShowDebugOverlay },
+
+    -- New window
+    { key = "N", mods = "LEADER|SHIFT", action = act.SpawnWindow },
+
+    -- ------------------------------------------------------------
+    -- Workspace Management (preserved from original config)
+    -- ------------------------------------------------------------
+    { key = "w", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "WORKSPACES" }) },
     {
         key = "w",
         mods = "LEADER|CTRL",
@@ -274,43 +487,83 @@ config.keys = {
             end),
         }),
     },
-    { key = "[",     mods = "LEADER",     action = act.SwitchWorkspaceRelative(-1) },
-    { key = "]",     mods = "LEADER",     action = act.SwitchWorkspaceRelative(1) },
 
-    -- Utility
-    { key = "Space", mods = "LEADER",     action = act.ShowLauncher },
-    { key = "d",     mods = "LEADER",     action = act.ShowLauncherArgs({ flags = "DOMAINS" }) },
-    { key = "v",     mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
-    { key = "c",     mods = "LEADER",     action = act.ActivateCopyMode },
-    { key = "f",     mods = "LEADER",     action = act.QuickSelect },
-    { key = "r",     mods = "LEADER",     action = act.ReloadConfiguration },
+    -- Workspace navigation (uses ALT to avoid conflict with copy mode '[')
+    { key = "[", mods = "LEADER|ALT", action = act.SwitchWorkspaceRelative(-1) },
+    { key = "]", mods = "LEADER|ALT", action = act.SwitchWorkspaceRelative(1) },
+
+    -- Domain list
+    { key = "d", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "DOMAINS" }) },
+
+    -- Reload configuration
+    { key = "r", mods = "LEADER", action = act.ReloadConfiguration },
 }
 
--- Copy Mode
+-- ============================================================
+-- Copy Mode (vim-like navigation)
+-- ============================================================
 config.key_tables = {
     copy_mode = {
-        { key = "Escape", action = act.CopyMode("Close") },
-        { key = "q",      action = act.CopyMode("Close") },
-        { key = "y",      action = act.Multiple({ act.CopyTo("Clipboard"), act.CopyMode("Close") }) },
-        { key = "v",      action = act.CopyMode({ SetSelectionMode = "Cell" }) },
-        { key = "V",      action = act.CopyMode({ SetSelectionMode = "Line" }) },
-        { key = "/",      action = act.Search({ CaseInSensitiveString = "" }) },
-        { key = "h",      action = act.CopyMode("MoveLeft") },
-        { key = "l",      action = act.CopyMode("MoveRight") },
-        { key = "k",      action = act.CopyMode("MoveUp") },
-        { key = "j",      action = act.CopyMode("MoveDown") },
-        { key = "w",      action = act.CopyMode("MoveForwardWord") },
-        { key = "b",      action = act.CopyMode("MoveBackwardWord") },
-        { key = "0",      action = act.CopyMode("MoveToStartOfLine") },
-        { key = "$",      action = act.CopyMode("MoveToEndOfLineContent") },
-        { key = "g",      action = act.CopyMode("MoveToScrollbackTop") },
-        { key = "G",      action = act.CopyMode("MoveToScrollbackBottom") },
+        -- Exit copy mode
+        { key = "Escape", mods = "NONE", action = act.CopyMode("Close") },
+        { key = "q", mods = "NONE", action = act.CopyMode("Close") },
+
+        -- Movement
+        { key = "h", mods = "NONE", action = act.CopyMode("MoveLeft") },
+        { key = "j", mods = "NONE", action = act.CopyMode("MoveDown") },
+        { key = "k", mods = "NONE", action = act.CopyMode("MoveUp") },
+        { key = "l", mods = "NONE", action = act.CopyMode("MoveRight") },
+
+        -- Word movement
+        { key = "w", mods = "NONE", action = act.CopyMode("MoveForwardWord") },
+        { key = "b", mods = "NONE", action = act.CopyMode("MoveBackwardWord") },
+        { key = "e", mods = "NONE", action = act.CopyMode("MoveForwardWordEnd") },
+
+        -- Line movement
+        { key = "0", mods = "NONE", action = act.CopyMode("MoveToStartOfLine") },
+        { key = "^", mods = "NONE", action = act.CopyMode("MoveToStartOfLineContent") },
+        { key = "$", mods = "NONE", action = act.CopyMode("MoveToEndOfLineContent") },
+
+        -- Page movement
+        { key = "g", mods = "NONE", action = act.CopyMode("MoveToScrollbackTop") },
+        { key = "G", mods = "SHIFT", action = act.CopyMode("MoveToScrollbackBottom") },
+        { key = "f", mods = "CTRL", action = act.CopyMode({ MoveByPage = 1 }) },
+        { key = "b", mods = "CTRL", action = act.CopyMode({ MoveByPage = -1 }) },
+        { key = "d", mods = "CTRL", action = act.CopyMode({ MoveByPage = 0.5 }) },
+        { key = "u", mods = "CTRL", action = act.CopyMode({ MoveByPage = -0.5 }) },
+
+        -- Selection
+        { key = "v", mods = "NONE", action = act.CopyMode({ SetSelectionMode = "Cell" }) },
+        { key = "V", mods = "SHIFT", action = act.CopyMode({ SetSelectionMode = "Line" }) },
+        { key = "v", mods = "CTRL", action = act.CopyMode({ SetSelectionMode = "Block" }) },
+
+        -- Copy and exit
+        {
+            key = "y",
+            mods = "NONE",
+            action = act.Multiple({
+                act.CopyTo("Clipboard"),
+                act.CopyMode("Close"),
+            }),
+        },
+
+        -- Search in copy mode
+        { key = "/", mods = "NONE", action = act.CopyMode("EditPattern") },
+        { key = "n", mods = "NONE", action = act.CopyMode("NextMatch") },
+        { key = "N", mods = "SHIFT", action = act.CopyMode("PriorMatch") },
+    },
+
+    search_mode = {
+        { key = "Escape", mods = "NONE", action = act.CopyMode("Close") },
+        { key = "Enter", mods = "NONE", action = act.CopyMode("AcceptPattern") },
+        { key = "n", mods = "CTRL", action = act.CopyMode("NextMatch") },
+        { key = "p", mods = "CTRL", action = act.CopyMode("PriorMatch") },
     },
 }
 
--- =========================================================
+-- ============================================================
 -- Quick Select Patterns
--- =========================================================
+-- ============================================================
 config.quick_select_patterns = {
     -- URL
     "https?://[^\\s\"'<>]+",
@@ -326,14 +579,14 @@ config.quick_select_patterns = {
     "[0-9a-f]{7,40}",
 }
 
--- =========================================================
+-- ============================================================
 -- Hyperlink Rules
--- =========================================================
+-- ============================================================
 config.hyperlink_rules = wezterm.default_hyperlink_rules()
 
--- =========================================================
+-- ============================================================
 -- Apply Local Configuration
--- =========================================================
+-- ============================================================
 
 -- 1. Generate ssh_domains from environments (connection == "connect" uses WezTerm's mux protocol)
 local ssh_domains = {}
@@ -380,7 +633,9 @@ for _, env in ipairs(local_config.environments or {}) do
     end
 end
 
--- 4. Workspace Quick Switch: LEADER + key
+-- 4. Workspace Quick Switch: LEADER + key (from local.lua)
+-- NOTE: These bindings are added AFTER the default tab number bindings,
+--       so they will OVERRIDE LEADER+1-9 for tab selection if keys overlap.
 for _, env in ipairs(local_config.environments or {}) do
     if env.key then
         local spawn_config = {}
