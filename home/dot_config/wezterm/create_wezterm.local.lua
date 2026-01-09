@@ -86,23 +86,23 @@
 return {
     environments = {
         {
-            key = "1",
-            workspace_name = "default",
-            connection = "local",
-            args = { "pwsh.exe", "-NoLogo" },
+            key = "q",
+            workspace_name = "ssh",
+            connection = "connect",
+            remote_address = "127.0.0.1",
+            username = "dev",
             is_default = true,
         },
-        -- {
-        --     key = "2",
-        --     workspace_name = "wsl",
-        --     connection = "connect",
-        --     remote_address = "127.0.0.1",
-        --     username = "dev",
-        -- },
+        {
+            key = "w",
+            workspace_name = "local",
+            connection = "local",
+            args = { "powershell.exe" },
+        },
     },
 
-    -- font = {
-    --     family = "UDEV Gothic 35NFLG",
-    --     size = 12,
-    -- },
+    font = {
+        family = "UDEV Gothic 35NFLG",
+        size = 12,
+    },
 }

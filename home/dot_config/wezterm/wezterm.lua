@@ -406,4 +406,3 @@ for _, env in ipairs(local_config.environments or {}) do
 end
 
 return config
-

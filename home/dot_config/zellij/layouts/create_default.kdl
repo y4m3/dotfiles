@@ -1,0 +1,23 @@
+// =============================================================================
+// Zellij Default Layout
+// Path: ~/.config/zellij/layouts/default.kdl
+//
+// This layout includes the compact-bar with tooltip functionality.
+// Press "?" in Normal mode to toggle keybinding hints.
+// =============================================================================
+
+layout {
+    // -------------------------------------------------------------------------
+    // Compact Bar with Tooltip
+    // The tooltip key "?" enables toggling keybinding hints in Normal mode.
+    // This is a plugin feature, not a keybind, so it works independently
+    // of the tmux mode (Ctrl+a) keybindings.
+    // -------------------------------------------------------------------------
+    pane size=1 borderless=true {
+        plugin location="zellij:compact-bar" {
+            tooltip "?"
+        }
+    }
+
+    pane
+}
