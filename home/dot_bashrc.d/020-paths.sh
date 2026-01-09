@@ -21,6 +21,7 @@ path_prepend "/bin"
 # User-specific prepends (idempotent)
 path_prepend "$HOME/.fzf/bin"
 path_prepend "$HOME/.cargo/bin"
+path_prepend "$HOME/.local/go/bin"
 path_prepend "$HOME/go/bin"
 path_prepend "$HOME/.local/bin"
 path_prepend "$HOME/bin"

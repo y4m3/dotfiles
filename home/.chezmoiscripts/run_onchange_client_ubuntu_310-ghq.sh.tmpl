@@ -10,9 +10,12 @@ if command -v ghq >/dev/null 2>&1; then
   exit 0
 fi
 
+# Add Go to PATH (installed by 125-go.sh to ~/.local/go)
+GOROOT="$HOME/.local/go"
+export PATH="$GOROOT/bin:$HOME/go/bin:$PATH"
+
 if ! command -v go >/dev/null 2>&1; then
-  echo "Error: Go (golang-go) not found in PATH." >&2
-  echo "Hint: Ensure prerequisites ran successfully: run_once_00-prerequisites.sh installs golang-go." >&2
+  echo "Error: Go not found at $GOROOT/bin/go. Install Go first (125-go.sh)." >&2
   exit 1
 fi
 
