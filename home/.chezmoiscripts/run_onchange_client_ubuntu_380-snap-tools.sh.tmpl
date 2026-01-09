@@ -1,41 +1,169 @@
 {{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
-# Install tools via snap
+# Install tools via snap (with GitHub release fallback)
 set -euo pipefail
 
 log() { printf '%s\n' "==> $*"; }
-
-if ! command -v snap >/dev/null 2>&1; then
-    log "snap not available, skipping snap tools"
-    exit 0
-fi
+err() { printf '%s\n' "Error: $*" >&2; }
 
 LOCAL_BIN="$HOME/.local/bin"
+USE_SNAP=false
 
-# Install or migrate a tool to snap
-# Usage: install_snap_tool <name>
-install_snap_tool() {
-    local name="$1"
-    local local_bin="$LOCAL_BIN/$name"
+if command -v snap >/dev/null 2>&1; then
+    USE_SNAP=true
+else
+    log "snap not available, will use GitHub release fallback"
+    mkdir -p "$LOCAL_BIN"
+fi
 
-    # Check if already installed via snap
-    if snap list "$name" >/dev/null 2>&1; then
-        log "skip (snap): $name"
-        return 0
+# Get GitHub token for API rate limit
+get_github_token() {
+    local token=""
+    if command -v gh >/dev/null 2>&1 && gh auth token >/dev/null 2>&1; then
+        token=$(gh auth token 2>/dev/null || echo "")
     fi
+    if [ -z "$token" ] && [ -n "${GITHUB_TOKEN:-}" ]; then
+        token="$GITHUB_TOKEN"
+    fi
+    echo "$token"
+}
 
-    log "Installing $name..."
-    sudo snap install "$name"
+# Fetch latest release version from GitHub
+github_latest_version() {
+    local repo="$1"
+    local token
+    token=$(get_github_token)
 
-    # Remove old local binary after successful snap install (migration from GitHub release)
-    if [ -x "$local_bin" ]; then
-        log "Removing old local binary: $local_bin"
-        rm -f "$local_bin"
+    if [ -n "$token" ]; then
+        curl -fsSL -H "Authorization: token $token" "https://api.github.com/repos/$repo/releases/latest" | jq -r '.tag_name'
+    else
+        curl -fsSL "https://api.github.com/repos/$repo/releases/latest" | jq -r '.tag_name'
     fi
 }
 
-install_snap_tool btop
-install_snap_tool glow
+# Install btop via snap or GitHub release
+install_btop() {
+    if [ "$USE_SNAP" = true ]; then
+        if snap list btop >/dev/null 2>&1; then
+            log "skip (snap): btop"
+            return 0
+        fi
+        log "Installing btop via snap..."
+        sudo snap install btop
+        # Remove old local binary after successful snap install
+        if [ -x "$LOCAL_BIN/btop" ]; then
+            log "Removing old local binary: $LOCAL_BIN/btop"
+            rm -f "$LOCAL_BIN/btop"
+        fi
+    else
+        if [ -x "$LOCAL_BIN/btop" ]; then
+            log "skip (exists): $LOCAL_BIN/btop"
+            return 0
+        fi
+        log "Installing btop via GitHub release (fallback)..."
 
-log "Snap tools installation complete"
+        local target
+        case "$(uname -m)" in
+            x86_64 | amd64) target="x86_64-unknown-linux-musl" ;;
+            aarch64 | arm64) target="aarch64-unknown-linux-musl" ;;
+            *)
+                err "Unsupported architecture: $(uname -m)"
+                return 1
+                ;;
+        esac
+
+        local version
+        version=$(github_latest_version "aristocratos/btop")
+        if [ -z "$version" ] || [ "$version" = "null" ]; then
+            err "Failed to resolve btop version"
+            return 1
+        fi
+
+        local url="https://github.com/aristocratos/btop/releases/download/${version}/btop-${target}.tbz"
+        local tmpdir
+        tmpdir=$(mktemp -d)
+        trap 'rm -rf "$tmpdir"' RETURN
+
+        curl -fsSL "$url" -o "$tmpdir/btop.tbz"
+        tar -xjf "$tmpdir/btop.tbz" -C "$tmpdir"
+
+        local binary_path
+        binary_path=$(find "$tmpdir" -maxdepth 3 -type f -name btop | head -n 1)
+        if [ -z "$binary_path" ]; then
+            err "btop binary not found in archive"
+            return 1
+        fi
+
+        install -m 0755 "$binary_path" "$LOCAL_BIN/btop"
+        log "btop installed: $("$LOCAL_BIN/btop" --version)"
+    fi
+}
+
+# Install glow via snap or GitHub release
+install_glow() {
+    if [ "$USE_SNAP" = true ]; then
+        if snap list glow >/dev/null 2>&1; then
+            log "skip (snap): glow"
+            return 0
+        fi
+        log "Installing glow via snap..."
+        sudo snap install glow
+        # Remove old local binary after successful snap install
+        if [ -x "$LOCAL_BIN/glow" ]; then
+            log "Removing old local binary: $LOCAL_BIN/glow"
+            rm -f "$LOCAL_BIN/glow"
+        fi
+    else
+        if [ -x "$LOCAL_BIN/glow" ]; then
+            log "skip (exists): $LOCAL_BIN/glow"
+            return 0
+        fi
+        log "Installing glow via GitHub release (fallback)..."
+
+        local arch
+        case "$(uname -m)" in
+            x86_64 | amd64) arch="x86_64" ;;
+            aarch64 | arm64) arch="arm64" ;;
+            *)
+                err "Unsupported architecture: $(uname -m)"
+                return 1
+                ;;
+        esac
+
+        local version
+        version=$(github_latest_version "charmbracelet/glow")
+        if [ -z "$version" ] || [ "$version" = "null" ]; then
+            err "Failed to resolve glow version"
+            return 1
+        fi
+
+        local version_trimmed="${version#v}"
+        local url="https://github.com/charmbracelet/glow/releases/download/${version}/glow_${version_trimmed}_Linux_${arch}.tar.gz"
+        local tmpdir
+        tmpdir=$(mktemp -d)
+        trap 'rm -rf "$tmpdir"' RETURN
+
+        curl -fsSL "$url" -o "$tmpdir/glow.tar.gz"
+        tar -xzf "$tmpdir/glow.tar.gz" -C "$tmpdir"
+
+        local binary_path
+        binary_path=$(find "$tmpdir" -maxdepth 2 -type f -name glow | head -n 1)
+        if [ -z "$binary_path" ]; then
+            err "glow binary not found in archive"
+            return 1
+        fi
+
+        install -m 0755 "$binary_path" "$LOCAL_BIN/glow"
+        log "glow installed: $("$LOCAL_BIN/glow" --version 2>/dev/null || echo "installed")"
+    fi
+}
+
+install_btop
+install_glow
+
+if [ "$USE_SNAP" = true ]; then
+    log "Snap tools installation complete"
+else
+    log "GitHub release tools installation complete (fallback mode)"
+fi
 {{- end -}}
