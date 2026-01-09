@@ -15,16 +15,30 @@ else
   echo "==> Installing shellcheck from GitHub releases..."
 
   case "$(uname -m)" in
-    x86_64 | amd64) arch="x86_64" ;;
-    aarch64 | arm64) arch="aarch64" ;;
-    *)
-      echo "Unsupported architecture: $(uname -m)" >&2
-      exit 1
-      ;;
+  x86_64 | amd64) arch="x86_64" ;;
+  aarch64 | arm64) arch="aarch64" ;;
+  *)
+    echo "Unsupported architecture: $(uname -m)" >&2
+    exit 1
+    ;;
   esac
 
+  # Use GitHub token if available (from gh auth token or GITHUB_TOKEN env var)
+  # This increases rate limit from 60/hour (unauthenticated) to 5000/hour (authenticated)
+  github_token=""
+  if command -v gh >/dev/null 2>&1 && gh auth token >/dev/null 2>&1; then
+    github_token=$(gh auth token 2>/dev/null || echo "")
+  fi
+  if [ -z "$github_token" ] && [ -n "${GITHUB_TOKEN:-}" ]; then
+    github_token="$GITHUB_TOKEN"
+  fi
+
   # Get latest version from GitHub API
-  version=$(curl -fsSL https://api.github.com/repos/koalaman/shellcheck/releases/latest | jq -r '.tag_name')
+  if [ -n "$github_token" ]; then
+    version=$(curl -fsSL -H "Authorization: token $github_token" https://api.github.com/repos/koalaman/shellcheck/releases/latest | jq -r '.tag_name')
+  else
+    version=$(curl -fsSL https://api.github.com/repos/koalaman/shellcheck/releases/latest | jq -r '.tag_name')
+  fi
 
   if [ -z "$version" ] || [ "$version" = "null" ]; then
     echo "Failed to get latest shellcheck version" >&2
