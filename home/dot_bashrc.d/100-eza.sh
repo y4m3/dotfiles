@@ -10,5 +10,8 @@ if is_interactive; then
     alias_if_not_set "ll" "eza -alF --git --icons"
     alias_if_not_set "la" "eza -a --icons"
     alias_if_not_set "tree" "eza --tree --color=auto --group-directories-first --icons"
+  else
+    # Fallback to GNU ls with color when eza is not available
+    alias_if_not_set "ls" "ls --color=auto"
   fi
 fi
