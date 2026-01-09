@@ -10,22 +10,22 @@ TEMP_DOCKER_SCRIPT=""
 cleanup() {
   local exit_code=${1:-130}
   local is_interrupt=${2:-false}
-  
+
   # Remove temporary file if it exists (safe even if already deleted)
   if [ -n "$TEMP_DOCKER_SCRIPT" ]; then
     rm -f "$TEMP_DOCKER_SCRIPT"
   fi
-  
+
   # Only show interrupt message for SIGINT/SIGTERM
   if [ "$is_interrupt" = true ]; then
     echo "" >&2
     echo "==> Script interrupted by user (Ctrl-C)" >&2
     echo "    Cleanup completed. chezmoi apply will continue with next script." >&2
   fi
-  
+
   # Disable EXIT trap to prevent infinite loop
   trap - EXIT
-  
+
   exit "$exit_code"
 }
 
