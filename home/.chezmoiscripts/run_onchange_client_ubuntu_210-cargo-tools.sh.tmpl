@@ -27,13 +27,17 @@ declare -A PKG2BIN=(
   [bat]=bat
   [eza]=eza
   ["fd-find"]=fd
+  ["git-delta"]=delta
   [ripgrep]=rg
   [starship]=starship
+  ["yazi-cli"]=ya
+  ["yazi-fm"]=yazi
+  [zellij]=zellij
   [zoxide]=zoxide
 )
 
 # Preserve install order
-TOOLS_PACKAGES=(bat eza fd-find ripgrep starship zoxide)
+TOOLS_PACKAGES=(bat eza fd-find git-delta ripgrep starship yazi-cli yazi-fm zellij zoxide)
 
 # Detect already-installed tools (ONLY ~/.cargo/bin), check by binary name
 to_install=()
