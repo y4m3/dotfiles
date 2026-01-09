@@ -3,6 +3,14 @@
 # This file is created by chezmoi using `create_` when it does not exist.
 # After creation it's intentionally left for the user to customize.
 
+# Vi mode for shell
+# - Esc: Command mode, i/a: Insert mode
+# - Cursor shape: | (Insert) / █ (Command)
+set -o vi
+bind 'set show-mode-in-prompt on'
+bind 'set vi-ins-mode-string \1\e[5 q\2'
+bind 'set vi-cmd-mode-string \1\e[1 q\2'
+
 # Prompt style selection: bare, enhanced or starship
 export PROMPT_STYLE=starship
 export VIRTUAL_ENV_DISABLE_PROMPT=1
