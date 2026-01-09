@@ -58,7 +58,8 @@ See [Alacritty Documentation](tools/alacritty.md) for details.
 3. Update import paths in `alacritty.toml` to Windows format:
    - Theme: `"%APPDATA%\\alacritty\\themes\\themes\\tokyo_night_storm.toml"`
    - Local: `"%APPDATA%\\alacritty\\alacritty.local.toml"`
-4. Run `chezmoi apply` (in WSL) to create `alacritty.local.toml`, then copy to Windows:
+4. Run `chezmoi apply` (in WSL) to create `alacritty.local.toml`, then copy to Windows.
+   Replace `<distro>` with your WSL distribution name (e.g., `Ubuntu`) and `<user>` with your Linux username:
    ```powershell
    Copy-Item \\wsl$\<distro>\home\<user>\.config\alacritty\alacritty.local.toml $env:APPDATA\alacritty\
    ```
@@ -66,7 +67,7 @@ See [Alacritty Documentation](tools/alacritty.md) for details.
    ```toml
    [terminal.shell]
    program = "C:\\Windows\\System32\\wsl.exe"
-   args = ["-d", "dev", "--cd", "~", "bash", "-ic", "'zellij attach --create main'"]
+   args = ["-d", "dev", "--cd", "~", "bash", "-lc", "'zellij attach --create main'"]
    ```
 
 See [Alacritty Documentation](tools/alacritty.md) for details.

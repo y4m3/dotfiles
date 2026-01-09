@@ -22,7 +22,7 @@ import = [
 # WSL (Windows):
 #   [terminal.shell]
 #   program = "C:\\Windows\\System32\\wsl.exe"
-#   args = ["-d", "dev", "--cd", "~", "bash", "-ic", "'zellij attach --create main'"]
+#   args = ["-d", "dev", "--cd", "~", "bash", "-lc", "'zellij attach --create main'"]
 #
 # Linux:
 #   [terminal.shell]

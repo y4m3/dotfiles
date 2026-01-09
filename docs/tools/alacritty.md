@@ -43,7 +43,8 @@ https://alacritty.org/
    - Theme: `"%APPDATA%\\alacritty\\themes\\themes\\tokyo_night_storm.toml"`
    - Local: `"%APPDATA%\\alacritty\\alacritty.local.toml"`
 
-3. **Run `chezmoi apply`** (in WSL) to create `alacritty.local.toml` template, then copy to Windows:
+3. **Run `chezmoi apply`** (in WSL) to create `alacritty.local.toml` template, then copy to Windows.
+   Replace `<distro>` with your WSL distribution name (e.g., `Ubuntu`) and `<user>` with your Linux username:
    ```powershell
    Copy-Item \\wsl$\<distro>\home\<user>\.config\alacritty\alacritty.local.toml $env:APPDATA\alacritty\
    ```
@@ -58,7 +59,7 @@ Add `[terminal.shell]` section in `alacritty.local.toml`:
 ```toml
 [terminal.shell]
 program = "C:\\Windows\\System32\\wsl.exe"
-args = ["-d", "dev", "--cd", "~", "bash", "-ic", "'zellij attach --create main'"]
+args = ["-d", "dev", "--cd", "~", "bash", "-lc", "'zellij attach --create main'"]
 ```
 
 **Linux**:
