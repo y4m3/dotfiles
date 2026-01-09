@@ -40,8 +40,8 @@ All installed via `run_onchange_client_ubuntu_210-cargo-tools.sh.tmpl` | [docs](
 
 ## Utilities & Monitoring
 
-- **btop** | [docs](tools/btop.md), https://github.com/aristocratos/btop | `run_onchange_client_ubuntu_280-btop.sh.tmpl`
-- **glow** | [docs](tools/glow.md), https://github.com/charmbracelet/glow | `run_onchange_client_ubuntu_370-glow.sh.tmpl`
+- **btop** | [docs](tools/btop.md), https://github.com/aristocratos/btop | `run_onchange_client_ubuntu_380-snap-tools.sh.tmpl`
+- **glow** | [docs](tools/glow.md), https://github.com/charmbracelet/glow | `run_onchange_client_ubuntu_380-snap-tools.sh.tmpl`
 - **lnav** | [docs](tools/lnav.md), https://lnav.org/ | `run_onchange_client_ubuntu_360-lnav.sh.tmpl`
 - **yazi** | [docs](tools/yazi.md), https://github.com/sxyazi/yazi | `run_onchange_client_ubuntu_285-yazi.sh.tmpl`
 
