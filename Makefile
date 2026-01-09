@@ -34,7 +34,8 @@ VOLUMES_FULL := $(VOLUME_DOTFILES) $(VOLUME_CARGO) $(VOLUME_RUSTUP) $(VOLUME_SNA
 GITHUB_TOKEN := $(shell command -v gh >/dev/null 2>&1 && gh auth token 2>/dev/null || echo "")
 
 # Common docker run base command
-DOCKER_RUN_BASE := docker run --rm -v "$(PWD):$(WORKDIR)" -w $(WORKDIR) $(if $(GITHUB_TOKEN),-e GITHUB_TOKEN="$(GITHUB_TOKEN)",)
+# HOST_UID/HOST_GID: Used to fix ownership of files created inside container
+DOCKER_RUN_BASE := docker run --rm -v "$(PWD):$(WORKDIR)" -w $(WORKDIR) $(if $(GITHUB_TOKEN),-e GITHUB_TOKEN="$(GITHUB_TOKEN)",) -e HOST_UID=$(shell id -u) -e HOST_GID=$(shell id -g)
 DOCKER_RUN_IT := $(DOCKER_RUN_BASE) -it
 DOCKER_RUN_BASE_USER := $(DOCKER_RUN_BASE) -u $(shell id -u):$(shell id -g)
 
@@ -130,6 +131,7 @@ test: build
 	             echo "  Total FAIL: $$fail_count" | tee -a "$$TEST_LOG_FILE"; \
 	             echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
 	             bash scripts/record-test-results.sh; \
+	             if [ -n "$${HOST_UID:-}" ] && [ -n "$${HOST_GID:-}" ]; then chown -R "$$HOST_UID:$$HOST_GID" .test-results/ 2>/dev/null || true; fi; \
 	             if [ $$fail_count -ne 0 ]; then exit 1; else exit 0; fi; \
 	           else \
 	             echo "Running affected tests: $$tests_to_run" | tee -a "$$TEST_LOG_FILE"; \
@@ -172,6 +174,7 @@ test: build
 	             echo "  Total FAIL: $$fail_count" | tee -a "$$TEST_LOG_FILE"; \
 	             echo "========================================" | tee -a "$$TEST_LOG_FILE"; \
 	             bash scripts/record-test-results.sh; \
+	             if [ -n "$${HOST_UID:-}" ] && [ -n "$${HOST_GID:-}" ]; then chown -R "$$HOST_UID:$$HOST_GID" .test-results/ 2>/dev/null || true; fi; \
 	             if [ $$fail_count -ne 0 ]; then exit 1; else exit 0; fi; \
 	           fi'
 
@@ -245,6 +248,7 @@ test-all: build
 	               echo "==> Check log files in $$TEST_LOG_DIR for details" | tee -a "$$TEST_LOG_FILE"; \
 	               bash scripts/record-test-results.sh; \
 	           fi; \
+	           if [ -n "$${HOST_UID:-}" ] && [ -n "$${HOST_GID:-}" ]; then chown -R "$$HOST_UID:$$HOST_GID" .test-results/ 2>/dev/null || true; fi; \
 	           if [ $$fail_count -ne 0 ]; then exit 1; else exit 0; fi'
 
 # clean: Remove persistent Docker volumes
