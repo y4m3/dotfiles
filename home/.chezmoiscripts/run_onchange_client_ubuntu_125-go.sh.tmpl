@@ -17,6 +17,10 @@ echo "==> Installing Go..."
 
 # Get latest stable version from go.dev
 GO_VERSION=$(curl -fsSL https://go.dev/VERSION?m=text | head -1)
+if [ -z "$GO_VERSION" ]; then
+    echo "Error: Failed to fetch Go version from go.dev" >&2
+    exit 1
+fi
 echo "  Latest version: $GO_VERSION"
 
 # Detect architecture

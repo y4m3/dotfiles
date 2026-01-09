@@ -8,7 +8,7 @@ err() { printf '%s\n' "Error: $*" >&2; }
 
 GOROOT="$HOME/.local/go"
 GO="$GOROOT/bin/go"
-GOBIN="${GOBIN:-$HOME/go/bin}"
+export GOBIN="${GOBIN:-$HOME/go/bin}"
 export PATH="$GOROOT/bin:$GOBIN:$PATH"
 
 # Require Go under ~/.local/go (not just in PATH)
