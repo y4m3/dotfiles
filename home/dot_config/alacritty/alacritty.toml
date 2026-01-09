@@ -1,0 +1,58 @@
+# Alacritty configuration (managed by chezmoi)
+# Machine-specific settings should be added to alacritty.local.toml (imported last, takes priority).
+#
+# NOTE for Windows users:
+#   WSL users should install Alacritty on Windows, not inside WSL.
+#   Windows config location: %APPDATA%\alacritty\alacritty.toml
+#   Copy this file and update import paths to Windows format (see comments in import section).
+
+[general]
+live_config_reload = true
+working_directory = "None"
+import = [
+    # Theme (Windows: "%APPDATA%\\alacritty\\themes\\themes\\tokyo_night_storm.toml")
+    "~/.config/alacritty/themes/themes/tokyo_night_storm.toml",
+    # Machine-specific settings - imported last, takes priority
+    # (Windows: "%APPDATA%\\alacritty\\alacritty.local.toml")
+    "~/.config/alacritty/alacritty.local.toml",
+]
+
+# Machine-specific [terminal.shell] examples (add to alacritty.local.toml):
+#
+# WSL (Windows):
+#   [terminal.shell]
+#   program = "C:\\Windows\\System32\\wsl.exe"
+#   args = ["-d", "dev", "--cd", "~", "bash", "-ic", "'zellij attach --create main'"]
+#
+# Linux:
+#   [terminal.shell]
+#   program = "/usr/bin/bash"
+#   args = ["-l"]
+
+[window]
+dimensions = { columns = 120, lines = 30 }
+padding = { x = 4, y = 2 }
+dynamic_padding = true
+opacity = 0.85
+blur = true
+dynamic_title = false
+
+[scrolling]
+history = 100000
+multiplier = 5
+
+[font]
+size = 12.0
+offset = { x = 0, y = 4 }
+normal = { family = "UDEV Gothic 35NFLG", style = "Regular" }
+bold = { family = "UDEV Gothic 35NFLG", style = "Bold" }
+italic = { family = "UDEV Gothic 35NFLG", style = "Italic" }
+bold_italic = { family = "UDEV Gothic 35NFLG", style = "Bold Italic" }
+
+[mouse]
+hide_when_typing = true
+
+[selection]
+save_to_clipboard = true
+semantic_escape_chars = ",│`|:\"' ()[]{}<>"
+
