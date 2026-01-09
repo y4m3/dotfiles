@@ -1,7 +1,16 @@
 {{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
 #!/usr/bin/env bash
 # Install yazi plugins using ya pkg
-set -euo pipefail
+#
+# Note: `ya pkg add` is idempotent - it will skip already installed plugins.
+#
+# Plugin configuration:
+#   - toggle-pane: Configured in keymap.toml (<C-p> to toggle max preview)
+#   - smart-enter: Add to keymap.toml: { on = "l", run = "plugin smart-enter" }
+#   - smart-paste: Add to keymap.toml: { on = "p", run = "plugin smart-paste" }
+#   - git: Shows git status automatically (no config needed)
+#   - zoom: Add to keymap.toml: { on = "z", run = "plugin zoom" }
+set -uo pipefail
 
 if ! command -v ya >/dev/null 2>&1; then
     echo "ya command not found, skipping plugin installation" >&2
@@ -10,11 +19,27 @@ fi
 
 echo "==> Installing yazi plugins..."
 
-ya pkg add yazi-rs/plugins:toggle-pane
-ya pkg add yazi-rs/plugins:smart-enter
-ya pkg add yazi-rs/plugins:smart-paste
-ya pkg add yazi-rs/plugins:git
-ya pkg add yazi-rs/plugins:zoom
+plugins=(
+    "yazi-rs/plugins:toggle-pane"
+    "yazi-rs/plugins:smart-enter"
+    "yazi-rs/plugins:smart-paste"
+    "yazi-rs/plugins:git"
+    "yazi-rs/plugins:zoom"
+)
+
+failed=0
+
+for plugin in "${plugins[@]}"; do
+    if ! ya pkg add "$plugin"; then
+        echo "Warning: Failed to install yazi plugin: $plugin" >&2
+        failed=1
+    fi
+done
+
+if [ "$failed" -ne 0 ]; then
+    echo "One or more yazi plugins failed to install" >&2
+    exit 1
+fi
 
 echo "==> yazi plugins installed successfully"
 {{- end -}}
