@@ -6,6 +6,10 @@
 ; ============================================================
 SetTitleMatchMode 2  ; Allow partial title matches in WinTitle parameters
 
+; Opacity bounds (0-255). Keep minimum >= 40 to remain visible/usable.
+global MIN_OPACITY := 40
+global MAX_OPACITY := 255
+
 ; ============================================================
 ; App groups (context-sensitive hotkeys)
 ; ============================================================
@@ -51,8 +55,7 @@ vk1C::ImeOn()            ; Henkan   (JP layout): IME ON
 ^+h::ToggleWindowExe("wezterm-gui.exe", "C:\Program Files\WezTerm\wezterm-gui.exe")
 
 ; Toggle Ferdium (show/activate <-> minimize)
-; Note: Update the path below to match your Ferdium installation location
-^+j::ToggleWindowExe("Ferdium.exe", "C:\Path\to\Ferdium.exe")
+^+j::ToggleWindowExe("Ferdium.exe", A_AppData "\..\Local\Ferdium\Ferdium.exe")
 
 ; ============================================================
 ; Hotkeys: Window opacity (active window)
@@ -72,7 +75,7 @@ vk1C::ImeOn()            ; Henkan   (JP layout): IME ON
 ImeEsc() {
     if IME_Get() {
         Send "{Esc}"
-        Sleep 1
+        Sleep 10
         IME_Set(0)
     } else {
         Send "{Esc}"
@@ -147,41 +150,37 @@ ToggleWindowExe(exeName, exePath, waitSec := 2) {
     busy := true
     Critical "On"
 
-    prevHwnd := WinGetID("A")
-    hwnd := FindWindowByExe(exeName, lastHwnd)
+    try {
+        prevHwnd := WinGetID("A")
+        hwnd := FindWindowByExe(exeName, lastHwnd)
 
-    if !hwnd {
-        Run '"' exePath '"'
-        if !WinWait("ahk_exe " exeName, , waitSec) {
-            Critical "Off"
-            busy := false
-            return
-        }
-        hwnd := FindWindowByExe(exeName, 0)
         if !hwnd {
-            Critical "Off"
-            busy := false
-            return
+            Run '"' exePath '"'
+            if !WinWait("ahk_exe " exeName, , waitSec)
+                return
+            hwnd := FindWindowByExe(exeName, 0)
+            if !hwnd
+                return
         }
+
+        lastHwnd := hwnd
+
+        if WinActive("ahk_id " hwnd) {
+            WinMinimize("ahk_id " hwnd)
+            if prevHwnd && (prevHwnd != hwnd)
+                WinActivate("ahk_id " prevHwnd)
+        } else {
+            if WinGetMinMax("ahk_id " hwnd) = -1
+                WinRestore("ahk_id " hwnd)
+
+            WinShow("ahk_id " hwnd)
+            WinActivate("ahk_id " hwnd)
+            WinWaitActive("ahk_id " hwnd, , 1)
+        }
+    } finally {
+        Critical "Off"
+        busy := false
     }
-
-    lastHwnd := hwnd
-
-    if WinActive("ahk_id " hwnd) {
-        WinMinimize("ahk_id " hwnd)
-        if prevHwnd && (prevHwnd != hwnd)
-            WinActivate("ahk_id " prevHwnd)
-    } else {
-        if WinGetMinMax("ahk_id " hwnd) = -1
-            WinRestore("ahk_id " hwnd)
-
-        WinShow("ahk_id " hwnd)
-        WinActivate("ahk_id " hwnd)
-        WinWaitActive("ahk_id " hwnd, , 1)
-    }
-
-    Critical "Off"
-    busy := false
 }
 
 ; Returns a window HWND belonging to exeName.
@@ -215,14 +214,14 @@ AdjustOpacity(delta, hwnd := 0) {
     if (cur = "")
         cur := 255  ; Default to fully opaque when no transparency is set
 
-    next := Clamp(cur + delta, 40, 255)  ; Keep >= 40 to remain usable/visible
+    next := Clamp(cur + delta, MIN_OPACITY, MAX_OPACITY)
     WinSetTransparent next, "ahk_id " hwnd
     ShowOpacityTip(next)
 }
 
 SetOpacity(value, hwnd := 0) {
     hwnd := hwnd ? hwnd : WinGetID("A")
-    value := Clamp(value, 40, 255)
+    value := Clamp(value, MIN_OPACITY, MAX_OPACITY)
     WinSetTransparent value, "ahk_id " hwnd
     ShowOpacityTip(value)
 }
