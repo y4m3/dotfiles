@@ -1,0 +1,30 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Install tools via snap
+set -euo pipefail
+
+log() { printf '%s\n' "==> $*"; }
+
+if ! command -v snap >/dev/null 2>&1; then
+    log "snap not available, skipping snap tools"
+    exit 0
+fi
+
+# btop
+if ! command -v btop >/dev/null 2>&1; then
+    log "Installing btop..."
+    sudo snap install btop
+else
+    log "skip (exists): btop"
+fi
+
+# glow
+if ! command -v glow >/dev/null 2>&1; then
+    log "Installing glow..."
+    sudo snap install glow
+else
+    log "skip (exists): glow"
+fi
+
+log "Snap tools installation complete"
+{{- end -}}
