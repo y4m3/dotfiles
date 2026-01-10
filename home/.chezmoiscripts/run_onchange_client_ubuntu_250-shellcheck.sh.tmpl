@@ -59,29 +59,30 @@ else
   echo "✓ shellcheck installed: $("$INSTALL_DIR/shellcheck" --version | head -2 | tail -1)"
 fi
 
-# shfmt - install via Go (requires golang-go from prerequisites)
+# shfmt - install via Go (requires Go from 125-go.sh)
 if [ -x "$INSTALL_DIR/shfmt" ]; then
   echo "✓ shfmt already installed: $("$INSTALL_DIR/shfmt" --version)"
 else
+  # Add Go to PATH (installed by 125-go.sh to ~/.local/go)
+  GOROOT="$HOME/.local/go"
+  export PATH="$GOROOT/bin:$HOME/go/bin:$PATH"
+
   if ! command -v go >/dev/null 2>&1; then
-    echo "Error: Go not found. Install prerequisites first." >&2
+    echo "Error: Go not found at $GOROOT/bin/go. Install Go first (125-go.sh)." >&2
     exit 1
   fi
 
   echo "==> Installing shfmt via Go..."
+  # Note: Binary is installed to ~/go/bin (already in PATH via 020-paths.sh)
   GO111MODULE=on go install mvdan.cc/sh/v3/cmd/shfmt@latest
 
-  # Copy built binary to ~/.local/bin
-  if [ -x "$HOME/go/bin/shfmt" ]; then
-    install -m 0755 "$HOME/go/bin/shfmt" "$INSTALL_DIR/shfmt"
-  elif [ -n "${GOPATH:-}" ] && [ -x "$GOPATH/bin/shfmt" ]; then
-    install -m 0755 "$GOPATH/bin/shfmt" "$INSTALL_DIR/shfmt"
-  else
-    echo "Error: go install did not produce shfmt binary." >&2
+  # Verify installation
+  if [ ! -x "$HOME/go/bin/shfmt" ]; then
+    echo "Error: go install did not produce shfmt binary at $HOME/go/bin/shfmt" >&2
     exit 1
   fi
 
-  echo "✓ shfmt installed: $INSTALL_DIR/shfmt ($("$INSTALL_DIR/shfmt" --version))"
+  echo "✓ shfmt installed: $HOME/go/bin/shfmt ($(shfmt --version))"
 fi
 
 echo "✓ Shell linting and formatting tools ready"

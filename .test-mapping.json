@@ -53,9 +53,14 @@
       "description": "zellij installation"
     },
     {
-      "pattern": "home/run_once_275-utils-yq.sh.tmpl",
-      "tests": ["tests/yq-test.sh"],
-      "description": "yq installation"
+      "pattern": "home/.chezmoiscripts/run_onchange_client_ubuntu_125-go.sh.tmpl",
+      "tests": ["tests/go-test.sh"],
+      "description": "Go runtime installation"
+    },
+    {
+      "pattern": "home/.chezmoiscripts/run_onchange_client_ubuntu_130-go-tools.sh.tmpl",
+      "tests": ["tests/lazygit-test.sh", "tests/lazydocker-test.sh", "tests/yq-test.sh"],
+      "description": "Go tools (lazygit, lazydocker, yq)"
     },
     {
       "pattern": "home/run_once_280-utils-btop.sh.tmpl",
@@ -81,16 +86,6 @@
       "pattern": "home/run_once_320-devtools-delta.sh.tmpl",
       "tests": ["tests/delta-test.sh"],
       "description": "delta installation"
-    },
-    {
-      "pattern": "home/run_once_330-devtools-lazygit.sh.tmpl",
-      "tests": ["tests/lazygit-test.sh"],
-      "description": "lazygit installation"
-    },
-    {
-      "pattern": "home/run_once_340-devtools-lazydocker.sh.tmpl",
-      "tests": ["tests/lazydocker-test.sh"],
-      "description": "lazydocker installation"
     },
     {
       "pattern": "home/.chezmoiscripts/run_onchange_client_ubuntu_260-wezterm.sh.tmpl",
