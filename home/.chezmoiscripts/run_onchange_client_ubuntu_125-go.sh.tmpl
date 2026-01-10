@@ -21,12 +21,22 @@ if [ -z "$GO_VERSION" ]; then
     echo "Error: Failed to fetch Go version from go.dev" >&2
     exit 1
 fi
+
+# Validate version format (should start with "go")
+case "$GO_VERSION" in
+    go*)
+        ;;
+    *)
+        echo "Error: Invalid Go version format: '$GO_VERSION'" >&2
+        exit 1
+        ;;
+esac
 echo "  Latest version: $GO_VERSION"
 
 # Detect architecture
 case "$(uname -m)" in
-    x86_64) ARCH="amd64" ;;
-    aarch64) ARCH="arm64" ;;
+    x86_64 | amd64) ARCH="amd64" ;;
+    aarch64 | arm64) ARCH="arm64" ;;
     *)
         echo "Error: Unsupported architecture: $(uname -m)" >&2
         exit 1
