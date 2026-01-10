@@ -43,9 +43,39 @@ case "$(uname -m)" in
         ;;
 esac
 
-# Download and extract
+# Download checksum for verification
+echo "  Downloading checksum..."
+CHECKSUM_URL="https://go.dev/dl/${GO_VERSION}.linux-${ARCH}.tar.gz.sha256"
+EXPECTED_CHECKSUM=$(curl -fsSL "$CHECKSUM_URL")
+if [ -z "$EXPECTED_CHECKSUM" ]; then
+    echo "Error: Failed to download checksum from $CHECKSUM_URL" >&2
+    exit 1
+fi
+echo "  Expected SHA256: $EXPECTED_CHECKSUM"
+
+# Download and verify in temporary directory
+TEMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TEMP_DIR"' EXIT INT TERM
+
+cd "$TEMP_DIR"
+echo "  Downloading Go archive..."
+curl -fsSL "https://go.dev/dl/${GO_VERSION}.linux-${ARCH}.tar.gz" -o go.tar.gz
+
+# Verify checksum
+echo "  Verifying checksum..."
+ACTUAL_CHECKSUM=$(sha256sum go.tar.gz | awk '{print $1}')
+if [ "$ACTUAL_CHECKSUM" != "$EXPECTED_CHECKSUM" ]; then
+    echo "Error: Checksum mismatch!" >&2
+    echo "  Expected: $EXPECTED_CHECKSUM" >&2
+    echo "  Actual:   $ACTUAL_CHECKSUM" >&2
+    exit 1
+fi
+echo "  ✓ Checksum verified"
+
+# Extract
+echo "  Extracting..."
 mkdir -p "$HOME/.local"
-curl -fsSL "https://go.dev/dl/${GO_VERSION}.linux-${ARCH}.tar.gz" | tar -C "$HOME/.local" -xz
+tar -C "$HOME/.local" -xzf go.tar.gz
 
 # Verify installation
 if [ -x "$GOROOT/bin/go" ]; then

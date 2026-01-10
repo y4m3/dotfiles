@@ -73,19 +73,16 @@ else
   fi
 
   echo "==> Installing shfmt via Go..."
+  # Note: Binary is installed to ~/go/bin (already in PATH via 020-paths.sh)
   GO111MODULE=on go install mvdan.cc/sh/v3/cmd/shfmt@latest
 
-  # Copy built binary to ~/.local/bin
-  if [ -x "$HOME/go/bin/shfmt" ]; then
-    install -m 0755 "$HOME/go/bin/shfmt" "$INSTALL_DIR/shfmt"
-  elif [ -n "${GOPATH:-}" ] && [ -x "$GOPATH/bin/shfmt" ]; then
-    install -m 0755 "$GOPATH/bin/shfmt" "$INSTALL_DIR/shfmt"
-  else
-    echo "Error: go install did not produce shfmt binary." >&2
+  # Verify installation
+  if [ ! -x "$HOME/go/bin/shfmt" ]; then
+    echo "Error: go install did not produce shfmt binary at $HOME/go/bin/shfmt" >&2
     exit 1
   fi
 
-  echo "✓ shfmt installed: $INSTALL_DIR/shfmt ($("$INSTALL_DIR/shfmt" --version))"
+  echo "✓ shfmt installed: $HOME/go/bin/shfmt ($(shfmt --version))"
 fi
 
 echo "✓ Shell linting and formatting tools ready"

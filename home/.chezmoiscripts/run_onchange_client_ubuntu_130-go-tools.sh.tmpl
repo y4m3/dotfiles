@@ -9,6 +9,7 @@ err() { printf '%s\n' "Error: $*" >&2; }
 GOROOT="$HOME/.local/go"
 GO="$GOROOT/bin/go"
 export GOBIN="${GOBIN:-$HOME/go/bin}"
+mkdir -p "$GOBIN"
 export PATH="$GOROOT/bin:$GOBIN:$PATH"
 
 # Require Go under ~/.local/go (not just in PATH)
@@ -16,6 +17,13 @@ if [ ! -x "$GO" ]; then
     err "go not found at $GO. Install Go first."
     exit 1
 fi
+
+# Note: Using @latest for convenience and automatic updates.
+# This means new versions are auto-installed on next run.
+# For production environments, consider pinning to specific versions:
+#   github.com/jesseduffield/lazygit@v0.40.2
+#   github.com/jesseduffield/lazydocker@v0.23.0
+#   github.com/mikefarah/yq/v4@v4.40.5
 
 # lazygit
 if [ ! -x "$GOBIN/lazygit" ]; then
