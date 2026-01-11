@@ -1,14 +1,9 @@
-# ~/.config/bat/config — bat defaults (tokyo-night theme)
+# ~/.config/bat/config — bat defaults
 # See: https://github.com/sharkdp/bat#configuration
-# Tokyo Night themes are installed via run_once_215-shell-bat-tokyonight.sh
+# Tokyo Night themes installed via .chezmoiexternal.toml
 
 # Always use colors
 --color=always
-
-# Theme: Tokyo Night (installed via bat-into-tokyonight)
-# Available: tokyonight_day, tokyonight_moon, tokyonight_night, tokyonight_storm
-# Can be overridden via BAT_THEME environment variable in ~/.bashrc.local
---theme=tokyonight_night
 
 # Show line numbers, grid and changes
 --style=header,grid,numbers,changes
