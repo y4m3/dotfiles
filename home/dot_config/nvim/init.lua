@@ -16,8 +16,6 @@
 --
 -- For paste: Use Ctrl+Shift+V (terminal paste) since OSC 52 paste
 -- is not widely supported for security reasons.
---
--- See: ~/.serena/memories/wezterm-wsl-clipboard-investigation.md
 -- ============================================================================
 if vim.fn.has("wsl") == 1 then
   vim.g.clipboard = {
