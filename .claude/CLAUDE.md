@@ -29,6 +29,7 @@ home-manager generations   # Check Home Manager status
 │   ├── .chezmoiscripts/     # Install scripts (6 scripts)
 │   ├── .chezmoiexternal.toml # External files (bat theme)
 │   ├── dot_config/nix/      # Nix flake & Home Manager config
+│   ├── dot_config/nvim/     # LazyVim (Neovim) configuration
 │   └── dot_*                # Dotfiles (dot_bashrc, dot_bashrc.d/, etc.)
 ├── install.sh               # Bootstrap script
 └── Justfile                 # Lint/format tasks
