@@ -14,26 +14,32 @@ Guiding principles
 
 Numbering system
 
-Files are loaded in lexicographic (numerical) order:
+Files are loaded in lexicographic (numerical) order. Numbers use 10-step
+increments to allow future additions without renumbering.
 
-- **000-099**: Core functionality and foundation
-  - `000-aliases-helper.sh`: Helper functions for alias management
-  - `010-user-preferences.sh`: Basic environment variables and settings
-  - `020-paths.sh`: PATH management
-  - `030-security-permissions.sh`: Security settings (file permissions)
+- **0xx**: Core functionality and foundation
+  - `010-aliases-helper.sh`: Helper functions for alias management
+  - `020-user-preferences.sh`: Basic environment variables and settings
+  - `030-paths.sh`: PATH management
+  - `040-security-permissions.sh`: Security settings (file permissions)
 
-- **100-199**: Tool configuration (one tool per file, sequential numbering)
-  - `100-eza.sh`: eza configuration
-  - `101-bat.sh`: bat configuration
-  - `102-ripgrep.sh`: ripgrep configuration
-  - `103-fd.sh`: fd configuration
-  - `105-direnv.sh`: direnv configuration
-  - `106-fzf.sh`: fzf configuration
-  - `107-completion.sh`: Other completion features (bash-completion, gh, etc.)
+- **1xx**: Tool configuration (one tool per file)
+  - `110-eza.sh`: eza configuration
+  - `120-bat.sh`: bat configuration
+  - `130-ripgrep.sh`: ripgrep configuration
+  - `140-fd.sh`: fd configuration
+  - `150-direnv.sh`: direnv configuration
+  - `160-fzf.sh`: fzf configuration
+  - `170-completion.sh`: Completion features (bash-completion, gh, etc.)
 
-- **200-299**: Runtime initialization
-  - `200-runtimes.sh`: Language runtime initialization (Rust, Node.js, Python, etc.)
-  - `299-zoxide.sh`: zoxide configuration (loaded last to avoid conflicts with other tools)
+- **2xx**: Prompt
+  - `210-starship.sh`: Starship prompt configuration
+
+- **8xx**: OS-specific
+  - `810-wsl-editors.sh.tmpl`: WSL editor integration
+
+- **9xx**: Must be last
+  - `910-zoxide.sh`: zoxide configuration (must be loaded last)
 
 Interactive vs non-interactive
 
@@ -54,13 +60,13 @@ Place the following in `~/.bashrc.local` to opt in:
 ENABLE_CD_LS=1
 ```
 
-The repository provides the implementation inside `299-zoxide.sh` but the
+The repository provides the implementation inside `910-zoxide.sh` but the
 feature is disabled by default so each host can opt in.
 
 Workflow
 
 1. This repo guarantees `~/.bashrc` and `~/.bashrc.d/` exist.
-2. Edit `~/.bashrc.d/010-user-preferences.sh` or create `~/.bashrc.local`
+2. Edit `~/.bashrc.d/020-user-preferences.sh` or create `~/.bashrc.local`
      for personal settings.
 3. Use `~/.bashrc.$HOSTNAME` for strict host-specific tweaks.
 

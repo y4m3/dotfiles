@@ -1,0 +1,234 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Install Docker Engine and Docker Compose on host system
+set -euo pipefail
+
+# Temporary file for Docker installation script (created with mktemp for security)
+TEMP_DOCKER_SCRIPT=""
+
+# Cleanup function for signal handling and error exits
+cleanup() {
+  local exit_code=${1:-130}
+  local is_interrupt=${2:-false}
+
+  # Remove temporary file if it exists (safe even if already deleted)
+  if [ -n "$TEMP_DOCKER_SCRIPT" ]; then
+    rm -f "$TEMP_DOCKER_SCRIPT"
+  fi
+
+  # Only show interrupt message for SIGINT/SIGTERM
+  if [ "$is_interrupt" = true ]; then
+    echo "" >&2
+    echo "==> Script interrupted by user (Ctrl-C)" >&2
+    echo "    Cleanup completed. chezmoi apply will continue with next script." >&2
+  fi
+
+  # Disable EXIT trap to prevent infinite loop
+  trap - EXIT
+
+  exit "$exit_code"
+}
+
+# Trap signals for cleanup (interrupts)
+trap 'cleanup 130 true' INT TERM
+
+# Trap EXIT for cleanup on normal exit or error
+# Note: rm -f is safe even if file doesn't exist, so this works for all exit scenarios
+# For early exits (like Docker container skip below), cleanup is harmless since
+# no temporary files have been created yet
+trap 'cleanup "${?}" false' EXIT
+
+# Skip in Docker containers (Docker-in-Docker is complex and not needed for testing)
+# Note: EXIT trap will be triggered here, but cleanup is safe since TEMP_DOCKER_SCRIPT
+# doesn't exist at this point. The script exits with code 0, allowing chezmoi apply
+# to continue with the next script.
+if [ -f /.dockerenv ]; then
+  echo "==> Running in Docker, skipping Docker installation (use host system)"
+  exit 0
+fi
+
+# Check Docker and Docker Compose separately
+DOCKER_INSTALLED=false
+COMPOSE_INSTALLED=false
+
+if command -v docker >/dev/null 2>&1; then
+  DOCKER_INSTALLED=true
+  echo "✓ Docker already installed: $(docker --version)"
+else
+  echo "==> Docker not found, will install"
+fi
+
+if command -v docker-compose >/dev/null 2>&1; then
+  COMPOSE_INSTALLED=true
+  echo "✓ Docker Compose already installed: $(docker-compose --version)"
+else
+  echo "==> Docker Compose not found, will install"
+fi
+
+# If both are installed, skip installation
+if [ "$DOCKER_INSTALLED" = true ] && [ "$COMPOSE_INSTALLED" = true ]; then
+  echo "✓ Docker and Docker Compose are already installed, skipping installation"
+  exit 0
+fi
+
+# Require apt-based systems
+if ! command -v apt-get >/dev/null 2>&1; then
+  echo "Error: apt-get not found. Please install Docker manually: https://docs.docker.com/engine/install/" >&2
+  exit 1
+fi
+
+# Require sudo
+if ! command -v sudo >/dev/null 2>&1; then
+  echo "Error: sudo not found. Docker installation requires sudo privileges." >&2
+  exit 1
+fi
+
+# Install Docker Engine if not already installed
+if [ "$DOCKER_INSTALLED" = false ]; then
+  # Double-check Docker is not installed (get.docker.com script should handle this, but we check explicitly)
+  if command -v docker >/dev/null 2>&1; then
+    echo "✓ Docker was installed by another process, skipping installation"
+    DOCKER_INSTALLED=true
+  else
+    echo "==> Installing Docker Engine..."
+    # Install prerequisites
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      ca-certificates \
+      curl \
+      gnupg \
+      lsb-release
+
+    # Create temporary file securely using mktemp
+    TEMP_DOCKER_SCRIPT=$(mktemp)
+
+    # Download Docker installation script
+    # Note: get.docker.com is served over HTTPS from official Docker infrastructure.
+    # While checksum verification would be ideal, this matches the pattern used
+    # in other run_once scripts. Consider adding verification in future improvements.
+    if ! curl -fsSL https://get.docker.com -o "$TEMP_DOCKER_SCRIPT"; then
+      echo "Error: Failed to download Docker installation script" >&2
+      exit 1
+    fi
+
+    # Run Docker installation script (non-interactive)
+    # Note: get.docker.com script is idempotent and will skip if Docker is already installed
+    if ! sudo sh "$TEMP_DOCKER_SCRIPT"; then
+      echo "Error: Docker installation failed" >&2
+      exit 1
+    fi
+
+    # Verify Docker installation
+    if ! command -v docker >/dev/null 2>&1; then
+      echo "Error: Docker installation completed but docker command not found" >&2
+      exit 1
+    fi
+
+    # Note: Temporary script will be cleaned up by EXIT trap
+    echo "✓ Docker Engine installed: $(docker --version)"
+  fi
+fi
+
+# Install Docker Compose standalone binary if not already installed
+if [ "$COMPOSE_INSTALLED" = false ]; then
+  # Double-check Docker Compose is not installed
+  if command -v docker-compose >/dev/null 2>&1; then
+    echo "✓ Docker Compose was installed by another process, skipping installation"
+    COMPOSE_INSTALLED=true
+  else
+    echo "==> Installing Docker Compose..."
+
+    # Ensure curl and ca-certificates are available (required for downloading Docker Compose over HTTPS)
+    if ! command -v curl >/dev/null 2>&1; then
+      echo "==> Installing curl and ca-certificates (required for Docker Compose installation)..."
+      sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl
+    elif ! dpkg -l | grep -q "^ii.*ca-certificates"; then
+      echo "==> Installing ca-certificates (required for HTTPS connections)..."
+      sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates
+    fi
+
+    COMPOSE_VERSION="v2.24.5" # Pinned known-good version; update as needed
+
+    # Detect architecture for Docker Compose
+    case "$(uname -m)" in
+    x86_64 | amd64) COMPOSE_ARCH="x86_64" ;;
+    aarch64 | arm64) COMPOSE_ARCH="aarch64" ;;
+    *)
+      echo "Error: Unsupported architecture for Docker Compose: $(uname -m)" >&2
+      exit 1
+      ;;
+    esac
+
+    COMPOSE_URL="https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-${COMPOSE_ARCH}"
+
+    # Download and install Docker Compose
+    # Note: Binary is downloaded from GitHub Releases over HTTPS.
+    # While checksum verification would be ideal, this matches the pattern used
+    # in other run_once scripts. Consider adding verification in future improvements.
+    if ! sudo curl -fsSL "$COMPOSE_URL" -o /usr/local/bin/docker-compose; then
+      echo "Error: Failed to download Docker Compose" >&2
+      exit 1
+    fi
+
+    sudo chmod +x /usr/local/bin/docker-compose
+
+    # Verify Docker Compose installation
+    if ! /usr/local/bin/docker-compose --version >/dev/null 2>&1; then
+      echo "Error: Docker Compose installation verification failed" >&2
+      exit 1
+    fi
+
+    echo "✓ Docker Compose installed: $(docker-compose --version)"
+  fi
+fi
+
+# Add current user to docker group (if not root)
+if [ "$(id -u)" -ne 0 ]; then
+  CURRENT_USER="${SUDO_USER:-$USER}"
+  if [ -z "$CURRENT_USER" ]; then
+    CURRENT_USER=$(whoami)
+  fi
+
+  # Check if docker group exists
+  if getent group docker >/dev/null 2>&1; then
+    # Check if user is already in docker group
+    if ! groups "$CURRENT_USER" | grep -q docker; then
+      echo "==> Adding user '$CURRENT_USER' to docker group..."
+      sudo usermod -aG docker "$CURRENT_USER"
+      echo "  Note: You may need to log out and log back in for group changes to take effect."
+      echo "  Alternatively, run: newgrp docker"
+    else
+      echo "✓ User '$CURRENT_USER' is already in docker group"
+    fi
+  else
+    echo "Warning: docker group not found, skipping user group addition" >&2
+  fi
+else
+  echo "  Running as root, skipping user group addition"
+fi
+
+# Start and enable Docker service (if systemd is available)
+if command -v systemctl >/dev/null 2>&1 && systemctl is-system-running >/dev/null 2>&1; then
+  echo "==> Starting Docker service..."
+  sudo systemctl enable docker
+  sudo systemctl start docker
+  echo "✓ Docker service started and enabled"
+else
+  echo "  Note: systemd not available, Docker service may need to be started manually"
+fi
+
+# Verify installation
+echo "==> Verifying installation..."
+if command -v docker >/dev/null 2>&1 && command -v docker-compose >/dev/null 2>&1; then
+  echo "✓ Docker Engine installed: $(docker --version)"
+  echo "✓ Docker Compose installed: $(docker-compose --version)"
+  echo ""
+  echo "Note: If you were added to the docker group, log out and log back in,"
+  echo "      or run 'newgrp docker' to use Docker without sudo."
+else
+  echo "Error: Installation verification failed" >&2
+  exit 1
+fi
+{{- end -}}
