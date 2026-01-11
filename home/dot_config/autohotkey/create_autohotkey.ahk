@@ -16,6 +16,7 @@ global MAX_OPACITY := 255
 GroupAdd "Editor", "ahk_exe Code.exe"
 GroupAdd "Editor", "ahk_exe Cursor.exe"
 GroupAdd "Editor", "ahk_exe Heynote.exe"
+GroupAdd "Editor", "ahk_exe Obsidian.exe"
 GroupAdd "Editor", "ahk_exe WindowsEditor.exe"
 GroupAdd "Editor", "ahk_exe Zed.exe"
 GroupAdd "Editor", "ahk_exe alacritty.exe"
@@ -55,7 +56,10 @@ vk1C::ImeOn()            ; Henkan   (JP layout): IME ON
 ^+h::ToggleWindowExe("wezterm-gui.exe", "C:\Program Files\WezTerm\wezterm-gui.exe")
 
 ; Toggle Ferdium (show/activate <-> minimize)
-^+j::ToggleWindowExe("Ferdium.exe", A_AppData "\..\Local\Ferdium\Ferdium.exe")
+^+j::ToggleWindowExe("Ferdium.exe", A_AppData "\..\Local\Programs\Ferdium\Ferdium.exe")
+
+; Toggle Heynote (show/activate <-> minimize)
+^+m::ToggleWindowExe("Heynote.exe", A_AppData "\..\Local\Programs\Heynote\Heynote.exe")
 
 ; ============================================================
 ; Hotkeys: Window opacity (active window)

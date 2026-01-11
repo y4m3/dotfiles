@@ -87,9 +87,9 @@ return {
     environments = {
         {
             key = "q",
-            workspace_name = "ssh",
+            workspace_name = "default",
             connection = "connect",
-            remote_address = "127.0.0.1",
+            remote_address = "dev",
             username = "dev",
             is_default = true,
         },

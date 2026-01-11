@@ -166,8 +166,8 @@ config.visual_bell = {
 }
 
 -- Performance
-config.max_fps = 120
-config.animation_fps =120 
+config.max_fps = 60
+config.animation_fps = 60
 
 -- Tab Bar
 config.use_fancy_tab_bar = false
@@ -627,7 +627,7 @@ for _, env in ipairs(local_config.environments or {}) do
         elseif env.connection == "ssh" then
             config.default_gui_startup_args = { "ssh", env.username .. "@" .. env.remote_address }
         elseif env.args then
-            config.default_gui_startup_args = env.args
+            config.default_prog = env.args
         end
         break
     end
