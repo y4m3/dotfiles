@@ -10,6 +10,10 @@ SetTitleMatchMode 2  ; Allow partial title matches in WinTitle parameters
 global MIN_OPACITY := 40
 global MAX_OPACITY := 255
 
+; jj/jk escape timing (for Vim-style insert mode exit)
+global JJ_THRESHOLD := 200  ; milliseconds
+global lastJPress := 0
+
 ; ============================================================
 ; App groups (context-sensitive hotkeys)
 ; ============================================================
@@ -18,6 +22,7 @@ GroupAdd "Editor", "ahk_exe Cursor.exe"
 GroupAdd "Editor", "ahk_exe Heynote.exe"
 GroupAdd "Editor", "ahk_exe Obsidian.exe"
 GroupAdd "Editor", "ahk_exe WindowsEditor.exe"
+GroupAdd "Editor", "ahk_exe WindowsTerminal.exe"
 GroupAdd "Editor", "ahk_exe Zed.exe"
 GroupAdd "Editor", "ahk_exe alacritty.exe"
 GroupAdd "Editor", "ahk_exe wezterm-gui.exe"
@@ -43,6 +48,22 @@ vk1D::ImeOff()           ; Muhenkan (JP layout): IME OFF
 vk1C::ImeOn()            ; Henkan   (JP layout): IME ON
 !`::ImeToggle()          ; Alt+`: fallback IME toggle (useful on US layout)
 
+; jj / jk to escape (Vim-style, only when IME is ON)
+~j::{
+    global lastJPress, JJ_THRESHOLD
+    if IME_Get() && (A_TickCount - lastJPress < JJ_THRESHOLD) {
+        EscapeFromInsert()
+    }
+    lastJPress := A_TickCount
+}
+
+~k::{
+    global lastJPress, JJ_THRESHOLD
+    if IME_Get() && (A_TickCount - lastJPress < JJ_THRESHOLD) {
+        EscapeFromInsert()
+    }
+}
+
 #HotIf
 
 ; ============================================================
@@ -53,13 +74,14 @@ vk1C::ImeOn()            ; Henkan   (JP layout): IME ON
 ; ^+h::ToggleWindowExe("alacritty.exe", "C:\Program Files\Alacritty\alacritty.exe")
 
 ; Toggle wezterm (show/activate <-> minimize)
-^+h::ToggleWindowExe("wezterm-gui.exe", "C:\Program Files\WezTerm\wezterm-gui.exe")
+^+h::ToggleWindowExe("wezterm-gui.exe", A_ProgramFiles "\WezTerm\wezterm-gui.exe")
+; !Enter::ToggleWindowExe("wezterm-gui.exe", A_ProgramFiles "\WezTerm\wezterm-gui.exe")
 
 ; Toggle Ferdium (show/activate <-> minimize)
-^+j::ToggleWindowExe("Ferdium.exe", A_AppData "\..\Local\Programs\Ferdium\Ferdium.exe")
+^+j::ToggleWindowExe("Ferdium.exe", EnvGet("LOCALAPPDATA") "\Programs\Ferdium\Ferdium.exe")
 
 ; Toggle Heynote (show/activate <-> minimize)
-^+m::ToggleWindowExe("Heynote.exe", A_AppData "\..\Local\Programs\Heynote\Heynote.exe")
+^+m::ToggleWindowExe("Heynote.exe", EnvGet("LOCALAPPDATA") "\Programs\Heynote\Heynote.exe")
 
 ; ============================================================
 ; Hotkeys: Window opacity (active window)
@@ -72,6 +94,14 @@ vk1C::ImeOn()            ; Henkan   (JP layout): IME ON
 ; ============================================================
 ; IME helpers
 ; ============================================================
+
+; jj/jk escape from insert mode (only called when IME is ON)
+EscapeFromInsert() {
+    Send "{Esc}"       ; Cancel uncommitted characters
+    Sleep 10
+    IME_Set(0)
+    Send "{Esc}"       ; Enter normal mode
+}
 
 ; ESC-like behavior:
 ; - If IME is ON: send ESC, then turn IME OFF (prevents "stuck IME" in Normal mode)
@@ -236,10 +266,4 @@ ShowOpacityTip(alpha) {
     SetTimer () => ToolTip(), -800
 }
 
-Clamp(x, lo, hi) {
-    if x < lo
-        return lo
-    if x > hi
-        return hi
-    return x
-}
+Clamp(x, lo, hi) => Min(Max(x, lo), hi)
