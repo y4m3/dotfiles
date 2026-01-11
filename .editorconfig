@@ -3,8 +3,10 @@
 
 root = true
 
-[*]
+# =============================================================================
 # Default for all files
+# =============================================================================
+[*]
 charset = utf-8
 end_of_line = lf
 indent_size = 2
@@ -13,15 +15,81 @@ insert_final_newline = true
 max_line_length = 120
 trim_trailing_whitespace = true
 
+# =============================================================================
+# Shell Scripts (shfmt compatible)
+# Based on Google Shell Style Guide: 2 spaces
+# =============================================================================
 [*.sh]
-# Shell script formatting (shfmt compatible)
-# Based on common shell scripting best practices
-switch_case_indent = true      # Indent case statements (readable)
-binary_next_line = false        # && and || at end of line (common style)
-space_redirects = true          # Space after redirects: > file (Google style)
-keep_padding = false            # Auto-format alignment (consistent)
-function_next_line = false      # func() { on same line (K&R style)
+# shfmt-specific options
+switch_case_indent = true
+binary_next_line = false
+space_redirects = true
+keep_padding = false
+function_next_line = false
 
+[*.sh.tmpl]
+switch_case_indent = true
+binary_next_line = false
+space_redirects = true
+keep_padding = false
+function_next_line = false
+
+# =============================================================================
+# Configuration Languages
+# =============================================================================
+[*.nix]
+# nixpkgs coding conventions: 2 spaces
+
+[*.toml]
+# TOML: 2 spaces (community standard)
+
+[*.{yml,yaml}]
+# YAML: 2 spaces (community standard)
+
+[*.json]
+# JSON: 2 spaces (Prettier default)
+
+[*.kdl]
+# KDL (Zellij): 4 spaces
+indent_size = 4
+
+# =============================================================================
+# Scripting Languages
+# =============================================================================
+[*.lua]
+# Lua: 2 spaces (Neovim/WezTerm community)
+
+[*.vim]
+# VIM Script: 2 spaces (Google Vimscript Style Guide)
+
+[*.py]
+# Python: 4 spaces (PEP 8)
+indent_size = 4
+
+# =============================================================================
+# Build/Task Tools
+# =============================================================================
+[Justfile]
+# just --fmt default: 4 spaces
+indent_size = 4
+
+[Makefile]
+# Makefile requires tabs
+indent_style = tab
+
+[*.mk]
+indent_style = tab
+
+# =============================================================================
+# Windows-specific
+# =============================================================================
+[*.ahk]
+# AutoHotkey: 4 spaces
+indent_size = 4
+
+# =============================================================================
+# Documentation
+# =============================================================================
 [*.md]
 max_line_length = off
 trim_trailing_whitespace = false

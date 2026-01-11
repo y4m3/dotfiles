@@ -37,7 +37,7 @@ home-manager generations   # Check Home Manager status
 ## Coding Conventions
 
 - Shell scripts: bash with `set -euo pipefail`
-- Indentation: 4 spaces for shell scripts
+- Indentation: 2 spaces for shell scripts (Google Shell Style Guide)
 - Script naming: `run_{once,onchange,after_onchange}_{profile}_{os}_{number}-{name}.sh.tmpl`
 - Template guards: Use empty template pattern for OS/profile checks
 
