@@ -50,6 +50,9 @@ in
     # Docker
     lazydocker
 
+    # Editor
+    neovim
+
     # System monitoring
     btop
     lnav
