@@ -1,0 +1,34 @@
+#!/bin/sh
+# Bootstrap script for chezmoi dotfiles
+# Usage:
+#   Local:  ./install.sh
+#   Remote: curl -fsLS https://raw.githubusercontent.com/y4m3/dotfiles/main/install.sh | sh
+
+set -e
+
+if [ ! "$(command -v chezmoi)" ]; then
+    bin_dir="$HOME/.local/bin"
+    chezmoi="$bin_dir/chezmoi"
+    if [ "$(command -v curl)" ]; then
+        sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$bin_dir"
+    elif [ "$(command -v wget)" ]; then
+        sh -c "$(wget -qO- get.chezmoi.io)" -- -b "$bin_dir"
+    else
+        echo "To install chezmoi, you must have curl or wget installed." >&2
+        exit 1
+    fi
+else
+    chezmoi=chezmoi
+fi
+
+# POSIX way to get script's dir: https://stackoverflow.com/a/29834779/12156188
+script_dir="$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P)"
+
+# Check if script_dir looks valid (has .chezmoiroot or is a chezmoi source dir)
+if [ -f "$script_dir/.chezmoiroot" ] || [ -f "$script_dir/.chezmoi.toml.tmpl" ]; then
+    # exec: replace current process with chezmoi init using local source
+    exec "$chezmoi" init --apply "--source=$script_dir"
+else
+    # Piped from curl/wget - clone from GitHub instead
+    exec "$chezmoi" init --apply y4m3
+fi

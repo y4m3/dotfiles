@@ -1,0 +1,4 @@
+[".config/bat/themes/tokyonight.tmTheme"]
+type = "file"
+url = "https://raw.githubusercontent.com/folke/tokyonight.nvim/main/extras/sublime/tokyonight_night.tmTheme"
+refreshPeriod = "168h"

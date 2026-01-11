@@ -1,0 +1,26 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Install apt packages that cannot be managed by Nix
+# - vim-gtk3: Required for WSL clipboard integration
+
+set -euo pipefail
+
+# Skip in Docker containers
+if [ -f /.dockerenv ]; then
+    echo "==> Running in Docker, skipping apt packages"
+    exit 0
+fi
+
+echo "==> Checking apt packages..."
+
+if command -v vim &> /dev/null && vim --version | grep -q "+clipboard"; then
+    echo "✓ vim with clipboard support already installed"
+    exit 0
+fi
+
+echo "==> Installing vim-gtk3 (for WSL clipboard integration)..."
+sudo apt-get update
+sudo apt-get install -y vim-gtk3
+
+echo "✓ vim-gtk3 installed"
+{{- end }}

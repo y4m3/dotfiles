@@ -1,3 +1,21 @@
 # Files to ignore after initial creation
 # These files are created once by chezmoi but not updated thereafter
 
+# Exclude Nix-related files on Windows
+{{- if eq .chezmoi.os "windows" }}
+.chezmoiscripts/run_once_client_ubuntu_000-apt-packages.sh.tmpl
+.chezmoiscripts/run_once_client_ubuntu_010-install-nix.sh.tmpl
+.chezmoiscripts/run_after_onchange_client_ubuntu_100-apply-home-manager.sh.tmpl
+.chezmoiscripts/run_onchange_client_ubuntu_300-yazi-plugins.sh.tmpl
+.config/nix/
+{{- end }}
+
+# Exclude client-only files on server profile
+{{- if and (hasKey . "profile") (eq .profile "server") }}
+.chezmoiscripts/run_once_client_ubuntu_000-apt-packages.sh.tmpl
+.chezmoiscripts/run_once_client_ubuntu_010-install-nix.sh.tmpl
+.chezmoiscripts/run_after_onchange_client_ubuntu_100-apply-home-manager.sh.tmpl
+.chezmoiscripts/run_onchange_client_ubuntu_200-wezterm.sh.tmpl
+.chezmoiscripts/run_onchange_client_ubuntu_300-yazi-plugins.sh.tmpl
+.config/nix/
+{{- end }}
