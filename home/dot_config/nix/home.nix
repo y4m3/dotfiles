@@ -56,6 +56,9 @@ in
     # System monitoring
     btop
     lnav
+
+    # Password manager
+    keepassxc
   ];
 
   programs.home-manager.enable = true;
