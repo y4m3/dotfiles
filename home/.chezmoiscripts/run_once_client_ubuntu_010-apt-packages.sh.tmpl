@@ -8,8 +8,8 @@ set -euo pipefail
 
 # Skip in Docker containers
 if [ -f /.dockerenv ]; then
-    echo "==> Running in Docker, skipping apt packages"
-    exit 0
+  echo "==> Running in Docker, skipping apt packages"
+  exit 0
 fi
 
 echo "==> Checking apt packages..."
@@ -17,20 +17,20 @@ echo "==> Checking apt packages..."
 PACKAGES_TO_INSTALL=()
 
 # Check vim with clipboard support
-if ! (command -v vim &> /dev/null && vim --version | grep -q "+clipboard"); then
-    PACKAGES_TO_INSTALL+=(vim-gtk3)
+if ! (command -v vim &>/dev/null && vim --version | grep -q "+clipboard"); then
+  PACKAGES_TO_INSTALL+=(vim-gtk3)
 fi
 
 # Check prerequisites for win32yank installer (WSL only)
 for pkg in unzip curl ca-certificates; do
-    if ! dpkg -s "$pkg" &> /dev/null; then
-        PACKAGES_TO_INSTALL+=("$pkg")
-    fi
+  if ! dpkg -s "$pkg" &>/dev/null; then
+    PACKAGES_TO_INSTALL+=("$pkg")
+  fi
 done
 
 if [ ${#PACKAGES_TO_INSTALL[@]} -eq 0 ]; then
-    echo "✓ All apt packages already installed"
-    exit 0
+  echo "✓ All apt packages already installed"
+  exit 0
 fi
 
 echo "==> Installing apt packages: ${PACKAGES_TO_INSTALL[*]}"
