@@ -8,7 +8,8 @@ log() { printf '%s\n' "==> $*"; }
 err() { printf '%s\n' "Error: $*" >&2; }
 
 # Only install in WSL environment
-if [ -z "${WSL_DISTRO_NAME:-}" ]; then
+# Check both WSL_DISTRO_NAME env var and /proc/version for WSL detection
+if [ -z "${WSL_DISTRO_NAME:-}" ] && ! grep -qi microsoft /proc/version 2>/dev/null; then
   log "Not WSL environment, skipping win32yank"
   exit 0
 fi
