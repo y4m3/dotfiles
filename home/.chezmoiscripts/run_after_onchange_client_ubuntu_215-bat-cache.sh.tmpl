@@ -1,0 +1,21 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# bat cache rebuild after theme changes
+# chezmoiexternal hash: {{ include ".chezmoiexternal.toml" | sha256sum }}
+
+set -euo pipefail
+
+# Source Nix environment
+if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+  . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+fi
+
+if ! command -v bat &>/dev/null; then
+  echo "bat not found. Skipping cache rebuild."
+  exit 0
+fi
+
+echo "==> Rebuilding bat cache..."
+bat cache --build
+echo "✓ bat cache rebuilt successfully"
+{{- end }}

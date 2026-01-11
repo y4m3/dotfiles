@@ -4,10 +4,10 @@
 # See: https://github.com/sharkdp/bat
 
 # Environment variables (non-interactive also needs this)
-# Default values can be overridden in ~/.bashrc.local
-# Tokyo Night themes are installed via .chezmoiexternal.toml
-: "${BAT_THEME:=tokyonight_storm}" # Theme: tokyonight_day, tokyonight_moon, tokyonight_night, tokyonight_storm
-: "${BAT_PAGER:=less -FRX}"        # -R: preserve colors, -F: exit if one screen, -X: don't clear screen
+# Tokyo Night themes: tokyonight_day, tokyonight_moon, tokyonight_night, tokyonight_storm
+# Themes installed via .chezmoiexternal.toml, override in ~/.bashrc.local if needed
+: "${BAT_THEME:=tokyonight_storm}"
+: "${BAT_PAGER:=less -FRX}" # -R: preserve colors, -F: exit if one screen, -X: don't clear screen
 
 export BAT_THEME BAT_PAGER
 
