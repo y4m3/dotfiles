@@ -8,10 +8,7 @@ https://github.com/charmbracelet/glow
 
 ## Installation
 
-Managed by `run_onchange_client_ubuntu_380-snap-tools.sh.tmpl`:
-- Prefers snap installation when available (auto-updates)
-- Falls back to GitHub releases when snap is unavailable (e.g., WSL without systemd)
-- Fallback installs to `~/.local/bin/glow`
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
 
 ## Environment-specific Configuration
 

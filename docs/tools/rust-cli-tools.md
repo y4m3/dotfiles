@@ -1,16 +1,16 @@
 # bat, eza, fd, ripgrep, starship, zoxide
 
-Rust-based CLI tools for enhanced terminal experience.
+CLI tools for enhanced terminal experience.
 
-All tools installed via cargo in `run_onchange_client_ubuntu_210-cargo-tools.sh.tmpl`.
+All tools managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
 
 ## bat
 
 **Official**: https://github.com/sharkdp/bat
 
 **Environment-specific**:
-- Tokyo Night themes installed via `run_onchange_client_ubuntu_215-bat-tokyonight.sh.tmpl`
-- Default: `tokyonight_night` (override via `BAT_THEME` in `~/.bashrc.local`)
+- Tokyo Night themes installed via `.chezmoiexternal.toml`
+- Default: `tokyonight_storm` (override via `BAT_THEME` in `~/.bashrc.local`)
 - Smart `cat` function: uses bat for interactive viewing, real cat for pipes/redirects
 
 ## eza

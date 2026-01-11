@@ -5,36 +5,21 @@ Concise notes focused on environment-specific behavior. See official docs for ge
 ## Official Documentation
 
 - Node.js: https://nodejs.org/
-- fnm: https://github.com/Schniz/fnm
 
 ## Installation
 
-Managed by `run_onchange_client_ubuntu_110-nodejs.sh.tmpl`:
-- Installs fnm (Fast Node Manager) to `~/.local/share/fnm`
-- Installs latest LTS Node.js via fnm
-- Shell integration defined in `home/dot_bashrc.d/200-runtimes.sh`
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`):
+- Installs Node.js 22 LTS directly (required for Claude Code and MCP servers)
+- No version manager required (single version managed by Nix)
 
 ## Environment-specific Configuration
 
-- fnm environment is set up in `~/.bashrc.d/200-runtimes.sh`:
-  - `FNM_DIR="$HOME/.local/share/fnm"`
-  - `PATH="$FNM_DIR:$PATH"`
-  - `eval "$(fnm env)"` sets up Node.js paths
-- Global tools should be installed via npm (`npm install -g <tool>`).
-- Projects can use `.node-version` or `.nvmrc` files for version pinning.
+- Node.js is available system-wide via Nix PATH
+- Global tools should be installed via npm (`npm install -g <tool>`)
+- Projects can use `.nvmrc` files for documentation purposes
 
-## Common Commands
+## Version Management
 
-```bash
-# List installed Node.js versions
-fnm list
-
-# Install specific version
-fnm install 20
-
-# Use specific version
-fnm use 20
-
-# Set default version
-fnm default 20
-```
+This configuration uses a fixed Node.js version managed by Nix:
+- Update version in `home/dot_config/nix/home.nix` (e.g., `nodejs_22` → `nodejs_24`)
+- Run `home-manager switch` to apply changes

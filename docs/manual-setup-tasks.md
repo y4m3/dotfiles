@@ -6,6 +6,7 @@ Manual tasks to complete after `chezmoi apply`. These require interactive user i
 
 ### Required
 - [ ] **Git Configuration** - Edit `~/.gitconfig.local` with your name and email
+- [ ] **Shell Restart** - Run `exec bash` after first Nix installation
 
 ### Recommended
 - [ ] **Alacritty Terminal** - Install on Windows host (WSL users)
@@ -34,7 +35,21 @@ Verify: `git config user.name && git config user.email`
 
 ---
 
-## 2. Alacritty Terminal Installation (Windows Host)
+## 2. Shell Restart (Required after Nix installation)
+
+After the first `chezmoi apply` installs Nix, restart your shell to load the Nix environment:
+
+```bash
+exec bash
+```
+
+Then run `chezmoi apply` again to complete the Home Manager installation.
+
+Verify: `nix --version && home-manager --version`
+
+---
+
+## 3. Alacritty Terminal Installation (Windows Host)
 
 **Note**: For WSL users, install on Windows host, not inside WSL.
 
@@ -44,7 +59,7 @@ See [Alacritty Documentation](tools/alacritty.md) for details.
 
 ---
 
-## 3. Alacritty Configuration (Windows Host)
+## 4. Alacritty Configuration (Windows Host)
 
 **Note**: On Linux/macOS, `alacritty.toml` is auto-deployed by `chezmoi apply`. This section is for Windows only.
 
@@ -74,7 +89,7 @@ See [Alacritty Documentation](tools/alacritty.md) for details.
 
 ---
 
-## 4. GitHub CLI Authentication
+## 5. GitHub CLI Authentication
 
 Run `gh auth login` and follow the prompts.
 
@@ -84,13 +99,13 @@ See [GitHub Tools Documentation](tools/github-tools.md) for security best practi
 
 ---
 
-## 5. Fonts Installation
+## 6. Fonts Installation
 
 See [Fonts Documentation](post-setup/fonts.md) for installation instructions.
 
 ---
 
-## 6. Docker Group
+## 7. Docker Group
 
 After Docker installation, log out and log back in (or run `newgrp docker`).
 
@@ -100,7 +115,7 @@ See [Docker Documentation](tools/docker.md) for details.
 
 ---
 
-## 7. User-specific Bash Settings
+## 8. User-specific Bash Settings
 
 Edit `~/.bashrc.local` to add personal settings:
 ```bash
@@ -113,7 +128,7 @@ export MY_VAR="value"
 
 ---
 
-## 8. SSH Key Generation
+## 9. SSH Key Generation
 
 Generate SSH key:
 ```bash

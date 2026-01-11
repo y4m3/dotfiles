@@ -8,7 +8,7 @@ https://wezterm.org/
 
 ## Installation
 
-Managed by `run_onchange_client_ubuntu_260-wezterm.sh.tmpl`. Configuration: `~/.config/wezterm/wezterm.lua`.
+Managed by `run_onchange_client_ubuntu_200-wezterm.sh.tmpl`. Configuration: `~/.config/wezterm/wezterm.lua`.
 
 ## Environment-specific Configuration
 

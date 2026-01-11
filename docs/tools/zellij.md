@@ -8,7 +8,7 @@ https://github.com/zellij-org/zellij
 
 ## Installation
 
-Managed by `run_onchange_client_ubuntu_265-zellij.sh.tmpl`. Configuration: `~/.config/zellij/config.kdl`.
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`). Configuration: `~/.config/zellij/config.kdl`.
 
 ## Environment-specific Configuration
 
@@ -43,4 +43,3 @@ Note: `Ctrl+g` is intentionally unbound to allow Claude Code to use it.
 - **Scroll/Search mode** (`Alt s`): Exit with `Esc` or `Enter` → Normal mode → `Alt g` → Locked
 - **Rename mode** (`Alt r`): Exit with `Esc` (cancel) or `Enter` (confirm) → `Alt g` → Locked
 - **Session Manager** (`Alt w`): Close plugin → `Alt g` → Locked
-

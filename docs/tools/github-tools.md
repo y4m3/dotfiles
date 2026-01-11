@@ -10,7 +10,7 @@ Official GitHub command-line tool. Execute PR, Issue, and repository operations 
 
 ### Installation
 
-Installed via `run_onchange_client_ubuntu_300-gh.sh.tmpl` from GitHub releases to `~/.local/bin/gh`.
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
 
 ### Authentication
 
@@ -42,9 +42,7 @@ Tool for unified Git repository management. Clones into structures like `~/ghq/g
 
 ### Installation
 
-Installed via `run_onchange_client_ubuntu_310-ghq.sh.tmpl` using `go install`.
-
-**Prerequisites**: Requires `golang-go` package (installed by `run_onchange_client_ubuntu_000-prerequisites.sh.tmpl`)
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
 
 ### Configuration
 
@@ -67,6 +65,5 @@ alias repo='cd $(ghq list -p | fzf)'
 
 ## Troubleshooting
 
-- **gh not found**: Check if installed: `ls -la ~/.local/bin/gh`
-- **ghq not found**: Check if Go is installed: `command -v go && go version`
-- **GOPATH not in PATH**: Add `export PATH="$HOME/go/bin:$PATH"` to `.bashrc.local`
+- **gh not found**: Ensure Nix profile is in PATH: `echo $PATH | grep nix`
+- **ghq not found**: Ensure Nix profile is in PATH: `echo $PATH | grep nix`

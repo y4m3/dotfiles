@@ -8,11 +8,8 @@ https://github.com/mikefarah/yq
 
 ## Installation
 
-Managed by `run_onchange_client_ubuntu_275-yq.sh.tmpl`:
-- Installs binary to `~/.local/bin/yq`
-- Adds Bash completion to `~/.bash_completion.d/yq`
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
 
 ## Environment-specific Notes
 
-- Used by repository tests in `tests/yq-test.sh`.
-- No global configuration beyond completion; use per-command options as needed.
+- No global configuration; use per-command options as needed.

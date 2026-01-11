@@ -8,7 +8,7 @@ https://github.com/dandavison/delta
 
 ## Installation
 
-Managed by `run_onchange_client_ubuntu_320-delta.sh.tmpl`. Installs to `~/.local/bin/delta`. Configured in `~/.gitconfig`.
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`). Configured in `~/.gitconfig`.
 
 ## Environment-specific Configuration
 

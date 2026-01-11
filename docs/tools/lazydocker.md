@@ -8,9 +8,9 @@ https://github.com/jesseduffield/lazydocker
 
 ## Installation
 
-Managed by `run_onchange_client_ubuntu_340-lazydocker.sh.tmpl`:
-- Installs to `~/.local/bin/lazydocker`
-- Configuration at `~/.config/lazydocker/config.yml`
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
+
+Configuration at `~/.config/lazydocker/config.yml`.
 
 ## Environment-specific Configuration
 

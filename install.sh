@@ -3,6 +3,7 @@
 # Usage:
 #   Local:  ./install.sh
 #   Remote: curl -fsLS https://raw.githubusercontent.com/y4m3/dotfiles/main/install.sh | sh
+#   Branch: DOTFILES_BRANCH=feature/xxx curl -fsLS .../install.sh | sh
 
 set -e
 
@@ -30,5 +31,10 @@ if [ -f "$script_dir/.chezmoiroot" ] || [ -f "$script_dir/.chezmoi.toml.tmpl" ];
     exec "$chezmoi" init --apply "--source=$script_dir"
 else
     # Piped from curl/wget - clone from GitHub instead
-    exec "$chezmoi" init --apply y4m3
+    branch="${DOTFILES_BRANCH:-main}"
+    if [ "$branch" = "main" ]; then
+        exec "$chezmoi" init --apply y4m3
+    else
+        exec "$chezmoi" init --apply --branch "$branch" y4m3
+    fi
 fi

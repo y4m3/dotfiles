@@ -8,9 +8,7 @@ https://github.com/astral-sh/uv
 
 ## Installation
 
-Managed by `run_onchange_client_ubuntu_120-uv.sh.tmpl`:
-- Installed to `~/.cargo/bin/uv`
-- PATH integration via `home/dot_bashrc.d/200-runtimes.sh`
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
 
 ## Environment-specific Configuration
 

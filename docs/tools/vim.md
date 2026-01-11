@@ -8,9 +8,9 @@ https://www.vim.org/
 
 ## Installation
 
-- **vim-gtk3** installed via `run_onchange_client_ubuntu_000-prerequisites.sh.tmpl` (provides `+clipboard` support)
+- **vim-gtk3** installed via `run_once_client_ubuntu_000-apt-packages.sh.tmpl` (provides `+clipboard` support)
 - Configuration template: `home/dot_vimrc.tmpl`
-- Colorscheme installed via `run_onchange_client_ubuntu_220-vim-tokyonight.sh.tmpl`
+- Colorscheme: Tokyo Night Storm
 
 ## Environment-specific Configuration
 
@@ -19,4 +19,3 @@ https://www.vim.org/
 - **Features**: Japanese text support, clipboard integration, line numbers, 2-space indentation, no backup/swap files
 
 For usage and advanced configuration, refer to the [Vim documentation](https://www.vim.org/docs.php).
-
