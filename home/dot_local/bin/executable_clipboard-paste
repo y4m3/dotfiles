@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# clipboard-paste: Cross-environment clipboard paste utility
+# Outputs clipboard contents to stdout
+# Supports: WSL, X11, Wayland (SSH cannot read clipboard)
+set -euo pipefail
+
+# Detect environment
+detect_env() {
+    # Priority: WSL > X11/Wayland > SSH > OSC52 fallback
+    # WSL first: win32yank/clip.exe are most reliable in WSL (even with WSLg)
+    if [[ -n "${WSL_DISTRO_NAME:-}" ]]; then
+        echo "wsl"
+    elif [[ -n "${DISPLAY:-}" ]] || [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+        echo "x11"
+    elif [[ -n "${SSH_CONNECTION:-}" ]]; then
+        echo "ssh"
+    else
+        echo "osc52"
+    fi
+}
+
+# Paste from clipboard
+paste_from_clipboard() {
+    local env
+    env=$(detect_env)
+
+    case "$env" in
+        wsl)
+            if command -v win32yank.exe &>/dev/null; then
+                win32yank.exe -o --lf
+            elif command -v powershell.exe &>/dev/null; then
+                # Use Get-Clipboard -Raw to avoid extra newlines, strip CRLF
+                powershell.exe -NoProfile -Command 'Get-Clipboard -Raw' | tr -d '\r'
+            else
+                echo "Error: No clipboard tool available in WSL" >&2
+                exit 1
+            fi
+            ;;
+        x11)
+            if command -v xclip &>/dev/null; then
+                xclip -out -selection clipboard 2>/dev/null || true
+            elif command -v xsel &>/dev/null; then
+                xsel --clipboard --output 2>/dev/null || true
+            elif command -v wl-paste &>/dev/null; then
+                wl-paste --no-newline 2>/dev/null || true
+            else
+                echo "Error: No clipboard tool available (xclip/xsel/wl-paste)" >&2
+                exit 1
+            fi
+            ;;
+        ssh|osc52)
+            # Cannot read clipboard via OSC 52 (security restriction)
+            echo "Error: Cannot read clipboard over SSH (use terminal paste)" >&2
+            exit 1
+            ;;
+    esac
+}
+
+paste_from_clipboard

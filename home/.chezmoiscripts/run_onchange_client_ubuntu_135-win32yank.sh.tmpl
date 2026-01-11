@@ -1,0 +1,53 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Install win32yank for WSL clipboard integration
+# Only runs in WSL environment; skipped on native Linux
+set -euo pipefail
+
+log() { printf '%s\n' "==> $*"; }
+err() { printf '%s\n' "Error: $*" >&2; }
+
+# Only install in WSL environment
+if [ -z "${WSL_DISTRO_NAME:-}" ]; then
+    log "Not WSL environment, skipping win32yank"
+    exit 0
+fi
+
+INSTALL_DIR="$HOME/.local/bin"
+WIN32YANK="$INSTALL_DIR/win32yank.exe"
+
+if [ -x "$WIN32YANK" ]; then
+    log "skip (exists): $WIN32YANK"
+    exit 0
+fi
+
+log "Installing win32yank for WSL clipboard..."
+
+# Create install directory
+mkdir -p "$INSTALL_DIR"
+
+# Download latest win32yank
+VERSION="v0.1.1"
+ARCH="64"
+URL="https://github.com/equalsraf/win32yank/releases/download/${VERSION}/win32yank-x${ARCH}.zip"
+TMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TMP_DIR"' EXIT
+
+log "Downloading win32yank ${VERSION}..."
+if ! curl -fsSL "$URL" -o "$TMP_DIR/win32yank.zip"; then
+    err "Failed to download win32yank"
+    exit 1
+fi
+
+log "Extracting..."
+if ! unzip -q "$TMP_DIR/win32yank.zip" -d "$TMP_DIR"; then
+    err "Failed to extract win32yank"
+    exit 1
+fi
+
+# Install
+mv "$TMP_DIR/win32yank.exe" "$WIN32YANK"
+chmod +x "$WIN32YANK"
+
+log "win32yank installed: $WIN32YANK"
+{{- end -}}

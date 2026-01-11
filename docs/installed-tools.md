@@ -69,12 +69,13 @@ For things that can't be managed by Nix:
 
 | Script | Purpose |
 |--------|---------|
-| `run_once_..._000-apt-packages.sh.tmpl` | vim-gtk3 (WSL clipboard integration) |
-| `run_once_..._010-install-nix.sh.tmpl` | Nix installation (Determinate Systems) |
-| `run_after_onchange_..._100-apply-home-manager.sh.tmpl` | Home Manager switch |
-| `run_onchange_..._200-wezterm.sh.tmpl` | wezterm-mux-server (apt repo) |
-| `run_onchange_..._210-docker.sh.tmpl` | Docker Engine (system service) |
-| `run_onchange_..._300-yazi-plugins.sh.tmpl` | yazi plugins (ya pkg add) |
+| `run_once_..._010-apt-packages.sh.tmpl` | vim-gtk3, unzip, curl (WSL clipboard) |
+| `run_once_..._020-install-nix.sh.tmpl` | Nix installation (Determinate Systems) |
+| `run_onchange_..._110-wezterm.sh.tmpl` | wezterm-mux-server (apt repo) |
+| `run_onchange_..._120-docker.sh.tmpl` | Docker Engine (system service) |
+| `run_onchange_..._135-win32yank.sh.tmpl` | win32yank (WSL clipboard tool) |
+| `run_after_onchange_..._210-apply-home-manager.sh.tmpl` | Home Manager switch |
+| `run_after_onchange_..._220-yazi-plugins.sh.tmpl` | yazi plugins (ya pkg add) |
 
 ### Why Not Nix?
 
@@ -82,6 +83,7 @@ For things that can't be managed by Nix:
 - **Nix**: Bootstrap dependency (can't install itself)
 - **Docker**: System service requiring systemd integration
 - **wezterm**: Uses apt repository for mux-server functionality
+- **win32yank**: Windows executable for WSL clipboard (not available in Nix)
 - **yazi plugins**: Managed via `ya pkg add` (yazi's package manager)
 
 ## Configuration Highlights
