@@ -31,10 +31,10 @@ set listchars=tab:»·,trail:·,nbsp:·
 " Clipboard Integration
 " ============================================================================
 
-" Use system clipboard (works with WSL2 and SSH with X11 forwarding)
-if has('clipboard')
-  set clipboard=unnamedplus  " Use system clipboard for yank/put
-endif
+" Cross-environment clipboard (WSL, SSH via OSC 52, local X11)
+" Only yank (y) syncs to clipboard; delete/change do not
+" See: ~/.vim/autoload/clipboard.vim
+call clipboard#setup()
 
 " ============================================================================
 " Editing

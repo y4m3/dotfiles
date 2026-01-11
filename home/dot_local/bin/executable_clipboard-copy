@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# clipboard-copy: Cross-environment clipboard copy utility
+# Reads from stdin and copies to system clipboard
+# Supports: WSL, SSH (OSC 52), tmux, zellij, X11, Wayland
+set -euo pipefail
+
+# Detect environment
+detect_env() {
+    # Priority: WSL > X11/Wayland > SSH > OSC52 fallback
+    # WSL first: win32yank/clip.exe are most reliable in WSL (even with WSLg)
+    if [[ -n "${WSL_DISTRO_NAME:-}" ]]; then
+        echo "wsl"
+    elif [[ -n "${DISPLAY:-}" ]] || [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+        echo "x11"
+    elif [[ -n "${SSH_CONNECTION:-}" ]]; then
+        echo "ssh"
+    else
+        echo "osc52"
+    fi
+}
+
+# Check if inside tmux (but not zellij)
+in_tmux_only() {
+    [[ -n "${TMUX:-}" ]] && [[ -z "${ZELLIJ:-}" ]]
+}
+
+# Send OSC 52 sequence
+send_osc52() {
+    local data="$1"
+    local encoded
+    encoded=$(printf '%s' "$data" | base64 | tr -d '\n')
+    local osc=$'\e]52;c;'"${encoded}"$'\a'
+
+    # Wrap for tmux passthrough (zellij handles OSC 52 natively)
+    if in_tmux_only; then
+        osc=$'\ePtmux;\e'"${osc}"$'\e\\'
+    fi
+
+    printf '%s' "$osc" > /dev/tty
+}
+
+# Copy using appropriate method
+copy_to_clipboard() {
+    local data="$1"
+    local env
+    env=$(detect_env)
+
+    case "$env" in
+        wsl)
+            if command -v win32yank.exe &>/dev/null; then
+                printf '%s' "$data" | win32yank.exe -i --crlf
+            elif command -v clip.exe &>/dev/null; then
+                printf '%s' "$data" | clip.exe
+            else
+                send_osc52 "$data"
+            fi
+            ;;
+        x11)
+            if command -v xclip &>/dev/null; then
+                printf '%s' "$data" | xclip -in -selection clipboard
+            elif command -v xsel &>/dev/null; then
+                printf '%s' "$data" | xsel --clipboard --input
+            elif command -v wl-copy &>/dev/null; then
+                printf '%s' "$data" | wl-copy
+            else
+                send_osc52 "$data"
+            fi
+            ;;
+        ssh|osc52)
+            send_osc52 "$data"
+            ;;
+    esac
+}
+
+# Read from stdin or argument
+if [[ $# -gt 0 ]]; then
+    data="$*"
+else
+    data=$(cat)
+fi
+
+copy_to_clipboard "$data"

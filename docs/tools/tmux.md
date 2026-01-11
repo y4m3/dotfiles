@@ -10,7 +10,7 @@ https://github.com/tmux/tmux
 
 Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
 
-Configuration template: `home/create_dot_tmux.conf.tmpl`.
+Configuration: `home/dot_tmux.conf`.
 
 ## Environment-specific Configuration
 
@@ -19,7 +19,10 @@ Configuration template: `home/create_dot_tmux.conf.tmpl`.
 - Splits:
 	- `prefix + |` (vertical), `prefix + -` (horizontal)
 - Clipboard integration:
-	- `prefix + P` pastes from system clipboard (requires `xclip`)
+	- OSC 52 passthrough enabled (`set -g set-clipboard on`)
+	- vi copy-mode: `y`/`Enter` copies via `~/.local/bin/clipboard-copy`
+	- `prefix + P` pastes from system clipboard via `~/.local/bin/clipboard-paste`
+	- Works across WSL, SSH, X11/Wayland environments
 - Theme:
 	- Tokyo Night colors for status bar and pane borders
 - Features:

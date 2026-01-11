@@ -47,12 +47,13 @@ tmux, uv, yazi, yq-go, zellij, zoxide
 
 | # | Script | Purpose |
 |---|--------|---------|
-| 000 | apt-packages | vim-gtk3 (WSL clipboard) |
-| 010 | install-nix | Nix installation |
-| 100 | apply-home-manager | Home Manager switch |
-| 200 | wezterm | wezterm-mux-server |
-| 210 | docker | Docker Engine |
-| 300 | yazi-plugins | yazi plugins |
+| 010 | apt-packages | vim-gtk3, unzip, curl (WSL) |
+| 020 | install-nix | Nix installation |
+| 110 | wezterm | wezterm-mux-server |
+| 120 | docker | Docker Engine |
+| 135 | win32yank | WSL clipboard tool |
+| 210 | apply-home-manager | Home Manager switch |
+| 220 | yazi-plugins | yazi plugins |
 
 ## Development
 
