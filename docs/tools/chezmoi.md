@@ -4,7 +4,7 @@ chezmoi is a dotfiles manager written in Go. It manages dotfiles across multiple
 
 ## Installation
 
-This repository includes automated installation via `run_onchange_client_ubuntu_010-chezmoi.sh.tmpl`.
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
 
 For installation instructions, see the [official chezmoi installation guide](https://www.chezmoi.io/install/).
 
@@ -24,18 +24,6 @@ This dotfiles repository is configured with chezmoi. Configuration files are sto
 ## Common Commands
 
 For all chezmoi commands and usage, refer to the [official chezmoi documentation](https://www.chezmoi.io/user-guide/command-overview/).
-
-## Testing
-
-A comprehensive test suite is provided:
-
-```bash
-# Run just the chezmoi test
-bash tests/chezmoi-test.sh
-
-# Run all tests
-make test
-```
 
 ## Documentation
 

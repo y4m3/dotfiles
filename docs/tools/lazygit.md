@@ -8,8 +8,9 @@ https://github.com/jesseduffield/lazygit
 
 ## Installation
 
-- Managed by `run_onchange_client_ubuntu_330-lazygit.sh.tmpl`
-- Config template: `home/dot_config/lazygit/create_config.yml.tmpl`
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
+
+Config template: `home/dot_config/lazygit/create_config.yml.tmpl`
 
 ## Environment-specific Configuration
 

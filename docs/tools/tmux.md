@@ -8,7 +8,8 @@ https://github.com/tmux/tmux
 
 ## Installation
 
-Installed via apt in `run_onchange_client_ubuntu_000-prerequisites.sh.tmpl`.
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
+
 Configuration template: `home/create_dot_tmux.conf.tmpl`.
 
 ## Environment-specific Configuration

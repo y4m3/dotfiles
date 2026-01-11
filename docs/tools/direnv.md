@@ -8,16 +8,15 @@ https://direnv.net/
 
 ## Installation
 
-Managed by `run_onchange_client_ubuntu_240-direnv.sh.tmpl`:
-- Downloads latest release from GitHub
-- Installs to `~/.local/bin/direnv`
-- Shell hook added in `~/.bashrc.d/105-direnv.sh`
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
+
+Shell hook added in `~/.bashrc.d/150-direnv.sh`.
 
 ## Configuration
 
 ### Shell Integration
 
-Automatically loaded via `~/.bashrc.d/105-direnv.sh`:
+Automatically loaded via `~/.bashrc.d/150-direnv.sh`:
 ```bash
 eval "$(direnv hook bash)"
 ```

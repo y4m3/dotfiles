@@ -8,7 +8,7 @@ https://github.com/junegunn/fzf
 
 ## Installation
 
-Managed by `run_onchange_client_ubuntu_200-fzf.sh.tmpl`
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
 
 ## Environment-specific Configuration
 

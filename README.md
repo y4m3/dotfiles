@@ -1,120 +1,110 @@
 # chezmoi-first setup guide
 
-This repository manages dotfiles with [chezmoi](https://www.chezmoi.io/#what-does-chezmoi-do). Host setup is the primary path; Docker is only for validation.
+Dotfiles managed with [chezmoi](https://www.chezmoi.io/) + [Nix Home Manager](https://nix-community.github.io/home-manager/).
 
-### Requirements
+## Requirements
 
+- Ubuntu 24.04+ (WSL2 supported)
 - curl, git
 
 ```bash
-sudo apt update; sudo apt install -y curl git
+sudo apt update && sudo apt install -y curl git
 ```
 
-## Quick start (host)
+## Quick Start
 
-1) Install chezmoi and apply this repo:
+1. Bootstrap (installs chezmoi + applies dotfiles):
 ```bash
-sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" init --apply y4m3
+curl -fsLS https://raw.githubusercontent.com/y4m3/dotfiles/main/install.sh | sh
 ```
 
-2) Update later:
+2. After Nix is installed, restart shell and apply again:
+```bash
+exec bash
+chezmoi apply
+```
+
+3. Update later:
 ```bash
 chezmoi update
 ```
-(`chezmoi pull && chezmoi apply` is equivalent)
 
+## Architecture
 
-## What chezmoi manages here
+- **Nix Home Manager**: Manages 25+ CLI tools declaratively via `~/.config/nix/home.nix`
+- **chezmoi**: Manages dotfiles and orchestrates installation scripts
+- **Scripts**: 6 scripts for things Nix can't handle (apt packages, Docker, wezterm-mux-server)
 
-- `home/` dotfiles (`dot_*`, `dot_*/*.sh`, `create_*` templates)
-- `home/.chezmoiscripts/run_onchange_client_ubuntu_*.sh.tmpl`: install scripts (re-run on content change)
-- `home/.chezmoi.toml.tmpl`: profile variable (`client` or `server`)
-- Themed configs (delta, lazygit, zellij, yazi)
+## What's Managed
 
-## Optional: Docker for testing
+### Nix Home Manager (home.nix)
 
-Use only when you need a throwaway validation environment. For detailed testing information, see [Testing Guide](docs/testing-guide.md).
+bat, btop, chezmoi, delta, direnv, eza, fd, fzf, gh, ghq, glow, jq, just,
+lazydocker, lazygit, lnav, nodejs_22, ripgrep, shellcheck, shfmt, starship,
+tmux, uv, yazi, yq-go, zellij, zoxide
+
+### Install Scripts
+
+| # | Script | Purpose |
+|---|--------|---------|
+| 000 | apt-packages | vim-gtk3 (WSL clipboard) |
+| 010 | install-nix | Nix installation |
+| 100 | apply-home-manager | Home Manager switch |
+| 200 | wezterm | wezterm-mux-server |
+| 210 | docker | Docker Engine |
+| 300 | yazi-plugins | yazi plugins |
+
+## Development
 
 ```bash
-make build               # Build Docker image
-make dev                 # chezmoi apply in container + login shell
-make test                # Change detection test (runs tests for changed files only)
-make test-all            # Run all tests (creates snapshot on success)
-make test-all BASELINE=1 # Run all tests and save baseline
-make clean               # Remove persistent volumes
-make clean REBUILD=1     # Remove volumes and rebuild environment
-make reset               # Reset manual installations, return to state A
-make lint                # shellcheck in lint image
-make format              # shfmt in lint image
+# Linting (requires shellcheck, shfmt from Nix)
+just lint
+just format
+just check
+
+# Preview changes
+chezmoi apply --dry-run -v
+chezmoi diff
+
+# View template variables
+chezmoi data | jq
 ```
 
-### Environment Management Workflow
+## Directory Structure
 
-This repository supports efficient tool testing with snapshot-based environment management:
+```
+.
+├── install.sh              # Bootstrap script
+├── Justfile                # Lint/format tasks
+├── home/
+│   ├── .chezmoi.toml.tmpl  # Profile variable (client/server)
+│   ├── .chezmoiscripts/    # 6 install scripts
+│   ├── .chezmoiexternal.toml # External files (bat theme)
+│   ├── dot_config/nix/     # Nix flake + home.nix
+│   └── dot_*               # Dotfiles
+└── docs/                   # Documentation
+```
 
-1. **Initial setup (State A)**: Run `make test-all` to build environment A and create a snapshot
-2. **Try new tools (State B = A + X)**: Use `make dev` to enter container, manually install tools
-3. **Continue testing**: Run `make dev` again to maintain state B
-4. **Reset to State A**: Run `make reset` to remove manually installed tools
-5. **Complete reset**: Run `make clean REBUILD=1` to rebuild everything from scratch
+## Manual Setup
 
-The snapshot system automatically tracks run_once-installed tools, so you don't need to maintain tool lists manually.
+After `chezmoi apply`:
 
-## Directory quick reference
+1. **Git config**: Edit `~/.gitconfig.local` with your name and email
+2. **Shell restart**: Run `exec bash` after first Nix install
+3. **Docker group**: Log out/in for docker group membership
 
-- `home/`: dotfiles sources (e.g., dot_bashrc, dot_bashrc.d/*)
-- `home/.chezmoiscripts/`: install scripts (`run_onchange_client_ubuntu_*.sh.tmpl`)
-- `tests/`: tool smoke tests
-- `docs/`: policy and templates (e.g., docs/templates/envrc-examples.md, docs/testing-guide.md)
-- `Dockerfile`, `Makefile`: container validation & automation
-
-## Verification
-
-For comprehensive verification of installation and configuration, see [docs/testing-guide.md](docs/testing-guide.md).
-
-## Tips
-
-- `create_*.tmpl` are "create-if-missing" templates; existing files are preserved.
-- Host application is the source of truth; Docker is for safe verification.
-
-### Main Targets
-
-- **`make dev`**: Launch interactive shell with chezmoi applied (most common for development)
-- **`make test`**: Change detection test - runs tests for changed files only (default, frequently used)
-- **`make test-all`**: Runs all tests and creates environment snapshot on success
-- **`make test-all BASELINE=1`**: Runs all tests and saves results as baseline for comparison
-- **`make clean`**: Remove persistent volumes (next `make dev` or `make test` will rebuild)
-- **`make clean REBUILD=1`**: Remove volumes and rebuild environment (complete reset)
-- **`make reset`**: Remove manually installed tools by comparing with snapshot (preserves chezmoi state)
-
-For detailed testing workflow and test types, see [Testing Guide](docs/testing-guide.md).
-
-## Manual Setup Tasks
-
-After running `chezmoi apply`, complete the following manual setup tasks:
-
-**Required**:
-- [ ] **Git Configuration** - Edit `~/.gitconfig.local` with your name and email (required before making commits)
-
-**Recommended**:
-- [ ] **Alacritty Terminal (Windows Host)** - Install Alacritty on Windows host for WSL users
-- [ ] **Alacritty Configuration (Windows Host)** - Configure Alacritty on Windows host (themes, shell settings)
-- [ ] **GitHub CLI Authentication** - Run `gh auth login` for higher API rate limits
-- [ ] **Fonts** - Install UDEV Gothic font for proper icon display
-
-See [Manual Setup Tasks](docs/manual-setup-tasks.md) for detailed instructions.
+See [Manual Setup Tasks](docs/manual-setup-tasks.md) for details.
 
 ## Documentation
 
-For detailed usage and customization methods, refer to:
+- **[Manual Setup Tasks](docs/manual-setup-tasks.md)** - Complete guide for manual setup
+- **[Installed Tools](docs/installed-tools.md)** - Full list of managed tools
+- **[Post-Setup](docs/post-setup.md)** - Quick checklist
+- **[Keybinding Design](docs/keybinding-design.md)** - Keyboard shortcuts philosophy
+- **Tool-specific docs**: See `docs/tools/`
 
-- **[Manual Setup Tasks](docs/manual-setup-tasks.md)** - Complete guide for manual setup tasks
-- **[Post-Setup Tasks](docs/post-setup.md)** - Quick checklist for manual tasks
-- **[Testing Guide](docs/testing-guide.md)** - Testing system and workflows
-- **[Security Best Practices](docs/tools/security.md)** - Credential management and file permissions
-- **Tool-specific details**:
-  - [fzf](docs/tools/fzf.md) - Fuzzy finder
-  - [Cargo Tools](docs/tools/rust-cli-tools.md) - bat, eza, fd, ripgrep, starship
-  - [zoxide](docs/tools/zoxide.md) - Directory jumping
-  - [GitHub Tools](docs/tools/github-tools.md) - gh, ghq
-  - [Vim](docs/tools/vim.md) - Text editor with clipboard support
+## Tips
+
+- `create_*.tmpl` are "create-if-missing" templates; existing files are preserved
+- Themed configs (delta, lazygit, zellij, yazi) use Tokyo Night colorscheme
+- All tools configured for vim-style keybindings where applicable

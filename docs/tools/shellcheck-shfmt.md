@@ -9,14 +9,11 @@ Concise notes focused on environment-specific behavior. See official docs for us
 
 ## Installation
 
-Managed by `run_onchange_client_ubuntu_250-shellcheck.sh.tmpl`:
-- Installs `shellcheck` and `shfmt` to `~/.local/bin/`
+Managed by Nix Home Manager (`home/dot_config/nix/home.nix`).
 
 ## Environment-specific Integration
 
-- Make targets:
-  - `make lint` runs shellcheck across `*.sh`
-  - `make format` runs shfmt across `home/` and `scripts/`
+- Just targets:
+  - `just lint` runs shellcheck across `*.sh`
+  - `just format` runs shfmt across `home/`
 - CI and hooks are not enforced here; use project-specific configuration as needed.
-
- 

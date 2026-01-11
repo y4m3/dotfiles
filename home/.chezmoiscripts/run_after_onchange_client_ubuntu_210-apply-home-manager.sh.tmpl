@@ -1,0 +1,36 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Home Manager configuration apply
+# home.nix hash: {{ include "dot_config/nix/home.nix" | sha256sum }}
+# flake.nix hash: {{ include "dot_config/nix/flake.nix" | sha256sum }}
+
+set -euo pipefail
+
+# Source Nix environment
+if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+    . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+fi
+
+if ! command -v nix &> /dev/null; then
+    echo "Error: Nix not found. Please run 'exec bash' and then 'chezmoi apply' again." >&2
+    exit 1
+fi
+
+FLAKE_DIR="${HOME}/.config/nix"
+USERNAME="$(whoami)"
+
+# Verify config files exist (should always exist since we use run_after_)
+if [ ! -f "$FLAKE_DIR/flake.nix" ] || [ ! -f "$FLAKE_DIR/home.nix" ]; then
+    echo "Error: Nix config files not found in $FLAKE_DIR" >&2
+    echo "Expected: flake.nix and home.nix" >&2
+    exit 1
+fi
+
+echo "==> Applying Home Manager configuration for user: $USERNAME"
+cd "$FLAKE_DIR"
+
+# Run Home Manager switch with --impure flag (required for builtins.getEnv)
+nix run home-manager -- switch --flake ".#${USERNAME}" --impure
+
+echo "✓ Home Manager applied successfully"
+{{- end }}

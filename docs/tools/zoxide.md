@@ -14,4 +14,4 @@ https://github.com/ajeetdsouza/zoxide
 
 ## Troubleshooting
 
-- **j command not found**: Use in interactive shells. Reload: `exec bash -l` or `source ~/.bashrc.d/299-zoxide.sh`
+- **j command not found**: Use in interactive shells. Reload: `exec bash -l` or `source ~/.bashrc.d/910-zoxide.sh`

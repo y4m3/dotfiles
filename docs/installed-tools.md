@@ -1,61 +1,101 @@
 # Installed Tools
 
-Complete list of tools managed by this dotfiles repository. Each tool links to its detailed documentation.
+Tools managed by this dotfiles repository using Nix Home Manager and chezmoi scripts.
 
-Scripts are located in `home/.chezmoiscripts/` with naming convention: `run_onchange_client_ubuntu_{number}-{name}.sh.tmpl`
+## Nix Home Manager (home.nix)
 
-## Prerequisites (apt)
+All tools below are installed declaratively via `~/.config/nix/home.nix`:
 
-Managed by `run_onchange_client_ubuntu_000-prerequisites.sh.tmpl`:
+### Shell & Terminal
 
-- **build-essential**, **pkg-config**, **git** (https://git-scm.com/), **jq** (https://jqlang.github.io/jq/), **tmux** ([docs](tools/tmux.md), https://github.com/tmux/tmux), **vim-gtk3** ([docs](tools/vim.md), https://www.vim.org/), **xclip**, **curl**/**wget**, **tree**, **unzip**/**tar**
+| Tool | Documentation | Website |
+|------|---------------|---------|
+| starship | | https://starship.rs/ |
+| zellij | [docs](tools/zellij.md) | https://github.com/zellij-org/zellij |
+| tmux | [docs](tools/tmux.md) | https://github.com/tmux/tmux |
 
-## Language Runtimes
+### File Operations
 
-- **Rust** (rustup + cargo) | https://www.rust-lang.org/ | `run_onchange_client_ubuntu_100-rust.sh.tmpl`
-- **Node.js** (via fnm) | [docs](tools/nodejs.md), https://nodejs.org/, https://github.com/Schniz/fnm | `run_onchange_client_ubuntu_110-nodejs.sh.tmpl`
-- **uv** | [docs](tools/uv.md), https://github.com/astral-sh/uv | `run_onchange_client_ubuntu_120-uv.sh.tmpl`
+| Tool | Documentation | Website |
+|------|---------------|---------|
+| bat | [docs](tools/rust-cli-tools.md) | https://github.com/sharkdp/bat |
+| eza | [docs](tools/rust-cli-tools.md) | https://github.com/eza-community/eza |
+| fd | [docs](tools/rust-cli-tools.md) | https://github.com/sharkdp/fd |
+| ripgrep | [docs](tools/rust-cli-tools.md) | https://github.com/BurntSushi/ripgrep |
+| fzf | [docs](tools/fzf.md) | https://github.com/junegunn/fzf |
+| yazi | [docs](tools/yazi.md) | https://github.com/sxyazi/yazi |
+| zoxide | [docs](tools/zoxide.md) | https://github.com/ajeetdsouza/zoxide |
 
-## Shell & CLI Tools
+### Git & Development
 
-- **direnv** | [docs](tools/direnv.md), https://direnv.net/ | `run_onchange_client_ubuntu_240-direnv.sh.tmpl`
-- **fzf** | [docs](tools/fzf.md), https://github.com/junegunn/fzf | `run_onchange_client_ubuntu_200-fzf.sh.tmpl`
-- **shellcheck** | [docs](tools/shellcheck-shfmt.md), https://www.shellcheck.net/ | `run_onchange_client_ubuntu_250-shellcheck.sh.tmpl`
-- **shfmt** | [docs](tools/shellcheck-shfmt.md), https://github.com/mvdan/sh | `run_onchange_client_ubuntu_250-shellcheck.sh.tmpl`
-- **yq** | [docs](tools/yq.md), https://github.com/mikefarah/yq | `run_onchange_client_ubuntu_275-yq.sh.tmpl`
-- **zoxide** | [docs](tools/zoxide.md), https://github.com/ajeetdsouza/zoxide | `run_onchange_client_ubuntu_210-cargo-tools.sh.tmpl`
+| Tool | Documentation | Website |
+|------|---------------|---------|
+| delta | [docs](tools/delta.md) | https://github.com/dandavison/delta |
+| lazygit | [docs](tools/lazygit.md) | https://github.com/jesseduffield/lazygit |
+| gh | [docs](tools/github-tools.md) | https://cli.github.com/ |
+| ghq | [docs](tools/github-tools.md) | https://github.com/x-motemen/ghq |
+| direnv | [docs](tools/direnv.md) | https://direnv.net/ |
+| shellcheck | [docs](tools/shellcheck-shfmt.md) | https://www.shellcheck.net/ |
+| shfmt | [docs](tools/shellcheck-shfmt.md) | https://github.com/mvdan/sh |
+| jq | | https://jqlang.github.io/jq/ |
+| yq | [docs](tools/yq.md) | https://github.com/mikefarah/yq |
+| glow | [docs](tools/glow.md) | https://github.com/charmbracelet/glow |
+| uv | [docs](tools/uv.md) | https://github.com/astral-sh/uv |
+| just | | https://just.systems/ |
 
-## Cargo Tools (Rust-based)
+### Runtimes
 
-All installed via `run_onchange_client_ubuntu_210-cargo-tools.sh.tmpl` | [docs](tools/rust-cli-tools.md)
+| Tool | Documentation | Website |
+|------|---------------|---------|
+| Node.js 22 LTS | [docs](tools/nodejs.md) | https://nodejs.org/ |
 
-- **bat** (https://github.com/sharkdp/bat), **eza** (https://github.com/eza-community/eza), **fd** (https://github.com/sharkdp/fd), **ripgrep (rg)** (https://github.com/BurntSushi/ripgrep), **starship** (https://starship.rs/)
+### Docker & Monitoring
 
-## Git & Development Tools
+| Tool | Documentation | Website |
+|------|---------------|---------|
+| lazydocker | [docs](tools/lazydocker.md) | https://github.com/jesseduffield/lazydocker |
+| btop | [docs](tools/btop.md) | https://github.com/aristocratos/btop |
+| lnav | [docs](tools/lnav.md) | https://lnav.org/ |
 
-- **delta** | [docs](tools/delta.md), https://github.com/dandavison/delta | `run_onchange_client_ubuntu_320-delta.sh.tmpl`
-- **gh** | [docs](tools/github-tools.md), https://cli.github.com/ | `run_onchange_client_ubuntu_300-gh.sh.tmpl`
-- **ghq** | [docs](tools/github-tools.md), https://github.com/x-motemen/ghq | `run_onchange_client_ubuntu_310-ghq.sh.tmpl`
-- **lazygit** | [docs](tools/lazygit.md), https://github.com/jesseduffield/lazygit | `run_onchange_client_ubuntu_330-lazygit.sh.tmpl`
+### Dotfiles Management
 
-## Utilities & Monitoring
+| Tool | Documentation | Website |
+|------|---------------|---------|
+| chezmoi | | https://www.chezmoi.io/ |
 
-- **btop** | [docs](tools/btop.md), https://github.com/aristocratos/btop | `run_onchange_client_ubuntu_380-snap-tools.sh.tmpl`
-- **glow** | [docs](tools/glow.md), https://github.com/charmbracelet/glow | `run_onchange_client_ubuntu_380-snap-tools.sh.tmpl`
-- **lnav** | [docs](tools/lnav.md), https://lnav.org/ | `run_onchange_client_ubuntu_360-lnav.sh.tmpl`
-- **yazi** | [docs](tools/yazi.md), https://github.com/sxyazi/yazi | `run_onchange_client_ubuntu_285-yazi.sh.tmpl`
+## Install Scripts (home/.chezmoiscripts/)
 
-## Terminal & Container Tools
+For things that can't be managed by Nix:
 
-- **Alacritty** | [docs](tools/alacritty.md), https://alacritty.org/ | Manual installation on Windows host required (for WSL users)
-- **zellij** | [docs](tools/zellij.md), https://github.com/zellij-org/zellij | `run_onchange_client_ubuntu_265-zellij.sh.tmpl`
-- **Docker** | [docs](tools/docker.md), https://www.docker.com/ | `run_onchange_client_ubuntu_350-docker.sh.tmpl` (installed on host system only)
-- **lazydocker** | [docs](tools/lazydocker.md), https://github.com/jesseduffield/lazydocker | `run_onchange_client_ubuntu_340-lazydocker.sh.tmpl`
+| Script | Purpose |
+|--------|---------|
+| `run_once_..._000-apt-packages.sh.tmpl` | vim-gtk3 (WSL clipboard integration) |
+| `run_once_..._010-install-nix.sh.tmpl` | Nix installation (Determinate Systems) |
+| `run_after_onchange_..._100-apply-home-manager.sh.tmpl` | Home Manager switch |
+| `run_onchange_..._200-wezterm.sh.tmpl` | wezterm-mux-server (apt repo) |
+| `run_onchange_..._210-docker.sh.tmpl` | Docker Engine (system service) |
+| `run_onchange_..._300-yazi-plugins.sh.tmpl` | yazi plugins (ya pkg add) |
 
-## Text Editors
+### Why Not Nix?
 
-- **vim-gtk3** | [docs](tools/vim.md), https://www.vim.org/ | `run_onchange_client_ubuntu_000-prerequisites.sh.tmpl` (colorscheme via `run_onchange_client_ubuntu_220-vim-tokyonight.sh.tmpl`)
+- **vim-gtk3**: Required for WSL clipboard integration (`+clipboard` feature)
+- **Nix**: Bootstrap dependency (can't install itself)
+- **Docker**: System service requiring systemd integration
+- **wezterm**: Uses apt repository for mux-server functionality
+- **yazi plugins**: Managed via `ya pkg add` (yazi's package manager)
 
 ## Configuration Highlights
 
-All tools are configured with Tokyo Night themes, vim-style keybindings, system clipboard integration, shell integration, and Nerd Fonts support.
+All tools are configured with:
+
+- **Tokyo Night** colorscheme
+- **Vim-style** keybindings where applicable
+- **System clipboard** integration
+- **Shell integration** (fzf, zoxide, direnv)
+- **Nerd Fonts** support (icons in terminal)
+
+## External Resources
+
+Additional files managed via `.chezmoiexternal.toml`:
+
+- **bat Tokyo Night theme**: `~/.config/bat/themes/tokyonight.tmTheme`

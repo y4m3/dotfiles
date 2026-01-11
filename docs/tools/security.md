@@ -4,7 +4,7 @@ This document describes security measures implemented in this dotfiles repositor
 
 ## Automatic Security Enforcement
 
-This dotfiles automatically enforces strict file permissions on credential files and directories via `~/.bashrc.d/030-security-permissions.sh`. This script runs on each shell startup and ensures proper permissions are set.
+This dotfiles automatically enforces strict file permissions on credential files and directories via `~/.bashrc.d/040-security-permissions.sh`. This script runs on each shell startup and ensures proper permissions are set.
 
 ## Protected Files and Directories
 

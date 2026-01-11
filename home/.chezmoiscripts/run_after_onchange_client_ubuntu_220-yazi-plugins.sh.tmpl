@@ -1,0 +1,40 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Yazi plugins installation
+# plugins hash: {{ "smart-enter toggle-pane smart-paste git zoom" | sha256sum }}
+
+set -euo pipefail
+
+# Source Nix environment
+if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+    . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+fi
+
+if ! command -v ya &> /dev/null; then
+    echo "yazi not found. Skipping plugin installation."
+    exit 0
+fi
+
+add_plugin() {
+    local plugin="$1"
+    local output
+    if output=$(ya pkg add "$plugin" 2>&1); then
+        echo "  ✓ $plugin"
+    elif echo "$output" | grep -q "already exists"; then
+        echo "  ✓ $plugin (already installed)"
+    else
+        echo "  ✗ $plugin: $output" >&2
+        return 1
+    fi
+}
+
+echo "==> Installing yazi plugins..."
+
+add_plugin yazi-rs/plugins:smart-enter
+add_plugin yazi-rs/plugins:toggle-pane
+add_plugin yazi-rs/plugins:smart-paste
+add_plugin yazi-rs/plugins:git
+add_plugin yazi-rs/plugins:zoom
+
+echo "✓ Yazi plugins installed successfully"
+{{- end }}

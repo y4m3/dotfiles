@@ -147,7 +147,7 @@ echo "✓ tool-name installed successfully"
 3. `~/go/bin` (Go tools, ghq, etc.)
 4. System default PATH
 
-**Implementation**: Managed in `home/dot_bashrc.d/20-paths.sh` with idempotent path prepending.
+**Implementation**: Managed in `home/dot_bashrc.d/030-paths.sh` with idempotent path prepending.
 
 ## References
 
