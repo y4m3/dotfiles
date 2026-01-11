@@ -1,108 +1,56 @@
--- =========================================================
--- Local Configuration Template
--- =========================================================
+-- WezTerm Local Configuration
 --
--- environments: Unified configuration for workspaces and connections
---   {
---     key = "1",                    -- LEADER + key for quick switch (optional)
---     workspace_name = "wsl",       -- Workspace name (used everywhere)
---     connection = "connect",       -- "local" | "connect" | "ssh"
---     -- For "connect" or "ssh":
---     remote_address = "127.0.0.1",
---     username = "dev",
---     default_prog = { "/bin/bash", "-l" },  -- Optional
---     -- For "local":
---     args = { "pwsh.exe", "-NoLogo" },
---     is_default = true,            -- Set as default startup (optional)
---   }
+-- This file configures workspaces and connections for your environment.
+-- See README.md in this directory for detailed documentation and examples.
 --
--- connection types:
---   "local"   - Run local command (uses args)
---   "connect" - WezTerm SSH domain (wezterm connect <workspace_name>)
---   "ssh"     - System SSH command (ssh user@host)
---
--- font: Font configuration (optional)
---   { family = "...", size = 12 }
---
--- =========================================================
-
--- =========================================================
--- Example: WSL + PowerShell (Windows host)
--- =========================================================
--- return {
---     environments = {
---         {
---             key = "1",
---             workspace_name = "wsl",
---             connection = "connect",
---             remote_address = "127.0.0.1",
---             username = "dev",
---             default_prog = { "/bin/bash", "-l" },
---             is_default = true,
---         },
---         {
---             key = "2",
---             workspace_name = "posh",
---             connection = "local",
---             args = { "pwsh.exe", "-NoLogo" },
---         },
---         {
---             -- No key = launch_menu only
---             workspace_name = "cmd",
---             connection = "local",
---             args = { "cmd.exe" },
---         },
---     },
---     font = {
---         family = "UDEV Gothic 35NFLG",
---         size = 12,
---     },
--- }
-
--- =========================================================
--- Example: SSH to remote server
--- =========================================================
--- return {
---     environments = {
---         {
---             key = "1",
---             workspace_name = "local",
---             connection = "local",
---             args = { "pwsh.exe", "-NoLogo" },
---             is_default = true,
---         },
---         {
---             key = "2",
---             workspace_name = "prod",
---             connection = "ssh",  -- Uses system ssh command
---             remote_address = "192.168.1.100",
---             username = "admin",
---         },
---     },
--- }
-
--- =========================================================
+-- Official docs:
+--   • https://wezterm.org/multiplexing.html
+--   • https://wezterm.org/config/lua/SshDomain.html
+--   • https://wezterm.org/config/lua/config/wsl_domains.html
 
 return {
-    environments = {
-        {
-            key = "q",
-            workspace_name = "default",
-            connection = "connect",
-            remote_address = "dev",
-            username = "dev",
-            is_default = true,
-        },
-        {
-            key = "w",
-            workspace_name = "local",
-            connection = "local",
-            args = { "powershell.exe" },
-        },
+  environments = {
+    {
+      -- Setting args = {} launches the OS default shell.
+      -- This is a somewhat dirty hack, but useful when you want the system's default behavior.
+      key = "9",
+      workspace_name = "default",
+      connection = "local",
+      args = {},
+      is_default = true,
     },
+    -- {
+    --   key = "1",
+    --   workspace_name = "mux-server-workspace_name",
+    --   connection = "connect",
+    --   remote_address = "remote_address_or_ssh_config_name"
+    --   username = "your_name",
+    --   default_prog = { "/bin/bash", "-l" },
+    --   is_default = true,
+    -- },
+    -- {
+    --   key = "2",
+    --   workspace_name = "local-workspace_name",
+    --   connection = "local", -- local connection
+    --   args = { "powershell.exe" },
+    -- },
+    -- {
+    --   key = "3",
+    --   workspace_name = "wsl-workspace_name",
+    --   connection = "local", -- local connection (wsl)
+    --   args = { "wsl.exe", "-d", "Ubuntu", "--", "/bin/bash", "-l" },
+    -- },
+    -- {
+    --   key = "4",
+    --   workspace_name = "ssh-workspace_name",
+    --   connection = "ssh", -- ssh connection
+    --   remote_address = "remote_address_or_ssh_config_name",
+    --   username = "your_name",
+    -- },
+  },
 
-    font = {
-        family = "UDEV Gothic 35NFLG",
-        size = 12,
-    },
+  font = {
+    family = "UDEV Gothic 35NFLG",
+    size = 12,
+  },
 }
