@@ -29,7 +29,7 @@ if is_interactive; then
       selected_path=$({
         ghq list --full-path
         if [[ -d "$WORKTREE_DIR" ]]; then
-          find "$WORKTREE_DIR" -mindepth 2 -type d 2> /dev/null | while read -r dir; do
+          find "$WORKTREE_DIR" -mindepth 2 -maxdepth 2 -type d 2> /dev/null | while read -r dir; do
             # Only include directories that are git worktrees
             if [[ -f "${dir}/.git" ]]; then
               echo "$dir"
@@ -76,7 +76,11 @@ if is_interactive; then
         branch_name=$(echo "$branch_name" | xargs)
       fi
 
-      worktree_path="${WORKTREE_DIR}/${repo_name}/${branch_name}"
+      # Use a filesystem-friendly name for the worktree directory to avoid
+      # creating nested paths when branch names contain slashes (e.g. feature/x).
+      local branch_dir_name="${branch_name//\//-}"
+      branch_dir_name="${branch_dir_name//./-}"
+      worktree_path="${WORKTREE_DIR}/${repo_name}/${branch_dir_name}"
 
       if [[ -d "$worktree_path" ]]; then
         echo "Worktree already exists: $worktree_path"
@@ -111,6 +115,9 @@ if is_interactive; then
           session_name="${session_name//./-}"
           tmux rename-session "$session_name" 2> /dev/null || true
         fi
+      else
+        echo "Error: Failed to create worktree for branch '$branch_name'" >&2
+        return 1
       fi
     }
 
@@ -142,6 +149,21 @@ if is_interactive; then
         echo "Currently in worktree. Moving to main repository..."
         main_worktree=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
         cd "$main_worktree" || cd ~ || return 1
+      fi
+
+      # Warn if the worktree has uncommitted or untracked changes
+      if git -C "$worktree_path" rev-parse --git-dir > /dev/null 2>&1; then
+        if [[ -n "$(git -C "$worktree_path" status --porcelain 2> /dev/null)" ]]; then
+          echo "Warning: Worktree '$worktree_path' has uncommitted changes or untracked files."
+          read -r -p "Remove worktree and discard these changes? [y/N] " reply
+          case "$reply" in
+            [Yy][Ee][Ss] | [Yy]) ;;
+            *)
+              echo "Aborted worktree removal."
+              return 1
+              ;;
+          esac
+        fi
       fi
 
       echo "Removing worktree: $worktree_path"
@@ -180,15 +202,50 @@ if is_interactive; then
 
   elif command -v ghq > /dev/null 2>&1; then
     # Fallback: ghq only (without fzf)
+    # Provides a simple numbered menu for selection.
     dev() {
-      local repo
-      repo=$(ghq list | head -1)
-      if [[ -n "$repo" ]]; then
-        cd "$(ghq root)/$repo" || return 1
-      else
+      local repos=() repo_count i choice repo
+
+      # Collect repositories managed by ghq
+      while IFS= read -r repo; do
+        [[ -n "$repo" ]] && repos+=("$repo")
+      done < <(ghq list)
+
+      repo_count=${#repos[@]}
+
+      if ((repo_count == 0)); then
         echo "No repositories found. Use 'ghq get <repo>' to clone." >&2
         return 1
+      elif ((repo_count == 1)); then
+        # Preserve previous behavior: go directly to the single repository
+        cd "$(ghq root)/${repos[0]}" || return 1
+        return 0
       fi
+
+      echo "Select repository (ghq fallback without fzf):"
+      for ((i = 0; i < repo_count; i++)); do
+        printf '  %2d) %s\n' "$((i + 1))" "${repos[i]}"
+      done
+      echo "  q) Cancel"
+
+      while :; do
+        read -r -p "Enter choice [1-${repo_count}] (or 'q' to cancel): " choice
+
+        case "$choice" in
+          q | Q | '')
+            echo "Selection cancelled."
+            return 1
+            ;;
+        esac
+
+        if [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= repo_count)); then
+          repo=${repos[choice - 1]}
+          cd "$(ghq root)/$repo" || return 1
+          return 0
+        else
+          echo "Invalid selection: '$choice'. Please enter a number between 1 and ${repo_count}, or 'q' to cancel."
+        fi
+      done
     }
   fi
 fi
