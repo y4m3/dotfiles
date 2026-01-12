@@ -17,6 +17,15 @@ return {
         name = "skkeleton",
         module = "blink.compat.source",
       }
+
+      -- Disable completion when skkeleton (Japanese IME) is active
+      opts.enabled = function()
+        if vim.g.skkeleton_enabled then
+          return false
+        end
+        return vim.bo.buftype ~= "prompt"
+      end
+
       return opts
     end,
   },
