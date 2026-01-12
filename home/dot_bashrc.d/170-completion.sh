@@ -15,9 +15,9 @@ if is_interactive; then
     # 'gh completion -s bash' outputs a script; source it inline
     eval "$(gh completion -s bash)"
   fi
-fi
 
-# carapace - Multi-shell completion framework
-if is_interactive && command -v carapace > /dev/null 2>&1; then
-  source <(carapace _carapace)
+  # carapace - Multi-shell completion framework
+  if command -v carapace > /dev/null 2>&1; then
+    source <(carapace _carapace)
+  fi
 fi
