@@ -7,18 +7,21 @@ WORKTREE_DIR="${WORKTREE_DIR:-${GHQ_ROOT}/.worktrees}"
 
 if is_interactive && command -v fzf > /dev/null 2>&1 && command -v ghq > /dev/null 2>&1; then
 
-  # dev: Navigate to ghq repository or worktree
+  # dev: Navigate to ghq repository or worktree using fzf
+  #   Lists all ghq-managed repositories and worktrees under WORKTREE_DIR
   dev() {
     local selected
     selected=$({
       ghq list --full-path
       [[ -d "$WORKTREE_DIR" ]] && find "$WORKTREE_DIR" -mindepth 2 -maxdepth 2 -type d -exec test -f {}/.git \; -print 2> /dev/null
-    } | sort -u | fzf --prompt="Repository: " --preview 'ls -la {}')
+    } | sort -u | fzf --prompt="Repository: " --preview 'ls -la -- {}')
     [[ -z "$selected" ]] && return 0
     cd "$selected" || return 1
   }
 
-  # wt-add [branch]: Create worktree
+  # wt-add [branch]: Create a new git worktree
+  #   Without args: Select from remote branches using fzf
+  #   With args: Create worktree for the specified branch
   wt-add() {
     git rev-parse --git-dir > /dev/null 2>&1 || {
       echo "Error: Not in a git repository" >&2
@@ -34,6 +37,7 @@ if is_interactive && command -v fzf > /dev/null 2>&1 && command -v ghq > /dev/nu
       [[ -z "$branch" ]] && return 0
       branch=$(echo "$branch" | xargs)
     fi
+    # Sanitize branch name for filesystem (replace / and . with -)
     path="${WORKTREE_DIR}/${repo}/${branch//[\/.]/-}"
     [[ -d "$path" ]] && {
       cd "$path" || return 1
@@ -49,13 +53,15 @@ if is_interactive && command -v fzf > /dev/null 2>&1 && command -v ghq > /dev/nu
     fi && { cd "$path" || return 1; }
   }
 
-  # wt-rm [path]: Remove worktree
+  # wt-rm [path]: Remove a git worktree
+  #   Without args: Select from existing worktrees using fzf
+  #   With args: Remove the specified worktree path
   wt-rm() {
     git rev-parse --git-dir > /dev/null 2>&1 || {
       echo "Error: Not in a git repository" >&2
       return 1
     }
-    local path main
+    local path main current_dir
     main=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
     if [[ -n "${1:-}" ]]; then
       path="$1"
@@ -63,16 +69,32 @@ if is_interactive && command -v fzf > /dev/null 2>&1 && command -v ghq > /dev/nu
       path=$(git worktree list --porcelain | grep '^worktree ' | sed 's/^worktree //' | grep -v "^${main}$" | fzf --prompt="Remove: ")
       [[ -z "$path" ]] && return 0
     fi
-    [[ "$(pwd)" == "$path"* ]] && { cd "$main" || return 1; }
+    current_dir=$(pwd)
+    [[ "$current_dir" == "$path" || "$current_dir" == "$path"/* ]] && { cd "$main" || return 1; }
     if [[ -n "$(git -C "$path" status --porcelain 2> /dev/null)" ]]; then
-      read -rp "Has uncommitted changes. Remove? [y/N] " r
-      [[ ! "$r" =~ ^[Yy] ]] && return 1
+      read -rp "This worktree has uncommitted changes. Remove? [y/N] " confirm
+      [[ ! "$confirm" =~ ^[Yy] ]] && return 1
     fi
-    git worktree remove "$path" --force
+    git worktree remove "$path"
   }
 
-  wt-list() { git rev-parse --git-dir > /dev/null 2>&1 && git worktree list; }
-  wt-prune() { git rev-parse --git-dir > /dev/null 2>&1 && git worktree prune -v; }
+  # wt-list: List all worktrees for current repository
+  wt-list() {
+    git rev-parse --git-dir > /dev/null 2>&1 || {
+      echo "Error: Not in a git repository" >&2
+      return 1
+    }
+    git worktree list
+  }
+
+  # wt-prune: Remove stale worktree references
+  wt-prune() {
+    git rev-parse --git-dir > /dev/null 2>&1 || {
+      echo "Error: Not in a git repository" >&2
+      return 1
+    }
+    git worktree prune -v
+  }
 
 fi
 
