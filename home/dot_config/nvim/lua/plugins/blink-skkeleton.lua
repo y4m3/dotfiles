@@ -17,6 +17,7 @@ return {
         name = "skkeleton",
         module = "blink.compat.source",
       }
+      return opts
     end,
   },
 }
