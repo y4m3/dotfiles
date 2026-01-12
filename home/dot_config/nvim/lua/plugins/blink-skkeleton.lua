@@ -19,11 +19,20 @@ return {
       }
 
       -- Disable completion when skkeleton (Japanese IME) is active
-      opts.enabled = function()
+      local prev_enabled = opts.enabled
+      opts.enabled = function(...)
         if vim.g.skkeleton_enabled then
           return false
         end
-        return vim.bo.buftype ~= "prompt"
+        if vim.bo.buftype == "prompt" then
+          return false
+        end
+        if type(prev_enabled) == "function" then
+          return prev_enabled(...)
+        elseif prev_enabled ~= nil then
+          return prev_enabled
+        end
+        return true
       end
 
       return opts

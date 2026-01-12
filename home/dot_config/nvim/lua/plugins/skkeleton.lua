@@ -26,8 +26,8 @@ return {
         callback = function()
           vim.g.skkeleton_enabled = true
           local ok, blink = pcall(require, "blink.cmp")
-          if ok then
-            blink.hide()
+          if ok and type(blink.hide) == "function" then
+            pcall(blink.hide)
           end
         end,
         desc = "Track skkeleton enabled state",
