@@ -35,14 +35,29 @@ in
     lazygit
 
     # Development
+    ast-grep
     direnv
     glow
     jq
     just
+    luarocks
+    markdown-toc
+    markdownlint-cli2
+    mermaid-cli
+    nixfmt-rfc-style
+    prettier
+    pyright
+    ruff
     shellcheck
     shfmt
+    sqlite
+    tectonic
     uv
     yq-go
+
+    # Image processing (snacks.image)
+    ghostscript
+    imagemagick
 
     # Runtimes
     nodejs_22
