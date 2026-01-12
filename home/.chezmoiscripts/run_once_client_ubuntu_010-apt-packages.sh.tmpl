@@ -3,6 +3,7 @@
 # Install apt packages that cannot be managed by Nix
 # - vim-gtk3: Required for WSL clipboard integration
 # - unzip, curl, ca-certificates: Required for win32yank installer
+# - build-essential: C/C++ compiler for nvim-treesitter and Docker builds
 
 set -euo pipefail
 
@@ -21,8 +22,8 @@ if ! (command -v vim &>/dev/null && vim --version | grep -q "+clipboard"); then
   PACKAGES_TO_INSTALL+=(vim-gtk3)
 fi
 
-# Check prerequisites for win32yank installer (WSL only)
-for pkg in unzip curl ca-certificates; do
+# Check other required packages
+for pkg in unzip curl ca-certificates build-essential; do
   if ! dpkg -s "$pkg" &>/dev/null; then
     PACKAGES_TO_INSTALL+=("$pkg")
   fi
