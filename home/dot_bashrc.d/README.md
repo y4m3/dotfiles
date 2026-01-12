@@ -30,7 +30,7 @@ increments to allow future additions without renumbering.
   - `140-fd.sh`: fd configuration
   - `150-direnv.sh`: direnv configuration
   - `160-fzf.sh`: fzf configuration
-  - `170-completion.sh`: Completion features (bash-completion, gh, etc.)
+  - `170-completion.sh`: Completion features (bash-completion, gh, carapace)
 
 - **2xx**: Prompt
   - `210-starship.sh`: Starship prompt configuration

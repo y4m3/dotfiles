@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 170-completion.sh — Shell completion (bash-completion, gh, etc.)
+# 170-completion.sh — Shell completion (bash-completion, gh, carapace)
 # Category: 1xx (Tool configuration)
 
 # Completion (interactive only)
@@ -14,5 +14,10 @@ if is_interactive; then
   if command -v gh > /dev/null 2>&1; then
     # 'gh completion -s bash' outputs a script; source it inline
     eval "$(gh completion -s bash)"
+  fi
+
+  # carapace - Multi-shell completion framework
+  if command -v carapace > /dev/null 2>&1; then
+    source <(carapace _carapace)
   fi
 fi
