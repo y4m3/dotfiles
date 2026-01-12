@@ -51,9 +51,7 @@ if [ -t 0 ]; then
     bind '"\e[B": history-search-forward'
 fi
 
-# Editor fallback (users override in personal files)
-export EDITOR="${EDITOR:-vim}"
-export VISUAL="${VISUAL:-$EDITOR}"
+# Editor settings in ~/.bashrc.d/100-editor.sh
 export GPG_TTY=$(tty 2>/dev/null)
 
 # less
