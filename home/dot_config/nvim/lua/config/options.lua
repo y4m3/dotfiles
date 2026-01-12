@@ -26,3 +26,7 @@ opt.sidescrolloff = 8
 -- Persistent undo history
 opt.undofile = true
 opt.undolevels = 10000
+
+-- Line wrapping
+opt.wrap = true
+opt.linebreak = true

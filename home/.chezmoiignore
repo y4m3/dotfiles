@@ -20,3 +20,6 @@
 .chezmoiscripts/run_after_onchange_client_ubuntu_220-yazi-plugins.sh.tmpl
 .config/nix/
 {{- end }}
+
+# SKK user dictionary (contains personal data, not synced)
+.skk/
