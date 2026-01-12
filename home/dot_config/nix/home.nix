@@ -52,6 +52,7 @@ in
     shfmt
     sqlite
     tectonic
+    tldr
     uv
     yq-go
 
