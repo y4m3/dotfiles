@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
 # 020-user-preferences.sh — User preferences
-# Category: 0xx (Core) (Core functionality)
-# Sets timezone, editor, and safety aliases
+# Category: 0xx (Core)
+# Sets timezone and safety aliases
 
 # Set timezone to JST (non-interactive also needs this)
 export TZ=Asia/Tokyo
 
-# Editor (non-interactive also needs this)
-export EDITOR="${EDITOR:-vim}"
-export VISUAL="${VISUAL:-$EDITOR}"
-export GIT_EDITOR="${GIT_EDITOR:-vim}"
+# Editor settings moved to 100-editor.sh
 
 # Readline: enable vi editing mode (interactive only)
 if is_interactive; then
