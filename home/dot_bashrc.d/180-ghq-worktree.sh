@@ -13,6 +13,7 @@ if is_interactive && command -v fzf > /dev/null 2>&1 && command -v ghq > /dev/nu
     local selected
     selected=$({
       ghq list --full-path
+      # Suppress find errors (e.g., permission denied) to avoid cluttering fzf output
       [[ -d "$WORKTREE_DIR" ]] && find "$WORKTREE_DIR" -mindepth 2 -maxdepth 2 -type d -exec test -f {}/.git \; -print 2> /dev/null
     } | sort -u | fzf --prompt="Repository: " --preview 'ls -la -- {}')
     [[ -z "$selected" ]] && return 0
@@ -30,7 +31,7 @@ if is_interactive && command -v fzf > /dev/null 2>&1 && command -v ghq > /dev/nu
     local repo branch path
     repo=$(basename "$(git rev-parse --show-toplevel)")
     if [[ -n "${1:-}" ]]; then
-      branch="$1"
+      branch=$(echo "$1" | xargs)
     else
       git fetch --all --prune || echo "Warning: git fetch failed" >&2
       branch=$(git branch -r | grep -v HEAD | sed 's/^[[:space:]]*origin\///' | fzf --prompt="Branch: ")
@@ -65,6 +66,11 @@ if is_interactive && command -v fzf > /dev/null 2>&1 && command -v ghq > /dev/nu
     main=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
     if [[ -n "${1:-}" ]]; then
       path="$1"
+      # Validate that path is actually a worktree of this repository
+      if ! git worktree list --porcelain 2> /dev/null | grep -qFx "worktree ${path}"; then
+        echo "Error: '$path' is not a worktree of this repository" >&2
+        return 1
+      fi
     else
       path=$(git worktree list --porcelain | grep '^worktree ' | sed 's/^worktree //' | grep -v "^${main}$" | fzf --prompt="Remove: ")
       [[ -z "$path" ]] && return 0
