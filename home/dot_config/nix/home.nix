@@ -60,7 +60,12 @@ in
     imagemagick
 
     # Runtimes
+    deno
     nodejs_22
+
+    # Japanese input (SKK)
+    skktools
+    skkDictionaries.l
 
     # Docker
     lazydocker
