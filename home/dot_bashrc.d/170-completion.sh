@@ -18,6 +18,6 @@ if is_interactive; then
 fi
 
 # carapace - Multi-shell completion framework
-if is_interactive && command -v carapace &> /dev/null; then
+if is_interactive && command -v carapace > /dev/null 2>&1; then
   source <(carapace _carapace)
 fi
