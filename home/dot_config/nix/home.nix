@@ -25,6 +25,7 @@ in
     fd
     fzf
     ripgrep
+    trash-cli
     yazi
     zoxide
 
