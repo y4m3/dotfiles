@@ -14,7 +14,7 @@ in
     chezmoi
 
     # Shell & Terminal
-    carapace-bin
+    carapace
     starship
     tmux
     zellij
