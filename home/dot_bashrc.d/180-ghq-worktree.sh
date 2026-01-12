@@ -3,7 +3,9 @@
 # Category: 1xx (Tool configuration)
 # Dependencies: fzf (160-fzf.sh), ghq, git
 # See: https://github.com/x-motemen/ghq
-# Reference: https://zenn.dev/shunk031/articles/ghq-gwq-fzf-worktree
+# Reference: Inspired by the ghq/fzf/worktree workflow described in:
+#   https://zenn.dev/shunk031/articles/ghq-gwq-fzf-worktree
+#   (this implementation does not use gwq)
 
 # Configuration (can be overridden in ~/.bashrc.local)
 GHQ_ROOT="${GHQ_ROOT:-$HOME/repos}"
@@ -29,8 +31,9 @@ if is_interactive; then
       selected_path=$({
         ghq list --full-path
         if [[ -d "$WORKTREE_DIR" ]]; then
+          # Find worktrees at WORKTREE_DIR/<repo>/<branch> structure
+          # The .git file (not directory) indicates a git worktree
           find "$WORKTREE_DIR" -mindepth 2 -maxdepth 2 -type d 2> /dev/null | while read -r dir; do
-            # Only include directories that are git worktrees
             if [[ -f "${dir}/.git" ]]; then
               echo "$dir"
             fi
@@ -47,6 +50,7 @@ if is_interactive; then
         local session_name
         session_name="${selected_path##*/}"
         session_name="${session_name//./-}"
+        session_name="${session_name//\//-}"
         tmux rename-session "$session_name" 2> /dev/null || true
       fi
     }
@@ -67,7 +71,9 @@ if is_interactive; then
       if [[ -n "${1:-}" ]]; then
         branch_name="$1"
       else
-        git fetch --all --prune 2> /dev/null
+        if ! git fetch --all --prune; then
+          echo "Warning: git fetch failed; branch list may be stale." >&2
+        fi
         branch_name=$(git branch -r |
           grep -v 'HEAD' |
           sed 's/^[[:space:]]*origin\///' |
@@ -169,10 +175,10 @@ if is_interactive; then
       echo "Removing worktree: $worktree_path"
       git worktree remove "$worktree_path" --force
 
-      # Remove empty parent directories
+      # Remove empty parent directories (only within WORKTREE_DIR)
       local parent_dir
       parent_dir=$(dirname "$worktree_path")
-      while [[ "$parent_dir" != "$WORKTREE_DIR" ]] && [[ -d "$parent_dir" ]]; do
+      while [[ "$parent_dir" != "$WORKTREE_DIR" ]] && [[ "$parent_dir" == "$WORKTREE_DIR"/* ]] && [[ -d "$parent_dir" ]]; do
         if [[ -z "$(ls -A "$parent_dir" 2> /dev/null)" ]]; then
           rmdir "$parent_dir" 2> /dev/null
           parent_dir=$(dirname "$parent_dir")
@@ -214,7 +220,7 @@ if is_interactive; then
       repo_count=${#repos[@]}
 
       if ((repo_count == 0)); then
-        echo "No repositories found. Use 'ghq get <repo>' to clone." >&2
+        echo "No repositories found. Use 'ghq get <repository-url>' to clone a repository." >&2
         return 1
       elif ((repo_count == 1)); then
         # Preserve previous behavior: go directly to the single repository
@@ -234,7 +240,7 @@ if is_interactive; then
         case "$choice" in
           q | Q | '')
             echo "Selection cancelled."
-            return 1
+            return 0
             ;;
         esac
 
