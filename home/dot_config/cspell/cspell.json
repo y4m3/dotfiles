@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/packages/cspell-types/cspell.schema.json",
+  "version": "0.2",
+  "language": "en",
+  "allowCompoundWords": true,
+  "import": [
+    "@cspell/dict-python/cspell-ext.json",
+    "@cspell/dict-sql/cspell-ext.json",
+    "@cspell/dict-software-terms/cspell-ext.json"
+  ],
+  "dictionaryDefinitions": [
+    {
+      "name": "user",
+      "path": "~/.local/share/cspell/user.txt",
+      "addWords": true
+    }
+  ],
+  "dictionaries": ["user"]
+}
