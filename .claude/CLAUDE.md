@@ -26,7 +26,7 @@ home-manager generations   # Check Home Manager status
 .
 ├── home/                    # Files to be copied to ~/
 │   ├── .chezmoi.toml.tmpl   # Profile variable (client/server)
-│   ├── .chezmoiscripts/     # Install scripts (6 scripts)
+│   ├── .chezmoiscripts/     # Install scripts
 │   ├── .chezmoiexternal.toml # External files (bat theme)
 │   ├── dot_config/nix/      # Nix flake & Home Manager config
 │   ├── dot_config/nvim/     # LazyVim (Neovim) configuration
