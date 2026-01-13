@@ -48,6 +48,7 @@ in
     mermaid-cli
     nixfmt-rfc-style
     prettier
+    cspell
     pyright
     ruff
     shellcheck

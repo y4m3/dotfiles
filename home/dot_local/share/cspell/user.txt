@@ -1,0 +1,3 @@
+# cspell user dictionary
+# Add words here (one per line) or use Neovim code action to add automatically
+# Example: chezmoi
