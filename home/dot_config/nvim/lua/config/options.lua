@@ -30,3 +30,19 @@ opt.undolevels = 10000
 -- Line wrapping
 opt.wrap = true
 opt.linebreak = true
+
+-- Cursor blink in all modes (note: may not work in all terminals)
+opt.guicursor = "n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20,a:blinkwait700-blinkon400-blinkoff400"
+
+-- Better diff algorithm for Japanese text
+opt.diffopt:append({ "algorithm:histogram", "indent-heuristic" })
+
+-- Visible whitespace characters
+opt.list = true
+opt.listchars = {
+  tab = "» ",
+  trail = "·",
+  nbsp = "␣",
+  extends = "›",
+  precedes = "‹",
+}
