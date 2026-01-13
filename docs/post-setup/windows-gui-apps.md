@@ -9,7 +9,7 @@ Recommended GUI applications for Windows host system (especially for WSL users).
 
 ## Terminal Emulators
 
-- **Alacritty**: https://alacritty.org/ (see [Alacritty Documentation](tools/alacritty.md))
+- **Alacritty**: https://alacritty.org/ (see [Alacritty Documentation](../tools/terminals.md#alacritty-alternative))
 
 ## Note-Taking & Knowledge Management
 
