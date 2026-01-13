@@ -1,6 +1,16 @@
-{ config, pkgs, lib, ... }:
+# Home Manager package configuration
+#
+# Packages here are managed by Nix instead of apt/brew for:
+# - Consistent versions across machines
+# - Declarative, reproducible setup
+# - Easy rollback via `home-manager generations`
+{
+  pkgs,
+  ...
+}:
 
 let
+  # Dynamic values from environment (requires --impure flag)
   username = builtins.getEnv "USER";
   homeDirectory = builtins.getEnv "HOME";
 in
@@ -34,7 +44,7 @@ in
     git
     lazygit
 
-    # Development
+    # Development tools
     ast-grep
     direnv
     glow
@@ -46,16 +56,16 @@ in
     mermaid-cli
     nixfmt-rfc-style
     prettier
-    pyright
-    ruff
+    pyright # Mason auto-install disabled; managed here for version consistency
+    ruff # Mason auto-install disabled; managed here for version consistency
     shellcheck
     shfmt
-    sqlite
+    sqlite # Required by snacks.picker for frecency/history
     tectonic
     uv
     yq-go
 
-    # Image processing (snacks.image)
+    # Image processing for snacks.image (LazyVim)
     ghostscript
     imagemagick
 
@@ -63,7 +73,7 @@ in
     deno
     nodejs_22
 
-    # Japanese input (SKK)
+    # Japanese input (SKK) for skkeleton/blink-skkeleton
     skktools
     skkDictionaries.l
 
