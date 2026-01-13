@@ -13,17 +13,20 @@ Dotfiles managed with [chezmoi](https://www.chezmoi.io/) + [Nix Home Manager](ht
 # 1. Bootstrap
 curl -fsLS https://raw.githubusercontent.com/y4m3/dotfiles/main/install.sh | sh
 
-# 2. Restart shell after Nix install, then apply again
-exec bash && chezmoi apply
+# 2. Restart shell after Nix install
+exec bash
 
-# 3. Update later
+# 3. Apply dotfiles (run in new shell)
+chezmoi apply
+
+# 4. Update later
 chezmoi update
 ```
 
 ## Architecture
 
 - **Nix Home Manager**: 25+ CLI tools via `~/.config/nix/home.nix`
-- **chezmoi**: Dotfiles + 6 install scripts (apt, Nix, wezterm, docker, win32yank, yazi)
+- **chezmoi**: Dotfiles + install scripts
 
 ## Directory Structure
 
