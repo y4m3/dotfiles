@@ -9,15 +9,38 @@ if is_interactive && command -v fzf > /dev/null 2>&1 && command -v ghq > /dev/nu
 
   # dev: Navigate to ghq repository or worktree using fzf
   #   Lists all ghq-managed repositories and worktrees under WORKTREE_DIR
+  #   Display format:
+  #     - ghq repos: github.com/owner/repo
+  #     - worktrees: [wt] repo/branch-name
   dev() {
-    local selected
+    local selected path
     selected=$({
-      ghq list --full-path
-      # Suppress find errors (e.g., permission denied) to avoid cluttering fzf output
-      [[ -d "$WORKTREE_DIR" ]] && find "$WORKTREE_DIR" -mindepth 2 -maxdepth 2 -type d -exec test -f {}/.git \; -print 2> /dev/null
-    } | sort -u | fzf --prompt="Repository: " --preview 'ls -la -- {}')
+      ghq list
+      # List worktrees with [wt] prefix and relative path
+      if [[ -d "$WORKTREE_DIR" ]]; then
+        find "$WORKTREE_DIR" -mindepth 2 -maxdepth 2 -type d -exec test -f {}/.git \; -print 2> /dev/null |
+          while IFS= read -r wt_path; do
+            echo "[wt] ${wt_path#"${WORKTREE_DIR}"/}"
+          done
+      fi
+    } | sort -u | fzf --prompt="Repository: " --preview "
+      item={}
+      if [[ \"\$item\" == '[wt] '* ]]; then
+        p=\"${WORKTREE_DIR}/\${item#\\[wt\\] }\"
+      else
+        p=\"${GHQ_ROOT}/\$item\"
+      fi
+      ls -la -- \"\$p\" 2>/dev/null
+    ")
     [[ -z "$selected" ]] && return 0
-    cd "$selected" || return 1
+
+    # Convert display name to full path
+    if [[ "$selected" == "[wt] "* ]]; then
+      path="${WORKTREE_DIR}/${selected#\[wt\] }"
+    else
+      path="${GHQ_ROOT}/${selected}"
+    fi
+    cd "$path" || return 1
   }
 
   # wt-add [branch]: Create a new git worktree
@@ -93,12 +116,76 @@ if is_interactive && command -v fzf > /dev/null 2>&1 && command -v ghq > /dev/nu
     git worktree list
   }
 
-  # wt-prune: Remove stale worktree references
+  # wt-prune: Remove merged worktrees and their branches
   wt-prune() {
     git rev-parse --git-dir > /dev/null 2>&1 || {
       echo "Error: Not in a git repository" >&2
       return 1
     }
+
+    local main_branch merged_worktrees=() main_worktree
+    main_worktree=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
+
+    # Detect main branch name (main or master)
+    if git show-ref --verify --quiet refs/heads/main; then
+      main_branch="main"
+    elif git show-ref --verify --quiet refs/heads/master; then
+      main_branch="master"
+    else
+      echo "Error: Could not find main or master branch" >&2
+      return 1
+    fi
+
+    # Get merged branches
+    local merged_branches
+    merged_branches=$(git branch --merged "$main_branch" | sed 's/^[* ]*//' | grep -v "^${main_branch}$")
+
+    # Find worktrees with merged branches
+    local worktree_path worktree_branch
+    while IFS= read -r line; do
+      if [[ "$line" == "worktree "* ]]; then
+        worktree_path="${line#worktree }"
+      elif [[ "$line" == "branch "* ]]; then
+        worktree_branch="${line#branch refs/heads/}"
+        if [[ "$worktree_path" != "$main_worktree" ]] && echo "$merged_branches" | grep -qFx "$worktree_branch"; then
+          merged_worktrees+=("${worktree_path}|${worktree_branch}")
+        fi
+      fi
+    done < <(git worktree list --porcelain)
+
+    if [[ ${#merged_worktrees[@]} -eq 0 ]]; then
+      echo "No merged worktrees found."
+      git worktree prune -v
+      return 0
+    fi
+
+    echo "Merged worktrees found:"
+    for entry in "${merged_worktrees[@]}"; do
+      local path="${entry%|*}"
+      local branch="${entry#*|}"
+      echo "  ${path} (branch: ${branch})"
+    done
+    echo
+
+    read -rp "Remove ${#merged_worktrees[@]} worktree(s) and their branches? [y/N] " confirm
+    if [[ ! "$confirm" =~ ^[Yy] ]]; then
+      echo "Aborted."
+      return 0
+    fi
+
+    local current_dir
+    current_dir=$(pwd)
+    for entry in "${merged_worktrees[@]}"; do
+      local path="${entry%|*}"
+      local branch="${entry#*|}"
+      # Move out if inside the worktree being removed
+      if [[ "$current_dir" == "$path" || "$current_dir" == "$path"/* ]]; then
+        cd "$main_worktree" || return 1
+      fi
+      echo "Removing worktree: ${path}"
+      git worktree remove "$path" && echo "Deleting branch: ${branch}" && git branch -d "$branch"
+    done
+
     git worktree prune -v
   }
 
