@@ -79,4 +79,4 @@ chmod 700 ~/.config/gh ~/.ssh ~/.docker ~/.cargo ~/.gnupg
 chmod 600 ~/.config/gh/hosts.yml ~/.ssh/id_* ~/.ssh/config ~/.git-credentials
 ```
 
-Or restart your shell - permissions will be automatically corrected by `030-security-permissions.sh`.
+Or restart your shell - permissions will be automatically corrected by `040-security-permissions.sh`.
