@@ -55,7 +55,7 @@ Verify: `nix --version && home-manager --version`
 
 Download from https://alacritty.org/
 
-See [Alacritty Documentation](tools/alacritty.md) for details.
+See [Alacritty Documentation](tools/terminals.md#alacritty-alternative) for details.
 
 ---
 
@@ -85,7 +85,7 @@ See [Alacritty Documentation](tools/alacritty.md) for details.
    args = ["-d", "dev", "--cd", "~", "bash", "-lc", "'zellij attach --create main'"]
    ```
 
-See [Alacritty Documentation](tools/alacritty.md) for details.
+See [Alacritty Documentation](tools/terminals.md#alacritty-alternative) for details.
 
 ---
 
@@ -95,7 +95,7 @@ Run `gh auth login` and follow the prompts.
 
 Verify: `gh auth status`
 
-See [GitHub Tools Documentation](tools/github-tools.md) for security best practices.
+See [Git Tools Documentation](tools/git-tools.md) for security best practices.
 
 ---
 
@@ -111,7 +111,7 @@ After Docker installation, log out and log back in (or run `newgrp docker`).
 
 Verify: `docker ps`
 
-See [Docker Documentation](tools/docker.md) for details.
+See [Docker Documentation](tools/infra-tools.md#docker) for details.
 
 ---
 

@@ -6,62 +6,96 @@ Tools managed by this dotfiles repository using Nix Home Manager and chezmoi scr
 
 All tools below are installed declaratively via `~/.config/nix/home.nix`:
 
+### Editors
+
+| Tool | Documentation | Website |
+|------|---------------|---------|
+| neovim | [docs](tools/editors.md#neovim-primary) | https://neovim.io/ |
+| vim | [docs](tools/editors.md#vim-secondary) | https://www.vim.org/ |
+
 ### Shell & Terminal
 
 | Tool | Documentation | Website |
 |------|---------------|---------|
-| starship | | https://starship.rs/ |
-| zellij | [docs](tools/zellij.md) | https://github.com/zellij-org/zellij |
-| tmux | [docs](tools/tmux.md) | https://github.com/tmux/tmux |
+| wezterm | [docs](tools/terminals.md#wezterm-primary) | https://wezfurlong.org/wezterm/ |
+| alacritty | [docs](tools/terminals.md#alacritty-alternative) | https://alacritty.org/ |
+| starship | [docs](tools/cli-tools.md#starship) | https://starship.rs/ |
+| zellij | [docs](tools/terminals.md#zellij-primary) | https://github.com/zellij-org/zellij |
+| tmux | [docs](tools/terminals.md#tmux-alternative) | https://github.com/tmux/tmux |
 
 ### File Operations
 
 | Tool | Documentation | Website |
 |------|---------------|---------|
-| bat | [docs](tools/rust-cli-tools.md) | https://github.com/sharkdp/bat |
-| eza | [docs](tools/rust-cli-tools.md) | https://github.com/eza-community/eza |
-| fd | [docs](tools/rust-cli-tools.md) | https://github.com/sharkdp/fd |
-| ripgrep | [docs](tools/rust-cli-tools.md) | https://github.com/BurntSushi/ripgrep |
-| fzf | [docs](tools/fzf.md) | https://github.com/junegunn/fzf |
-| yazi | [docs](tools/yazi.md) | https://github.com/sxyazi/yazi |
-| zoxide | [docs](tools/zoxide.md) | https://github.com/ajeetdsouza/zoxide |
+| bat | [docs](tools/cli-tools.md#bat) | https://github.com/sharkdp/bat |
+| eza | [docs](tools/cli-tools.md#eza) | https://github.com/eza-community/eza |
+| fd | [docs](tools/cli-tools.md#fd) | https://github.com/sharkdp/fd |
+| ripgrep | [docs](tools/cli-tools.md#ripgrep-rg) | https://github.com/BurntSushi/ripgrep |
+| fzf | [docs](tools/cli-tools.md#fzf) | https://github.com/junegunn/fzf |
+| yazi | [docs](tools/cli-tools.md#yazi) | https://github.com/sxyazi/yazi |
+| zoxide | [docs](tools/cli-tools.md#zoxide) | https://github.com/ajeetdsouza/zoxide |
+| glow | [docs](tools/cli-tools.md#glow) | https://github.com/charmbracelet/glow |
 
-### Git & Development
+### Git
 
 | Tool | Documentation | Website |
 |------|---------------|---------|
-| delta | [docs](tools/delta.md) | https://github.com/dandavison/delta |
-| lazygit | [docs](tools/lazygit.md) | https://github.com/jesseduffield/lazygit |
-| gh | [docs](tools/github-tools.md) | https://cli.github.com/ |
-| ghq | [docs](tools/github-tools.md) | https://github.com/x-motemen/ghq |
-| direnv | [docs](tools/direnv.md) | https://direnv.net/ |
-| shellcheck | [docs](tools/shellcheck-shfmt.md) | https://www.shellcheck.net/ |
-| shfmt | [docs](tools/shellcheck-shfmt.md) | https://github.com/mvdan/sh |
-| jq | | https://jqlang.github.io/jq/ |
-| yq | [docs](tools/yq.md) | https://github.com/mikefarah/yq |
-| glow | [docs](tools/glow.md) | https://github.com/charmbracelet/glow |
-| uv | [docs](tools/uv.md) | https://github.com/astral-sh/uv |
-| just | | https://just.systems/ |
+| delta | [docs](tools/git-tools.md#delta) | https://github.com/dandavison/delta |
+| lazygit | [docs](tools/git-tools.md#lazygit) | https://github.com/jesseduffield/lazygit |
+| gh | [docs](tools/git-tools.md#gh-github-cli) | https://cli.github.com/ |
+| ghq | [docs](tools/git-tools.md#ghq) | https://github.com/x-motemen/ghq |
+
+### Python Development
+
+| Tool | Documentation | Website |
+|------|---------------|---------|
+| uv | [docs](tools/dev-tools.md#uv-package-manager) | https://github.com/astral-sh/uv |
+| pyright | [docs](tools/dev-tools.md#pyright-lsp) | https://github.com/microsoft/pyright |
+| ruff | [docs](tools/dev-tools.md#ruff-linterformatter) | https://github.com/astral-sh/ruff |
+
+### Development Tools
+
+| Tool | Documentation | Website |
+|------|---------------|---------|
+| direnv | [docs](tools/dev-tools.md#direnv) | https://direnv.net/ |
+| shellcheck | [docs](tools/dev-tools.md#shell) | https://www.shellcheck.net/ |
+| shfmt | [docs](tools/dev-tools.md#shell) | https://github.com/mvdan/sh |
+| jq | [docs](tools/dev-tools.md#data-processing) | https://jqlang.github.io/jq/ |
+| yq | [docs](tools/dev-tools.md#data-processing) | https://github.com/mikefarah/yq |
+| just | [docs](tools/dev-tools.md#command-runners) | https://just.systems/ |
+| prettier | [docs](tools/dev-tools.md#javascriptmarkdown) | https://prettier.io/ |
+| markdownlint-cli2 | [docs](tools/dev-tools.md#javascriptmarkdown) | https://github.com/DavidAnson/markdownlint-cli2 |
+| mermaid-cli | [docs](tools/dev-tools.md#javascriptmarkdown) | https://github.com/mermaid-js/mermaid-cli |
+| ast-grep | [docs](tools/dev-tools.md#code-search) | https://ast-grep.github.io/ |
+
+### Japanese Input
+
+| Tool | Documentation | Website |
+|------|---------------|---------|
+| skktools | [docs](tools/editors.md#japanese-input-skk) | https://github.com/skk-dev/skktools |
+| skkDictionaries | [docs](tools/editors.md#japanese-input-skk) | https://github.com/skk-dev/dict |
 
 ### Runtimes
 
 | Tool | Documentation | Website |
 |------|---------------|---------|
-| Node.js 22 LTS | [docs](tools/nodejs.md) | https://nodejs.org/ |
+| Node.js 22 LTS | [docs](tools/dev-tools.md#nodejs) | https://nodejs.org/ |
+| deno | [docs](tools/dev-tools.md#deno) | https://deno.land/ |
 
 ### Docker & Monitoring
 
 | Tool | Documentation | Website |
 |------|---------------|---------|
-| lazydocker | [docs](tools/lazydocker.md) | https://github.com/jesseduffield/lazydocker |
-| btop | [docs](tools/btop.md) | https://github.com/aristocratos/btop |
-| lnav | [docs](tools/lnav.md) | https://lnav.org/ |
+| docker | [docs](tools/infra-tools.md#docker) | https://www.docker.com/ |
+| lazydocker | [docs](tools/infra-tools.md#lazydocker) | https://github.com/jesseduffield/lazydocker |
+| btop | [docs](tools/infra-tools.md#btop) | https://github.com/aristocratos/btop |
+| lnav | [docs](tools/infra-tools.md#lnav) | https://lnav.org/ |
 
 ### Dotfiles Management
 
 | Tool | Documentation | Website |
 |------|---------------|---------|
-| chezmoi | | https://www.chezmoi.io/ |
+| chezmoi | [docs](tools/chezmoi.md) | https://www.chezmoi.io/ |
 
 ## Install Scripts (home/.chezmoiscripts/)
 
@@ -75,6 +109,7 @@ For things that can't be managed by Nix:
 | `run_onchange_..._120-docker.sh.tmpl` | Docker Engine (system service) |
 | `run_onchange_..._135-win32yank.sh.tmpl` | win32yank (WSL clipboard tool) |
 | `run_after_onchange_..._210-apply-home-manager.sh.tmpl` | Home Manager switch |
+| `run_after_onchange_..._215-bat-cache.sh.tmpl` | bat theme cache rebuild |
 | `run_after_onchange_..._220-yazi-plugins.sh.tmpl` | yazi plugins (ya pkg add) |
 
 ### Why Not Nix?

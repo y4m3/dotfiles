@@ -49,8 +49,8 @@ in
     nixfmt-rfc-style
     prettier
     cspell
-    pyright
-    ruff
+    pyright # Mason auto-install disabled; managed here for version consistency
+    ruff # Mason auto-install disabled; managed here for version consistency
     shellcheck
     shfmt
     sqlite
