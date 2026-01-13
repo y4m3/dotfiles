@@ -10,8 +10,8 @@ All tools below are installed declaratively via `~/.config/nix/home.nix`:
 
 | Tool | Documentation | Website |
 |------|---------------|---------|
-| neovim | [docs](tools/editors.md#neovim) | https://neovim.io/ |
-| vim | [docs](tools/editors.md#vim) | https://www.vim.org/ |
+| neovim | [docs](tools/editors.md#neovim-primary) | https://neovim.io/ |
+| vim | [docs](tools/editors.md#vim-secondary) | https://www.vim.org/ |
 
 ### Shell & Terminal
 
@@ -20,8 +20,8 @@ All tools below are installed declaratively via `~/.config/nix/home.nix`:
 | wezterm | [docs](tools/terminals.md#wezterm-primary) | https://wezfurlong.org/wezterm/ |
 | alacritty | [docs](tools/terminals.md#alacritty-alternative) | https://alacritty.org/ |
 | starship | [docs](tools/cli-tools.md#starship) | https://starship.rs/ |
-| zellij | [docs](tools/terminals.md#zellij) | https://github.com/zellij-org/zellij |
-| tmux | [docs](tools/terminals.md#tmux) | https://github.com/tmux/tmux |
+| zellij | [docs](tools/terminals.md#zellij-primary) | https://github.com/zellij-org/zellij |
+| tmux | [docs](tools/terminals.md#tmux-alternative) | https://github.com/tmux/tmux |
 
 ### File Operations
 
@@ -49,24 +49,24 @@ All tools below are installed declaratively via `~/.config/nix/home.nix`:
 
 | Tool | Documentation | Website |
 |------|---------------|---------|
-| uv | [docs](tools/dev-tools.md#uv) | https://github.com/astral-sh/uv |
-| pyright | [docs](tools/dev-tools.md#pyright) | https://github.com/microsoft/pyright |
-| ruff | [docs](tools/dev-tools.md#ruff) | https://github.com/astral-sh/ruff |
+| uv | [docs](tools/dev-tools.md#uv-package-manager) | https://github.com/astral-sh/uv |
+| pyright | [docs](tools/dev-tools.md#pyright-lsp) | https://github.com/microsoft/pyright |
+| ruff | [docs](tools/dev-tools.md#ruff-linterformatter) | https://github.com/astral-sh/ruff |
 
 ### Development Tools
 
 | Tool | Documentation | Website |
 |------|---------------|---------|
 | direnv | [docs](tools/dev-tools.md#direnv) | https://direnv.net/ |
-| shellcheck | [docs](tools/dev-tools.md#shellcheck) | https://www.shellcheck.net/ |
-| shfmt | [docs](tools/dev-tools.md#shfmt) | https://github.com/mvdan/sh |
-| jq | [docs](tools/dev-tools.md#jq) | https://jqlang.github.io/jq/ |
-| yq | [docs](tools/dev-tools.md#yq) | https://github.com/mikefarah/yq |
-| just | [docs](tools/dev-tools.md#just) | https://just.systems/ |
-| prettier | [docs](tools/dev-tools.md#prettier) | https://prettier.io/ |
-| markdownlint-cli2 | [docs](tools/dev-tools.md#markdownlint) | https://github.com/DavidAnson/markdownlint-cli2 |
-| mermaid-cli | [docs](tools/dev-tools.md#mermaid-cli) | https://github.com/mermaid-js/mermaid-cli |
-| ast-grep | [docs](tools/dev-tools.md#ast-grep) | https://ast-grep.github.io/ |
+| shellcheck | [docs](tools/dev-tools.md#shell) | https://www.shellcheck.net/ |
+| shfmt | [docs](tools/dev-tools.md#shell) | https://github.com/mvdan/sh |
+| jq | [docs](tools/dev-tools.md#data-processing) | https://jqlang.github.io/jq/ |
+| yq | [docs](tools/dev-tools.md#data-processing) | https://github.com/mikefarah/yq |
+| just | [docs](tools/dev-tools.md#command-runners) | https://just.systems/ |
+| prettier | [docs](tools/dev-tools.md#javascriptmarkdown) | https://prettier.io/ |
+| markdownlint-cli2 | [docs](tools/dev-tools.md#javascriptmarkdown) | https://github.com/DavidAnson/markdownlint-cli2 |
+| mermaid-cli | [docs](tools/dev-tools.md#javascriptmarkdown) | https://github.com/mermaid-js/mermaid-cli |
+| ast-grep | [docs](tools/dev-tools.md#code-search) | https://ast-grep.github.io/ |
 
 ### Japanese Input
 
