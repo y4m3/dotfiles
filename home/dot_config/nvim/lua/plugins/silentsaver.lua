@@ -5,6 +5,7 @@ return {
     event = "VeryLazy",
     config = function()
       vim.g.silentsaver_dir = vim.fn.expand("~/.cache/silentsaver")
+      vim.g.silentsaver_echo = false
     end,
   },
 }

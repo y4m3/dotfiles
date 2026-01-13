@@ -17,6 +17,29 @@ return {
 
       -- Create user dictionary directory
       vim.fn.mkdir(vim.fn.expand("~/.skk"), "p")
+
+      -- Track skkeleton state for blink.cmp integration
+      vim.g.skkeleton_enabled = false
+
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "skkeleton-enable-post",
+        callback = function()
+          vim.g.skkeleton_enabled = true
+          local ok, blink = pcall(require, "blink.cmp")
+          if ok and type(blink.hide) == "function" then
+            pcall(blink.hide)
+          end
+        end,
+        desc = "Track skkeleton enabled state",
+      })
+
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "skkeleton-disable-post",
+        callback = function()
+          vim.g.skkeleton_enabled = false
+        end,
+        desc = "Track skkeleton disabled state",
+      })
     end,
   },
   -- Highlight henkan candidates
