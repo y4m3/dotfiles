@@ -10,9 +10,76 @@ SetTitleMatchMode 2  ; Allow partial title matches in WinTitle parameters
 global MIN_OPACITY := 40
 global MAX_OPACITY := 255
 
+; SandS state
+global SpaceDown := false
+global SpacePressTime := 0
+global SPACE_THRESHOLD := 200  ; ms - Space sent only if held shorter than this
+
 ; jj/jk escape timing (for Vim-style insert mode exit)
 global JJ_THRESHOLD := 200  ; milliseconds
 global lastJPress := 0
+
+; ============================================================
+; SandS (Space and Shift)
+; ============================================================
+/*
+*Space::{
+    ; If modifier key is held, send normal Space
+    if GetKeyState("Ctrl") || GetKeyState("Alt") || GetKeyState("LWin") || GetKeyState("RWin") {
+        Send "{Blind}{Space}"
+        return
+    }
+
+    Send "{Blind}{Shift down}"
+    KeyWait "Space"
+    Send "{Blind}{Shift up}"
+
+    ; Send Space only if Space was pressed alone
+    if (A_PriorKey = "Space") {
+        Send "{Space}"
+    }
+}
+*/
+
+*Space::{
+    global SpaceDown, SpacePressTime
+
+    ; If modifier key is held, send normal Space
+    if GetKeyState("Ctrl") || GetKeyState("Alt") || GetKeyState("LWin") || GetKeyState("RWin") {
+        Send "{Blind}{Space}"
+        return
+    }
+
+    SpaceDown := true
+    SpacePressTime := A_TickCount
+    Send "{Blind}{Shift down}"
+}
+
+*Space up::{
+    global SpaceDown, SpacePressTime, SPACE_THRESHOLD
+
+    if !SpaceDown
+        return
+
+    Send "{Blind}{Shift up}"
+
+    ; Send Space only if pressed alone AND held shorter than threshold
+    if (A_PriorKey = "Space") && (A_TickCount - SpacePressTime < SPACE_THRESHOLD) {
+        Send "{Space}"
+    }
+
+    SpaceDown := false
+}
+
+; ============================================================
+; RAlt for IME control
+; ============================================================
+; RAlt tap toggles IME, hold acts as normal Alt
+~RAlt up::{
+    if (A_PriorKey = "RAlt") {
+        ImeToggle()
+    }
+}
 
 ; ============================================================
 ; App groups (context-sensitive hotkeys)
@@ -267,3 +334,4 @@ ShowOpacityTip(alpha) {
 }
 
 Clamp(x, lo, hi) => Min(Max(x, lo), hi)
+
