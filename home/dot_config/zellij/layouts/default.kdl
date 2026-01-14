@@ -3,7 +3,7 @@
 // Path: ~/.config/zellij/layouts/default.kdl
 //
 // This layout includes the compact-bar with tooltip functionality.
-// Press "?" in Normal mode to toggle keybinding hints.
+// Press "F1" in Normal mode to toggle keybinding hints.
 // =============================================================================
 
 layout {
@@ -15,7 +15,7 @@ layout {
     // -------------------------------------------------------------------------
     pane size=1 borderless=true {
         plugin location="zellij:compact-bar" {
-            tooltip "?"
+            tooltip "F1"
         }
     }
 
