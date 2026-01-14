@@ -3,5 +3,6 @@
 return {
   {
     "vim-denops/denops.vim",
+    lazy = true, -- Load only when required by dependent plugins (skkeleton, kensaku, etc.)
   },
 }
