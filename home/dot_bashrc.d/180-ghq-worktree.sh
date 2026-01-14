@@ -7,40 +7,21 @@ WORKTREE_DIR="${WORKTREE_DIR:-${GHQ_ROOT}/.worktrees}"
 
 if is_interactive && command -v fzf > /dev/null 2>&1 && command -v ghq > /dev/null 2>&1; then
 
-  # dev: Navigate to ghq repository or worktree using fzf
-  #   Lists all ghq-managed repositories and worktrees under WORKTREE_DIR
-  #   Display format:
-  #     - ghq repos: github.com/owner/repo
-  #     - worktrees: [wt] repo/branch-name
+  # dev: Navigate to ghq repository or gwq worktree using fzf
+  #   Uses ghq list which includes gwq worktrees (directories with = in name)
+  #   Display format: owner/repo or owner/repo=branch (host prefix stripped)
   dev() {
-    local selected path
-    selected=$({
-      ghq list
-      # List worktrees with [wt] prefix and relative path
-      if [[ -d "$WORKTREE_DIR" ]]; then
-        find "$WORKTREE_DIR" -mindepth 2 -maxdepth 2 -type d -exec test -f {}/.git \; -print 2> /dev/null |
-          while IFS= read -r wt_path; do
-            echo "[wt] ${wt_path#"${WORKTREE_DIR}"/}"
-          done
-      fi
-    } | sort -u | fzf --prompt="Repository: " --preview "
-      item={}
-      if [[ \"\$item\" == '[wt] '* ]]; then
-        p=\"${WORKTREE_DIR}/\${item#\\[wt\\] }\"
-      else
-        p=\"${GHQ_ROOT}/\$item\"
-      fi
-      ls -la -- \"\$p\" 2>/dev/null
-    ")
+    local selected
+    selected=$(
+      ghq list | while IFS= read -r repo; do
+        display="${repo#github.com/}"
+        display="${display#gitlab.com/}"
+        display="${display#bitbucket.org/}"
+        echo -e "${display}\t${repo}"
+      done | fzf --prompt="Repository: " --with-nth=1 -d$'\t'
+    )
     [[ -z "$selected" ]] && return 0
-
-    # Convert display name to full path
-    if [[ "$selected" == "[wt] "* ]]; then
-      path="${WORKTREE_DIR}/${selected#\[wt\] }"
-    else
-      path="${GHQ_ROOT}/${selected}"
-    fi
-    cd "$path" || return 1
+    cd "$(ghq root)/${selected#*$'\t'}" || return 1
   }
 
   # wt-add [branch]: Create a new git worktree
