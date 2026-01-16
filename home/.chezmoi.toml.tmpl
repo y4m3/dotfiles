@@ -4,6 +4,14 @@
 {{-   $profile = "client" -}}
 {{- end -}}
 
+{{- /* Detect WSL environment */ -}}
+{{- $isWsl := false -}}
+{{- if eq .chezmoi.os "linux" -}}
+{{-   $isWsl = .chezmoi.kernel.osrelease | lower | contains "microsoft" -}}
+{{- end -}}
+
 [data]
     # Environment type: client (default) or server
     profile = "{{ $profile }}"
+    # WSL detection (true if running in Windows Subsystem for Linux)
+    is_wsl = {{ $isWsl }}

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 020-paths.sh — PATH management
+# 020-paths.sh -- PATH management
 # Category: 000-099 (Core functionality)
 
 # Prepend a directory to PATH if not already present
@@ -10,6 +10,7 @@ path_prepend() {
   esac
 }
 
+{{- if eq .chezmoi.os "linux" }}
 # Basic/system paths (keep minimal and safe)
 path_prepend "/usr/local/sbin"
 path_prepend "/usr/local/bin"
@@ -17,6 +18,12 @@ path_prepend "/usr/sbin"
 path_prepend "/usr/bin"
 path_prepend "/sbin"
 path_prepend "/bin"
+{{- end }}
+
+{{- if eq .chezmoi.os "windows" }}
+# Windows (Git Bash) - Scoop and uv paths
+path_prepend "$HOME/scoop/shims"
+{{- end }}
 
 # User-specific prepends (idempotent)
 path_prepend "$HOME/.fzf/bin"

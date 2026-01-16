@@ -1,0 +1,69 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_210-winget-tools.ps1.tmpl
+# Install GUI and larger tools via winget
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+function Test-CommandExists {
+    param([string]$Command)
+    return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+# Check what needs to be installed
+$needGit = -not (Test-CommandExists git)
+$needNvim = -not (Test-CommandExists nvim)
+$needWezterm = -not (Test-CommandExists wezterm) -and -not (Test-Path "$env:ProgramFiles\WezTerm\wezterm.exe")
+
+if (-not $needGit) {
+    Write-Log "Already installed: git"
+}
+if (-not $needNvim) {
+    Write-Log "Already installed: nvim"
+}
+if (-not $needWezterm) {
+    Write-Log "Already installed: wezterm"
+}
+
+# If everything is installed, we're done
+if (-not $needGit -and -not $needNvim -and -not $needWezterm) {
+    Write-Log "Done!"
+    exit 0
+}
+
+# Ensure winget is available (only needed when installing)
+if (-not (Test-CommandExists winget)) {
+    Write-Host "Error: winget (App Installer) is not installed." -ForegroundColor Red
+    Write-Host "Please install App Installer from Microsoft Store or run:" -ForegroundColor Yellow
+    Write-Host "  Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" -ForegroundColor Yellow
+    exit 1
+}
+
+Write-Log "Installing GUI/large tools via winget..."
+
+# Git (if not present)
+if ($needGit) {
+    Write-Log "Installing Git.Git..."
+    winget install --id Git.Git --accept-source-agreements --accept-package-agreements
+}
+
+# Neovim
+if ($needNvim) {
+    Write-Log "Installing Neovim.Neovim..."
+    winget install --id Neovim.Neovim --accept-source-agreements --accept-package-agreements
+}
+
+# WezTerm terminal emulator
+if ($needWezterm) {
+    Write-Log "Installing WezTerm..."
+    winget install --id wez.wezterm --accept-source-agreements --accept-package-agreements
+}
+
+Write-Log "Done!"
+{{- end -}}

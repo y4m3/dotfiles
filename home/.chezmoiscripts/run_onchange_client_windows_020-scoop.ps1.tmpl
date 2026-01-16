@@ -1,0 +1,50 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_020-scoop.ps1.tmpl
+# Install Scoop package manager for Windows
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+function Test-CommandExists {
+    param([string]$Command)
+    return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+$scoopPath = "$env:USERPROFILE\scoop\shims"
+$scoopExe = "$scoopPath\scoop.cmd"
+
+# Check if Scoop is already installed
+if (Test-CommandExists scoop) {
+    Write-Log "Already installed: scoop"
+    exit 0
+}
+
+if (Test-Path $scoopExe) {
+    Write-Log "Already installed: scoop (at $scoopPath)"
+    exit 0
+}
+
+Write-Log "Installing Scoop..."
+
+# Set execution policy for current user
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+
+# Install Scoop
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+
+# Verify installation
+if (Test-Path $scoopExe) {
+    Write-Log "Scoop installed successfully"
+    & $scoopExe --version
+} else {
+    Write-Host "Warning: Scoop installation may require a new terminal session" -ForegroundColor Yellow
+}
+
+Write-Log "Done!"
+{{- end -}}

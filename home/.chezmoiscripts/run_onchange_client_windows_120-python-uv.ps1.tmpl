@@ -1,0 +1,71 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_120-python-uv.ps1.tmpl
+# Install Python package manager uv
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+function Test-CommandExists {
+    param([string]$Command)
+    return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+$uvBinPath = "$env:USERPROFILE\.local\bin"
+$uvExe = "$uvBinPath\uv.exe"
+
+# Check if uv is already installed
+if (Test-CommandExists uv) {
+    Write-Log "Already installed: uv ($(uv --version))"
+} elseif (Test-Path $uvExe) {
+    Write-Log "Already installed: uv ($(& $uvExe --version))"
+} else {
+    Write-Log "Installing uv..."
+
+    # Install uv using the official installer
+    Invoke-RestMethod https://astral.sh/uv/install.ps1 | Invoke-Expression
+
+    # Verify installation
+    if (Test-Path $uvExe) {
+        Write-Log "uv installed successfully"
+        & $uvExe --version
+    } else {
+        Write-Host "Warning: uv installation may require a new terminal session" -ForegroundColor Yellow
+    }
+}
+
+# Install Python via uv if not present
+# Note: Windows App Execution Alias (WindowsApps) can make Get-Command find 'python'
+# even when Python is not actually installed (redirects to Microsoft Store).
+# We check the command source path to exclude WindowsApps aliases.
+function Test-PythonInstalled {
+    $cmd = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $cmd) {
+        return $false
+    }
+    # Exclude WindowsApps App Execution Alias (Store redirect stub)
+    if ($cmd.Source -like "*\WindowsApps\*") {
+        return $false
+    }
+    return $true
+}
+
+if (-not (Test-PythonInstalled)) {
+    if (Test-Path $uvExe) {
+        Write-Log "Installing Python via uv..."
+        & $uvExe python install
+    } else {
+        Write-Log "Skipping Python installation (uv not available in current session)"
+    }
+} else {
+    $pythonVersion = & python --version 2>&1
+    Write-Log "Already installed: python ($pythonVersion)"
+}
+
+Write-Log "Done!"
+{{- end -}}
