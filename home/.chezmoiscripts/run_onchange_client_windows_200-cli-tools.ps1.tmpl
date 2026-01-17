@@ -37,25 +37,21 @@ function Install-ScoopPackage {
         [string]$Command
     )
     if (-not (Test-CommandExists $Command)) {
-        # btop: clean stale btop.conf in current version before install
-        # (Scoop pre_install script fails if btop.conf exists from previous install)
+        # btop: handle failed installation state and clean stale btop.conf
         if ($Package -eq "btop") {
-            $btopCurrent = Join-Path $env:USERPROFILE "scoop\apps\btop\current"
-            if (Test-Path $btopCurrent) {
-                try {
-                    $staleFiles = Get-ChildItem -Path $btopCurrent -Filter "btop.conf" -File -ErrorAction Stop
-                    if ($staleFiles) {
-                        Write-Log "Cleaning stale btop.conf before install..."
-                        foreach ($file in $staleFiles) {
-                            try {
-                                Remove-Item -Path $file.FullName -Force -ErrorAction Stop
-                            } catch {
-                                Write-Log "Warning: Failed to remove $($file.FullName): $_"
-                            }
-                        }
-                    }
-                } catch {
-                    Write-Log "Warning: Failed to scan for stale btop.conf: $_"
+            # Clean up any failed btop installation state
+            $btopList = scoop list btop 2>&1 | Out-String
+            if ($btopList -match "Install failed") {
+                Write-Log "Removing failed btop installation..."
+                scoop uninstall btop -p 2>&1 | Out-Null
+            }
+            # Also clean stale btop.conf files (Scoop pre_install script fails if exists)
+            $btopRoot = Join-Path $env:USERPROFILE "scoop\apps\btop"
+            if (Test-Path $btopRoot) {
+                $staleFiles = Get-ChildItem -Path $btopRoot -Filter "btop.conf" -Recurse -ErrorAction SilentlyContinue
+                if ($staleFiles) {
+                    Write-Log "Cleaning stale btop.conf before install..."
+                    $staleFiles | ForEach-Object { Remove-Item -Path $_.FullName -Force }
                 }
             }
         }
