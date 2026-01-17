@@ -19,6 +19,7 @@ function Test-CommandExists {
 # Check if Rust is already installed
 if (Test-CommandExists rustc) {
     Write-Log "Already installed: rust ($(rustc --version))"
+    Write-Log "Done!"
     exit 0
 }
 
