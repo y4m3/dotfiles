@@ -45,7 +45,12 @@ function Install-ScoopPackage {
 }
 
 # Ensure extras bucket is available (required for lazygit, carapace-bin)
-$bucketNames = (scoop bucket list).Name 2>$null
+$bucketNames = @()
+try {
+    $bucketNames = @((scoop bucket list).Name)
+} catch {
+    # Ignore errors; treat as empty bucket list
+}
 if ($bucketNames -notcontains "extras") {
     Write-Log "Adding extras bucket..."
     scoop bucket add extras

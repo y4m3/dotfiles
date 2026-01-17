@@ -24,9 +24,9 @@ if (Test-CommandExists rustc) {
 
 Write-Log "Installing Rust via rustup..."
 
-# Download and run rustup-init
+# Download and run rustup-init (auto-detects architecture)
 $rustupInit = "$env:TEMP\rustup-init.exe"
-Invoke-WebRequest -Uri "https://win.rustup.rs/x86_64" -OutFile $rustupInit
+Invoke-WebRequest -Uri "https://win.rustup.rs" -OutFile $rustupInit
 
 # Install Rust with default options (no prompts)
 & $rustupInit -y --default-toolchain stable
