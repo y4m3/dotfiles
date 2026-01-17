@@ -1,0 +1,39 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_300-gh.ps1.tmpl
+# Install GitHub CLI
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+function Test-CommandExists {
+    param([string]$Command)
+    return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+# Check if GitHub CLI is already installed
+if (Test-CommandExists gh) {
+    Write-Log "Already installed: gh"
+    gh --version
+    Write-Log "Done!"
+    exit 0
+}
+
+# Ensure winget is available (only needed when installing)
+if (-not (Test-CommandExists winget)) {
+    Write-Host "Error: winget (App Installer) is not installed." -ForegroundColor Red
+    Write-Host "Please install App Installer from Microsoft Store or run:" -ForegroundColor Yellow
+    Write-Host "  Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" -ForegroundColor Yellow
+    exit 1
+}
+
+Write-Log "Installing GitHub CLI via winget..."
+winget install --id GitHub.cli --accept-source-agreements --accept-package-agreements
+
+Write-Log "Done!"
+{{- end -}}

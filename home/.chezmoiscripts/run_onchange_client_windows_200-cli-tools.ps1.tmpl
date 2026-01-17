@@ -1,0 +1,105 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_200-cli-tools.ps1.tmpl
+# Install CLI tools via Scoop
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+function Test-CommandExists {
+    param([string]$Command)
+    return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+# Ensure scoop is available (handle fresh install where PATH isn't updated yet)
+$scoopShims = "$env:USERPROFILE\scoop\shims"
+$scoopCmd = "$scoopShims\scoop.cmd"
+
+if (-not (Test-CommandExists scoop)) {
+    if (Test-Path $scoopCmd) {
+        # Scoop was just installed in this session; add shims to PATH
+        Write-Log "Adding Scoop shims to PATH for this session..."
+        $env:PATH = "$scoopShims;$env:PATH"
+    } else {
+        Write-Host "Scoop is not installed. Please run the scoop installation script first." -ForegroundColor Red
+        exit 1
+    }
+}
+
+function Install-ScoopPackage {
+    param(
+        [string]$Package,
+        [string]$Command
+    )
+    if (-not (Test-CommandExists $Command)) {
+        Write-Log "Installing $Package..."
+        scoop install $Package
+    } else {
+        Write-Log "Already installed: $Package ($Command)"
+    }
+}
+
+# Ensure extras bucket is available (required for lazygit, carapace-bin)
+$bucketNames = @()
+try {
+    $bucketNames = @((scoop bucket list).Name)
+} catch {
+    # Ignore errors; treat as empty bucket list
+}
+if ($bucketNames -notcontains "extras") {
+    Write-Log "Adding extras bucket..."
+    scoop bucket add extras
+} else {
+    Write-Log "extras bucket already available"
+}
+
+Write-Log "Installing CLI tools via Scoop..."
+
+# Package definitions: Package name -> Command name
+# Based on actual Scoop package binaries (verified via 'scoop info <pkg>')
+$MainPackages = @(
+    @{ Package = "ripgrep"; Command = "rg" },          # Fast grep alternative
+    @{ Package = "fd"; Command = "fd" },               # Fast find alternative
+    @{ Package = "fzf"; Command = "fzf" },             # Fuzzy finder
+    @{ Package = "bat"; Command = "bat" },             # Cat with syntax highlighting
+    @{ Package = "eza"; Command = "eza" },             # Modern ls replacement
+    @{ Package = "zoxide"; Command = "zoxide" },       # Smart cd command
+    @{ Package = "yazi"; Command = "yazi" },           # Terminal file manager
+    @{ Package = "delta"; Command = "delta" },         # Better git diff viewer
+    @{ Package = "jq"; Command = "jq" },               # JSON processor
+    @{ Package = "yq"; Command = "yq" },               # YAML processor
+    @{ Package = "just"; Command = "just" },           # Command runner
+    @{ Package = "starship"; Command = "starship" },   # Cross-shell prompt
+    @{ Package = "shellcheck"; Command = "shellcheck" }, # Shell script linter
+    @{ Package = "shfmt"; Command = "shfmt" },         # Shell script formatter
+    @{ Package = "btop"; Command = "btop" },           # Resource monitor
+    @{ Package = "glow"; Command = "glow" },           # Markdown renderer
+    @{ Package = "tldr"; Command = "tldr" },           # Simplified man pages
+    @{ Package = "direnv"; Command = "direnv" },       # Directory-based env vars
+    @{ Package = "ghq"; Command = "ghq" },             # Git repository manager
+    @{ Package = "tree-sitter"; Command = "tree-sitter" } # Parser generator
+)
+
+# Packages from extras bucket
+$ExtrasPackages = @(
+    @{ Package = "lazygit"; Command = "lazygit" },     # Terminal UI for git
+    @{ Package = "carapace-bin"; Command = "carapace" } # Multi-shell completer
+)
+
+# Install main bucket packages
+foreach ($pkg in $MainPackages) {
+    Install-ScoopPackage -Package $pkg.Package -Command $pkg.Command
+}
+
+# Install extras bucket packages
+foreach ($pkg in $ExtrasPackages) {
+    Install-ScoopPackage -Package $pkg.Package -Command $pkg.Command
+}
+
+Write-Log "Done!"
+{{- end -}}

@@ -1,0 +1,39 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_125-go.ps1.tmpl
+# Install Go via winget
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+function Test-CommandExists {
+    param([string]$Command)
+    return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+# Check if Go is already installed
+if (Test-CommandExists go) {
+    Write-Log "Already installed: go"
+    go version
+    Write-Log "Done!"
+    exit 0
+}
+
+# Ensure winget is available (only needed when installing)
+if (-not (Test-CommandExists winget)) {
+    Write-Host "Error: winget (App Installer) is not installed." -ForegroundColor Red
+    Write-Host "Please install App Installer from Microsoft Store or run:" -ForegroundColor Yellow
+    Write-Host "  Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" -ForegroundColor Yellow
+    exit 1
+}
+
+Write-Log "Installing Go via winget..."
+winget install --id GoLang.Go --accept-source-agreements --accept-package-agreements
+
+Write-Log "Done!"
+{{- end -}}

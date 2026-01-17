@@ -1,0 +1,49 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_100-rust.ps1.tmpl
+# Install Rust toolchain via rustup
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+function Test-CommandExists {
+    param([string]$Command)
+    return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+# Check if Rust is already installed
+if (Test-CommandExists rustc) {
+    Write-Log "Already installed: rust ($(rustc --version))"
+    Write-Log "Done!"
+    exit 0
+}
+
+Write-Log "Installing Rust via rustup..."
+
+# Download and run rustup-init (auto-detects architecture)
+$rustupInit = "$env:TEMP\rustup-init.exe"
+Invoke-WebRequest -Uri "https://win.rustup.rs" -OutFile $rustupInit
+
+# Install Rust with default options (no prompts)
+& $rustupInit -y --default-toolchain stable
+
+# Clean up
+Remove-Item $rustupInit -ErrorAction SilentlyContinue
+
+# Verify installation using direct path
+$cargoPath = "$env:USERPROFILE\.cargo\bin"
+if (Test-Path "$cargoPath\rustc.exe") {
+    Write-Log "Rust installed successfully"
+    & "$cargoPath\rustc.exe" --version
+    & "$cargoPath\cargo.exe" --version
+} else {
+    Write-Host "Warning: Rust installation may require a new terminal session" -ForegroundColor Yellow
+}
+
+Write-Log "Done!"
+{{- end -}}
