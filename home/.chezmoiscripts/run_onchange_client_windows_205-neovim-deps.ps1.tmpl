@@ -1,0 +1,160 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_205-neovim-deps.ps1.tmpl
+# Install Neovim dependencies (tools that Nix manages on Linux)
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+function Test-CommandExists {
+    param([string]$Command)
+    return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+# Ensure scoop is available
+$scoopShims = "$env:USERPROFILE\scoop\shims"
+$scoopCmd = "$scoopShims\scoop.cmd"
+
+if (-not (Test-CommandExists scoop)) {
+    if (Test-Path $scoopCmd) {
+        $env:PATH = "$scoopShims;$env:PATH"
+    } else {
+        Write-Host "Scoop is not installed. Please run the scoop installation script first." -ForegroundColor Red
+        exit 1
+    }
+}
+
+function Install-ScoopPackage {
+    param(
+        [string]$Package,
+        [string]$Command
+    )
+    if (-not (Test-CommandExists $Command)) {
+        Write-Log "Installing $Package..."
+        scoop install $Package
+    } else {
+        Write-Log "Already installed: $Package ($Command)"
+    }
+}
+
+Write-Log "Installing Neovim dependencies..."
+
+# =============================================================================
+# Scoop packages for Neovim
+# =============================================================================
+Write-Log "Installing Scoop packages..."
+
+# PowerShell 7 (pwsh) - for better plugin compatibility
+Install-ScoopPackage -Package "pwsh" -Command "pwsh"
+
+# Image support (for image.nvim, etc.)
+Install-ScoopPackage -Package "imagemagick" -Command "magick"
+
+# Archive utilities (used by various plugins)
+Install-ScoopPackage -Package "unzip" -Command "unzip"
+Install-ScoopPackage -Package "gzip" -Command "gzip"
+
+# wget (used by some plugins for downloading)
+# Note: Use "wget.exe" to avoid matching PowerShell's wget alias (Invoke-WebRequest)
+Install-ScoopPackage -Package "wget" -Command "wget.exe"
+
+# =============================================================================
+# Visual Studio Build Tools (for native compilation)
+# =============================================================================
+Write-Log "Checking Visual Studio Build Tools..."
+
+# Check if cl.exe is available (indicates VCTools are installed)
+$vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+$hasVCTools = $false
+
+if (Test-Path $vsWhere) {
+    $vsInstallPath = & $vsWhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null
+    if ($vsInstallPath) {
+        $hasVCTools = $true
+        Write-Log "Visual Studio Build Tools already installed"
+    }
+}
+
+if (-not $hasVCTools) {
+    Write-Log "Installing Visual Studio Build Tools via winget..."
+    Write-Host "  (This may take a while...)" -ForegroundColor Yellow
+
+    # Install Build Tools with C++ workload
+    $wingetArgs = @(
+        "install"
+        "--id", "Microsoft.VisualStudio.2022.BuildTools"
+        "--override", "--quiet --wait --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+        "--accept-source-agreements"
+        "--accept-package-agreements"
+    )
+
+    try {
+        & winget @wingetArgs
+        Write-Log "Visual Studio Build Tools installed"
+    } catch {
+        Write-Host "Warning: Failed to install Visual Studio Build Tools. Some plugins may not work." -ForegroundColor Yellow
+        Write-Host "  You can install manually: winget install Microsoft.VisualStudio.2022.BuildTools" -ForegroundColor Yellow
+    }
+}
+
+# =============================================================================
+# npm packages
+# =============================================================================
+Write-Log "Installing npm packages..."
+
+if (Test-CommandExists npm) {
+    # prettier - code formatter
+    $prettierInstalled = npm list -g prettier 2>$null | Select-String "prettier"
+    if (-not $prettierInstalled) {
+        Write-Log "Installing prettier..."
+        npm install -g prettier
+    } else {
+        Write-Log "Already installed: prettier"
+    }
+
+    # cspell - spell checker
+    $cspellInstalled = npm list -g cspell 2>$null | Select-String "cspell"
+    if (-not $cspellInstalled) {
+        Write-Log "Installing cspell..."
+        npm install -g cspell
+    } else {
+        Write-Log "Already installed: cspell"
+    }
+} else {
+    Write-Host "Warning: npm not found. Please run Node.js installation script first." -ForegroundColor Yellow
+}
+
+# =============================================================================
+# uv tool packages (Python tools)
+# =============================================================================
+Write-Log "Installing Python tools via uv..."
+
+if (Test-CommandExists uv) {
+    # pyright - Python type checker
+    $pyrightInstalled = uv tool list 2>$null | Select-String "pyright"
+    if (-not $pyrightInstalled) {
+        Write-Log "Installing pyright..."
+        uv tool install pyright
+    } else {
+        Write-Log "Already installed: pyright"
+    }
+
+    # ruff - Python linter/formatter
+    $ruffInstalled = uv tool list 2>$null | Select-String "ruff"
+    if (-not $ruffInstalled) {
+        Write-Log "Installing ruff..."
+        uv tool install ruff
+    } else {
+        Write-Log "Already installed: ruff"
+    }
+} else {
+    Write-Host "Warning: uv not found. Please run Python/uv installation script first." -ForegroundColor Yellow
+}
+
+Write-Log "Done!"
+{{- end -}}
