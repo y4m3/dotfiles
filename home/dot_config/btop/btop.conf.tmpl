@@ -1,3 +1,4 @@
+{{- if ne .chezmoi.os "windows" -}}
 # btop config
 # See: https://github.com/aristocratos/btop#configurability
 
@@ -8,3 +9,4 @@ color_theme = "tokyo-storm"
 truecolor = True
 theme_background = True
 update_ms = 2000
+{{- end -}}
