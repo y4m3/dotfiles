@@ -12,6 +12,12 @@
 .config/btop/btop.conf
 {{- end }}
 
+# Exclude Windows-specific files on Linux/macOS
+{{- if ne .chezmoi.os "windows" }}
+.config/powershell/
+Documents/
+{{- end }}
+
 # Exclude client-only files on server profile
 {{- if and (hasKey . "profile") (eq .profile "server") }}
 .chezmoiscripts/run_once_client_ubuntu_010-apt-packages.sh.tmpl
