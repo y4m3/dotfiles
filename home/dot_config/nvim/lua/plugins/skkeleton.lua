@@ -8,10 +8,24 @@ return {
       { "<C-j>", "<Plug>(skkeleton-toggle)", mode = { "i", "c" }, desc = "Toggle SKK" },
     },
     config = function()
+      -- Determine dictionary path based on OS
+      local dict_path
+      if vim.fn.has("win32") == 1 then
+        dict_path = vim.fn.expand("~/.local/share/skk/SKK-JISYO.L")
+      else
+        dict_path = vim.fn.expand("~/.nix-profile/share/skk/SKK-JISYO.L")
+      end
+
+      -- Check if dictionary exists
+      local global_dicts = {}
+      if vim.fn.filereadable(dict_path) == 1 then
+        table.insert(global_dicts, dict_path)
+      else
+        vim.notify("SKK dictionary not found: " .. dict_path, vim.log.levels.WARN)
+      end
+
       vim.fn["skkeleton#config"]({
-        globalDictionaries = {
-          vim.fn.expand("~/.nix-profile/share/skk/SKK-JISYO.L"),
-        },
+        globalDictionaries = global_dicts,
         userDictionary = vim.fn.expand("~/.skk/skk-jisyo"),
       })
 

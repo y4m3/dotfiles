@@ -7,6 +7,8 @@ local opt = vim.opt
 opt.clipboard = "unnamedplus"
 
 -- Japanese encoding support (from existing vimrc)
+opt.encoding = "utf-8"
+opt.fileencoding = "utf-8"
 opt.fileencodings = "utf-8,iso-2022-jp,euc-jp,cp932"
 opt.fileformats = "unix,dos,mac"
 
