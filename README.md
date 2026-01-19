@@ -4,10 +4,18 @@ Dotfiles managed with [chezmoi](https://www.chezmoi.io/) + [Nix Home Manager](ht
 
 ## Requirements
 
+### Linux/WSL
 - Ubuntu 24.04+ (WSL2 supported)
   - curl, git
 
+### Windows
+- Windows 10/11
+- PowerShell 5.1+
+- winget (App Installer)
+
 ## Quick Start
+
+### Linux/WSL
 
 ```bash
 # 1. Bootstrap
@@ -23,6 +31,35 @@ chezmoi apply
 chezmoi update
 ```
 
+### Windows
+
+```powershell
+# 1. Bootstrap (one-liner)
+irm https://raw.githubusercontent.com/y4m3/dotfiles/main/install.ps1 | iex
+
+# Or with specific branch
+$env:DOTFILES_BRANCH = "feature/xxx"; irm https://raw.githubusercontent.com/y4m3/dotfiles/main/install.ps1 | iex
+
+# 2. Update later
+chezmoi update
+```
+
+### Windows (with private apps)
+
+Private apps include: LibreWolf, Brave, Proton suite, Linear, Todoist, Zotero.
+
+```powershell
+# Set environment variable before init
+$env:DOTFILES_INSTALL_PRIVATE_APPS = "true"
+
+# Run init to regenerate config, then apply
+chezmoi init
+chezmoi apply
+
+# To permanently enable (persists across sessions)
+[Environment]::SetEnvironmentVariable("DOTFILES_INSTALL_PRIVATE_APPS", "true", "User")
+```
+
 ## Architecture
 
 - **Nix Home Manager**: 25+ CLI tools via `~/.config/nix/home.nix`
@@ -32,7 +69,8 @@ chezmoi update
 
 ```
 .
-├── install.sh              # Bootstrap script
+├── install.sh              # Bootstrap script (Linux/WSL)
+├── install.ps1             # Bootstrap script (Windows)
 ├── Justfile                # Lint/format tasks
 ├── home/
 │   ├── .chezmoi.toml.tmpl  # Profile variable (client/server)
