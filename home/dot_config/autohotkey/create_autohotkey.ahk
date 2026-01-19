@@ -14,72 +14,98 @@ global MAX_OPACITY := 255
 global SpaceDown := false
 global SpacePressTime := 0
 global SPACE_THRESHOLD := 200  ; ms - Space sent only if held shorter than this
+global SpaceUsedAsShift := false  ; whether Shift down was sent for this Space press
 
 ; jj/jk escape timing (for Vim-style insert mode exit)
 global JJ_THRESHOLD := 200  ; milliseconds
 global lastJPress := 0
 
+; RAlt tap = IME toggle state
+global RAltPressTime := 0
+
+; RShift tap = IME toggle state
+global RShiftPressTime := 0
+
 ; ============================================================
 ; SandS (Space and Shift)
 ; ============================================================
-/*
-*Space::{
-    ; If modifier key is held, send normal Space
-    if GetKeyState("Ctrl") || GetKeyState("Alt") || GetKeyState("LWin") || GetKeyState("RWin") {
+*Space:: {
+    global SpaceDown, SpacePressTime, SpaceUsedAsShift
+
+    ; Added: Do not activate SandS when physical Shift is pressed
+    if GetKeyState("Shift", "P") {
         Send "{Blind}{Space}"
         return
     }
 
-    Send "{Blind}{Shift down}"
-    KeyWait "Space"
-    Send "{Blind}{Shift up}"
-
-    ; Send Space only if Space was pressed alone
-    if (A_PriorKey = "Space") {
-        Send "{Space}"
-    }
-}
-*/
-
-*Space::{
-    global SpaceDown, SpacePressTime
-
-    ; If modifier key is held, send normal Space
+    ; Existing: Normal Space when other modifier keys are pressed
     if GetKeyState("Ctrl") || GetKeyState("Alt") || GetKeyState("LWin") || GetKeyState("RWin") {
         Send "{Blind}{Space}"
         return
     }
 
     SpaceDown := true
+    SpaceUsedAsShift := true
     SpacePressTime := A_TickCount
     Send "{Blind}{Shift down}"
 }
 
-*Space up::{
-    global SpaceDown, SpacePressTime, SPACE_THRESHOLD
+*Space up:: {
+    global SpaceDown, SpacePressTime, SPACE_THRESHOLD, SpaceUsedAsShift
 
-    if !SpaceDown
+    if !SpaceDown {
+        SpaceUsedAsShift := false
         return
+    }
 
-    Send "{Blind}{Shift up}"
+    ; Added: Only release Shift if we sent Shift down for this Space (don't affect physical Shift)
+    if SpaceUsedAsShift {
+        Send "{Blind}{Shift up}"
+    }
 
-    ; Send Space only if pressed alone AND held shorter than threshold
-    if (A_PriorKey = "Space") && (A_TickCount - SpacePressTime < SPACE_THRESHOLD) {
+    ; Single tap detection (only if SandS was activated)
+    if SpaceUsedAsShift && (A_PriorKey = "Space") && (A_TickCount - SpacePressTime < SPACE_THRESHOLD) {
         Send "{Space}"
     }
 
     SpaceDown := false
+    SpaceUsedAsShift := false
 }
 
 ; ============================================================
 ; RAlt for IME control
 ; ============================================================
 ; RAlt tap toggles IME, hold acts as normal Alt
-~RAlt up::{
-    if (A_PriorKey = "RAlt") {
+*RAlt::{
+    global RAltPressTime
+    RAltPressTime := A_TickCount
+
+    ; If released quickly, treat as tap. Otherwise act as a normal modifier.
+    if KeyWait("RAlt", "T0.2") {
+        ImeToggle()
+        return
+    }
+
+    Send "{Blind}{RAlt down}"
+    KeyWait "RAlt"
+    Send "{Blind}{RAlt up}"
+}
+
+; ============================================================
+; RShift tap = IME toggle, any-combo = normal Shift (generic)
+; ============================================================
+~*RShift::{
+    global RShiftPressTime
+    RShiftPressTime := A_TickCount
+}
+
+~*RShift up::{
+    global RShiftPressTime
+    if (A_PriorKey = "RShift") && (A_TickCount - RShiftPressTime < 200) {
         ImeToggle()
     }
 }
+
 
 ; ============================================================
 ; App groups (context-sensitive hotkeys)
@@ -142,10 +168,6 @@ vk1C::ImeOn()            ; Henkan   (JP layout): IME ON
 
 ; Toggle wezterm (show/activate <-> minimize)
 ^+h::ToggleWindowExe("wezterm-gui.exe", A_ProgramFiles "\WezTerm\wezterm-gui.exe")
-; !Enter::ToggleWindowExe("wezterm-gui.exe", A_ProgramFiles "\WezTerm\wezterm-gui.exe")
-
-; Toggle Ferdium (show/activate <-> minimize)
-^+j::ToggleWindowExe("Ferdium.exe", EnvGet("LOCALAPPDATA") "\Programs\Ferdium\Ferdium.exe")
 
 ; Toggle Heynote (show/activate <-> minimize)
 ^+m::ToggleWindowExe("Heynote.exe", EnvGet("LOCALAPPDATA") "\Programs\Heynote\Heynote.exe")
@@ -191,6 +213,8 @@ ImeToggle() => IME_Set(IME_Get() ? 0 : 1)
 IME_Get(winTitle := "A") {
     hwnd := GetFocusedHwnd(winTitle)
     imeWnd := DllCall("imm32\ImmGetDefaultIMEWnd", "Ptr", hwnd, "Ptr")
+    if !imeWnd
+        return 0
 
     ; WM_IME_CONTROL (0x0283), IMC_GETOPENSTATUS (0x0005)
     return DllCall("SendMessageW"
@@ -205,6 +229,8 @@ IME_Get(winTitle := "A") {
 IME_Set(setSts, winTitle := "A") {
     hwnd := GetFocusedHwnd(winTitle)
     imeWnd := DllCall("imm32\ImmGetDefaultIMEWnd", "Ptr", hwnd, "Ptr")
+    if !imeWnd
+        return 0
 
     ; WM_IME_CONTROL (0x0283), IMC_SETOPENSTATUS (0x0006)
     return DllCall("SendMessageW"
@@ -334,4 +360,3 @@ ShowOpacityTip(alpha) {
 }
 
 Clamp(x, lo, hi) => Min(Max(x, lo), hi)
-

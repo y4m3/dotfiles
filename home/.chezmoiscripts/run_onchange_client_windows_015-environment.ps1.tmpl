@@ -1,0 +1,96 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_015-environment.ps1.tmpl
+# Set up XDG environment variables and PATH for Windows
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+function Set-UserEnvironmentVariable {
+    param(
+        [string]$Name,
+        [string]$Value
+    )
+    $current = [Environment]::GetEnvironmentVariable($Name, "User")
+    if ($current -ne $Value) {
+        Write-Log "Setting $Name = $Value"
+        [Environment]::SetEnvironmentVariable($Name, $Value, "User")
+        # Also set for current session
+        [Environment]::SetEnvironmentVariable($Name, $Value, "Process")
+        return $true
+    } else {
+        Write-Log "Already set: $Name"
+        return $false
+    }
+}
+
+function Add-ToUserPath {
+    param([string]$Directory)
+
+    $currentPath = [Environment]::GetEnvironmentVariable("PATH", "User")
+    if (-not $currentPath) {
+        $currentPath = ""
+    }
+
+    # Check if directory is already in PATH
+    $pathDirs = $currentPath -split ";"
+    if ($pathDirs -contains $Directory) {
+        Write-Log "Already in PATH: $Directory"
+        return $false
+    }
+
+    # Prepend to PATH
+    $newPath = if ($currentPath) { "$Directory;$currentPath" } else { $Directory }
+    Write-Log "Adding to PATH: $Directory"
+    [Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
+
+    # Also update current session
+    $env:PATH = "$Directory;$env:PATH"
+    return $true
+}
+
+Write-Log "Setting up XDG environment variables..."
+
+# XDG Base Directory Specification
+# See: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+$userHome = $env:USERPROFILE
+
+# Set HOME if not set (some tools expect this)
+Set-UserEnvironmentVariable -Name "HOME" -Value $userHome | Out-Null
+
+# XDG directories (using Unix-style paths under USERPROFILE)
+$xdgConfig = Join-Path $userHome ".config"
+$xdgData = Join-Path $userHome ".local\share"
+$xdgCache = Join-Path $userHome ".cache"
+$xdgState = Join-Path $userHome ".local\state"
+
+Set-UserEnvironmentVariable -Name "XDG_CONFIG_HOME" -Value $xdgConfig | Out-Null
+Set-UserEnvironmentVariable -Name "XDG_DATA_HOME" -Value $xdgData | Out-Null
+Set-UserEnvironmentVariable -Name "XDG_CACHE_HOME" -Value $xdgCache | Out-Null
+Set-UserEnvironmentVariable -Name "XDG_STATE_HOME" -Value $xdgState | Out-Null
+
+# Create XDG directories if they don't exist
+Write-Log "Ensuring XDG directories exist..."
+$xdgDirs = @($xdgConfig, $xdgData, $xdgCache, $xdgState)
+foreach ($dir in $xdgDirs) {
+    if (-not (Test-Path $dir)) {
+        Write-Log "Creating directory: $dir"
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    }
+}
+
+# Add ~/.local/bin to PATH
+$localBin = Join-Path $userHome ".local\bin"
+if (-not (Test-Path $localBin)) {
+    Write-Log "Creating directory: $localBin"
+    New-Item -ItemType Directory -Path $localBin -Force | Out-Null
+}
+Add-ToUserPath -Directory $localBin | Out-Null
+
+Write-Log "Done!"
+{{- end -}}

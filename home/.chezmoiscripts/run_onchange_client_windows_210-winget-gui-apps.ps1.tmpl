@@ -1,0 +1,91 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_210-winget-gui-apps.ps1.tmpl
+# Install common GUI applications via winget
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+function Test-AppInstalled {
+    param([string]$WingetId)
+    $null = winget list --id $WingetId --exact --accept-source-agreements 2>$null
+    return $LASTEXITCODE -eq 0
+}
+
+# Define apps to install (winget IDs)
+$apps = @(
+    # Tools
+    "Git.Git",
+    "Microsoft.PowerShell",
+    "wez.wezterm",
+    "equalsraf.win32yank",
+
+    # Browsers
+    "Google.Chrome",
+    "Mozilla.Firefox",
+
+    # Launcher
+    "OliverSchwendener.ueli",
+
+    # Editors
+    "Anysphere.Cursor",
+    "Microsoft.VisualStudioCode",
+    "Neovim.Neovim",
+    "Obsidian.Obsidian",
+    "ZedIndustries.Zed",
+    "JonatanHeyman.Heynote",
+
+    # Window Manager
+    "glzr-io.glazewm",
+    "glzr-io.zebar",
+
+    # IME
+    "nathancorvussolis.corvusskk",
+
+    # Utils
+    "AutoHotkey.AutoHotkey",
+    "Microsoft.PowerToys",
+    "KeePassXCTeam.KeePassXC"
+)
+
+Write-Log "Checking GUI applications..."
+
+$appsToInstall = @()
+foreach ($wingetId in $apps) {
+    $displayName = $wingetId.Split('.')[-1]
+
+    if (Test-AppInstalled -WingetId $wingetId) {
+        Write-Log "Already installed: $displayName"
+    } else {
+        $appsToInstall += $wingetId
+    }
+}
+
+if ($appsToInstall.Count -eq 0) {
+    Write-Log "All GUI applications are already installed!"
+    exit 0
+}
+
+# Ensure winget is available
+if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    Write-Host "Error: winget (App Installer) is not installed." -ForegroundColor Red
+    Write-Host "Please install App Installer from Microsoft Store or run:" -ForegroundColor Yellow
+    Write-Host "  Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" -ForegroundColor Yellow
+    exit 1
+}
+
+Write-Log "Installing $($appsToInstall.Count) GUI application(s) via winget..."
+
+foreach ($wingetId in $appsToInstall) {
+    $displayName = $wingetId.Split('.')[-1]
+    Write-Log "Installing $displayName ($wingetId)..."
+    winget install --id $wingetId --accept-source-agreements --accept-package-agreements
+}
+
+Write-Log "Done!"
+{{- end -}}

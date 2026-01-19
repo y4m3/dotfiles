@@ -1,0 +1,28 @@
+{{- if eq .chezmoi.os "windows" -}}
+# PowerShell Profile (XDG-compliant)
+# Location: ~/.config/powershell/profile.ps1
+# This file is managed by chezmoi
+
+# Skip for non-interactive shells
+if (-not [Environment]::UserInteractive) { return }
+if ($Host.Name -eq 'Default Host') { return }
+
+# profile.d pattern: source all scripts in ~/.config/powershell/profile.d/
+if ($env:XDG_CONFIG_HOME) {
+    $profileDir = Join-Path $env:XDG_CONFIG_HOME "powershell\profile.d"
+} else {
+    $profileDir = Join-Path $env:USERPROFILE ".config\powershell\profile.d"
+}
+
+if (Test-Path $profileDir) {
+    Get-ChildItem -Path $profileDir -Filter "*.ps1" | Sort-Object Name | ForEach-Object {
+        . $_.FullName
+    }
+}
+
+# Local overrides (not managed by chezmoi)
+$localProfile = Join-Path (Split-Path $PROFILE.CurrentUserAllHosts) "profile.local.ps1"
+if (Test-Path $localProfile) {
+    . $localProfile
+}
+{{- end -}}

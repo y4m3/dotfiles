@@ -1,22 +1,12 @@
+-- bootstrap lazy.nvim, LazyVim and your plugins
+require("config.lazy")
+
 -- ============================================================================
--- Clipboard Configuration for WSL
+-- Clipboard Configuration
 -- ============================================================================
--- WHY OSC 52 instead of win32yank.exe?
---
--- WezTerm connects to WSL via SSH domain (`connection = "connect"`).
--- SSH sessions are isolated from the Windows desktop session, so
--- win32yank.exe cannot access the Windows clipboard.
---
--- Connection type differences:
---   SSH (`connect`)  → Isolated session → win32yank.exe ❌
---   wsl.exe (`local`) → Inherited session → win32yank.exe ✅
---
--- OSC 52 escape sequences work because they go through the terminal,
--- which then handles clipboard operations on the Windows side.
---
--- For paste: Use Ctrl+Shift+V (terminal paste) since OSC 52 paste
--- is not widely supported for security reasons.
--- ============================================================================
+
+-- WSL: Use OSC 52 (SSH sessions can't access Windows clipboard directly)
+-- Paste: Use Ctrl+Shift+V (terminal paste)
 if vim.fn.has("wsl") == 1 then
   vim.g.clipboard = {
     name = "OSC 52",
@@ -25,13 +15,31 @@ if vim.fn.has("wsl") == 1 then
       ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
     },
     paste = {
-      -- OSC 52 paste is not supported by most terminals for security.
-      -- Use Ctrl+Shift+V for paste, or switch to wsl.exe connection.
       ["+"] = function() return { "" } end,
       ["*"] = function() return { "" } end,
     },
   }
 end
 
--- bootstrap lazy.nvim, LazyVim and your plugins
-require("config.lazy")
+-- Windows (native): Use win32yank
+if vim.fn.has("win32") == 1 then
+  vim.g.clipboard = {
+    name = "win32yank",
+    copy = {
+      ["+"] = "win32yank.exe -i --crlf",
+      ["*"] = "win32yank.exe -i --crlf",
+    },
+    paste = {
+      ["+"] = "win32yank.exe -o --lf",
+      ["*"] = "win32yank.exe -o --lf",
+    },
+    cache_enabled = 0,
+  }
+end
+
+-- ============================================================================
+-- Neovide Configuration
+-- ============================================================================
+if vim.g.neovide then
+  require("config.neovide")
+end
