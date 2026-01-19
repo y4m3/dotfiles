@@ -3,6 +3,19 @@
 return {
   {
     "vim-denops/denops.vim",
-    lazy = true, -- Load only when required by dependent plugins (skkeleton, kensaku, etc.)
+    lazy = false,
+    init = function()
+      local deno = vim.fn.exepath("deno")
+      if deno ~= "" then
+        vim.g["denops#deno"] = deno
+      end
+
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "DenopsReady",
+        callback = function()
+          vim.fn["denops#plugin#discover"]()
+        end,
+      })
+    end,
   },
 }
