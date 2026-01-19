@@ -63,6 +63,15 @@ Install-ScoopPackage -Package "gzip" -Command "gzip"
 # Note: Use "wget.exe" to avoid matching PowerShell's wget alias (Invoke-WebRequest)
 Install-ScoopPackage -Package "wget" -Command "wget.exe"
 
+# Ghostscript (PDF/EPS processing for snacks.image)
+Install-ScoopPackage -Package "ghostscript" -Command "gswin64c"
+
+# Tectonic (LaTeX engine)
+Install-ScoopPackage -Package "tectonic" -Command "tectonic"
+
+# SQLite (for snacks.nvim picker frecency database)
+Install-ScoopPackage -Package "sqlite" -Command "sqlite3"
+
 # =============================================================================
 # Visual Studio Build Tools (for native compilation)
 # =============================================================================
@@ -124,6 +133,15 @@ if (Test-CommandExists npm) {
         npm install -g cspell
     } else {
         Write-Log "Already installed: cspell"
+    }
+
+    # mermaid-cli - diagram generator
+    $mermaidInstalled = npm list -g @mermaid-js/mermaid-cli 2>$null | Select-String "mermaid-cli"
+    if (-not $mermaidInstalled) {
+        Write-Log "Installing @mermaid-js/mermaid-cli..."
+        npm install -g @mermaid-js/mermaid-cli
+    } else {
+        Write-Log "Already installed: @mermaid-js/mermaid-cli"
     }
 } else {
     Write-Host "Warning: npm not found. Please run Node.js installation script first." -ForegroundColor Yellow
