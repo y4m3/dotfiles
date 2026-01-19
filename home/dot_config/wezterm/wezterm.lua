@@ -103,6 +103,15 @@ else
 end
 
 -- ============================================================
+-- Environment Variables
+-- ============================================================
+-- Set LANG for UTF-8 support (required for proper Unicode display)
+-- See: https://wezterm.org/faq.html
+config.set_environment_variables = {
+    LANG = "en_US.UTF-8",
+}
+
+-- ============================================================
 -- Appearance
 -- ============================================================
 
@@ -120,18 +129,31 @@ config.macos_window_background_blur = 20
 config.win32_system_backdrop = "Acrylic"
 
 -- Font (configurable via local_config.font)
--- If not configured, WezTerm uses its built-in default font
+-- Fallback fonts for symbols (Windows built-in)
+local symbol_fallbacks = {
+    "Segoe UI Symbol",
+    "Segoe UI Emoji",
+}
+
 if local_config.font and local_config.font.family then
-    config.font = wezterm.font(local_config.font.family, {
-        weight = local_config.font.weight or "Regular",
-        stretch = local_config.font.stretch or "Normal",
-        style = local_config.font.style or "Normal",
-    })
+    local font_list = {
+        {
+            family = local_config.font.family,
+            weight = local_config.font.weight or "Regular",
+            stretch = local_config.font.stretch or "Normal",
+            style = local_config.font.style or "Normal",
+        },
+    }
+    for _, fallback in ipairs(symbol_fallbacks) do
+        table.insert(font_list, fallback)
+    end
+    config.font = wezterm.font_with_fallback(font_list)
     if local_config.font.size then
         config.font_size = local_config.font.size
     end
 end
 config.adjust_window_size_when_changing_font_size = true
+config.allow_square_glyphs_to_overflow_width = "WhenFollowedBySpace"
 
 -- Colors
 config.color_scheme = "Tokyo Night (Gogh)"
