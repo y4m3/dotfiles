@@ -1,0 +1,54 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_206-skk-dict.ps1.tmpl
+# Download SKK dictionary for Windows (Nix manages this on Linux)
+
+# Note: Using 'Continue' to allow script to proceed even if download fails
+$ErrorActionPreference = 'Continue'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+# XDG-compliant path
+$skkDir = Join-Path $env:USERPROFILE ".local\share\skk"
+$dictPath = Join-Path $skkDir "SKK-JISYO.L"
+$dictUrl = "https://raw.githubusercontent.com/skk-dev/dict/master/SKK-JISYO.L"
+
+# Create directory if needed
+if (-not (Test-Path $skkDir)) {
+    Write-Log "Creating SKK directory: $skkDir"
+    New-Item -ItemType Directory -Path $skkDir -Force | Out-Null
+}
+
+# Check if download is needed
+$needDownload = $true
+if (Test-Path $dictPath) {
+    $fileAge = (Get-Date) - (Get-Item $dictPath).LastWriteTime
+    if ($fileAge.TotalDays -lt 30) {
+        Write-Log "SKK dictionary exists and is recent (age: $([int]$fileAge.TotalDays) days)"
+        $needDownload = $false
+    } else {
+        Write-Log "SKK dictionary is older than 30 days, updating..."
+    }
+}
+
+if ($needDownload) {
+    Write-Log "Downloading SKK dictionary from GitHub..."
+    try {
+        # Use TLS 1.2 for GitHub
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $dictUrl -OutFile $dictPath -UseBasicParsing
+        Write-Log "Downloaded: $dictPath"
+    } catch {
+        Write-Host "Warning: Failed to download SKK dictionary. SKK input may not work." -ForegroundColor Yellow
+        Write-Host "  URL: $dictUrl" -ForegroundColor Yellow
+        Write-Host "  Error: $_" -ForegroundColor Yellow
+        # Don't exit with error - allow other scripts to continue
+    }
+}
+
+Write-Log "Done!"
+{{- end -}}
