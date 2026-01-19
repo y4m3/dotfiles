@@ -36,3 +36,10 @@ if vim.fn.has("win32") == 1 then
     cache_enabled = 0,
   }
 end
+
+-- ============================================================================
+-- Neovide Configuration
+-- ============================================================================
+if vim.g.neovide then
+  require("config.neovide")
+end
