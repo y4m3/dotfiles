@@ -1,0 +1,76 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") (.install_private_apps | default false) -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_211-winget-gui-private.ps1.tmpl
+# Install private GUI applications via winget (enabled by DOTFILES_INSTALL_PRIVATE_APPS=true)
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+function Test-AppInstalled {
+    param([string]$WingetId)
+    $null = winget list --id $WingetId --exact --accept-source-agreements 2>$null
+    return $LASTEXITCODE -eq 0
+}
+
+# Define private apps (winget IDs)
+$apps = @(
+    # Browsers
+    "LibreWolf.LibreWolf",
+    "Brave.Brave",
+
+    # Proton Suite
+    "Proton.ProtonPass",
+    "Proton.ProtonMail",
+    "Proton.ProtonDrive",
+    "Proton.ProtonVPN",
+
+    # Task Management
+    "LinearOrbit.Linear",
+    "Doist.Todoist",
+
+    # Library
+    "DigitalScholar.Zotero",
+    "RustemMussabekov.Raindrop"
+)
+
+Write-Log "Checking private GUI applications..."
+
+$appsToInstall = @()
+foreach ($wingetId in $apps) {
+    $displayName = $wingetId.Split('.')[-1]
+
+    if (Test-AppInstalled -WingetId $wingetId) {
+        Write-Log "Already installed: $displayName"
+    } else {
+        $appsToInstall += $wingetId
+    }
+}
+
+if ($appsToInstall.Count -eq 0) {
+    Write-Log "All private GUI applications are already installed!"
+    exit 0
+}
+
+# Ensure winget is available
+if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    Write-Host "Error: winget (App Installer) is not installed." -ForegroundColor Red
+    Write-Host "Please install App Installer from Microsoft Store or run:" -ForegroundColor Yellow
+    Write-Host "  Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" -ForegroundColor Yellow
+    exit 1
+}
+
+Write-Log "Installing $($appsToInstall.Count) private GUI application(s) via winget..."
+
+foreach ($wingetId in $appsToInstall) {
+    $displayName = $wingetId.Split('.')[-1]
+    Write-Log "Installing $displayName ($wingetId)..."
+    winget install --id $wingetId --accept-source-agreements --accept-package-agreements
+}
+
+Write-Log "Done!"
+{{- end -}}

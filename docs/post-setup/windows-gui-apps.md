@@ -1,27 +1,57 @@
 # Windows GUI Applications
 
-Recommended GUI applications for Windows host system (especially for WSL users). These applications require manual installation and are not managed by chezmoi.
+GUI applications for Windows are automatically installed via winget by chezmoi scripts.
 
-## Code Editors & IDEs
+## Automatic Installation
 
-- **Cursor**: https://cursor.com/
-- **Visual Studio Code**: https://code.visualstudio.com/
+The following applications are installed automatically by `chezmoi apply`:
 
-## Terminal Emulators
+### Common Apps (210-winget-gui-apps.ps1)
 
-- **Alacritty**: https://alacritty.org/ (see [Alacritty Documentation](../tools/terminals.md#alacritty-alternative))
+**Tools:**
+- Git, WezTerm, AutoHotkey, PowerToys, KeePassXC
 
-## Note-Taking & Knowledge Management
+**Browsers:**
+- Google Chrome, Mozilla Firefox
 
-- **Heynote**: https://heynote.com/
-- **Obsidian**: https://obsidian.md/
+**Editors:**
+- Neovim, Visual Studio Code, Cursor, Zed, Obsidian, Heynote
 
-## Project Management
+**Window Manager:**
+- GlazeWM, Zebar
 
-- **Linear**: https://linear.app/
+**Launcher:**
+- ueli
 
-## Windows Utilities & Automation
+**IME:**
+- CorvusSKK
 
-- **PowerToys**: https://github.com/microsoft/PowerToys
-- **AutoHotkey**: https://www.autohotkey.com/
+### Private Apps (211-winget-gui-private.ps1)
 
+Enabled by setting `DOTFILES_INSTALL_PRIVATE_APPS=true` before `chezmoi init`:
+
+```powershell
+$env:DOTFILES_INSTALL_PRIVATE_APPS = "true"
+chezmoi init
+chezmoi apply
+```
+
+**Browsers:**
+- LibreWolf, Brave
+
+**Proton Suite:**
+- ProtonPass, ProtonMail, ProtonDrive, ProtonVPN
+
+**Task Management:**
+- Linear, Todoist
+
+**Library:**
+- Zotero
+
+## Adding New Apps
+
+To add a new application, edit the appropriate script in `home/.chezmoiscripts/`:
+
+1. Find the winget ID: `winget search <app-name>`
+2. Add the ID to the `$apps` array in the script
+3. Run `chezmoi apply`

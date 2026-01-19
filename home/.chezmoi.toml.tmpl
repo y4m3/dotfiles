@@ -10,8 +10,13 @@
 {{-   $isWsl = .chezmoi.kernel.osrelease | lower | contains "microsoft" -}}
 {{- end -}}
 
+{{- /* Install private apps (Windows only, disabled by default) */ -}}
+{{- $installPrivateApps := env "DOTFILES_INSTALL_PRIVATE_APPS" | eq "true" -}}
+
 [data]
     # Environment type: client (default) or server
     profile = "{{ $profile }}"
     # WSL detection (true if running in Windows Subsystem for Linux)
     is_wsl = {{ $isWsl }}
+    # Install private apps (Proton suite, Linear, etc.) - Windows only
+    install_private_apps = {{ $installPrivateApps }}
