@@ -10,7 +10,9 @@ opt.clipboard = "unnamedplus"
 opt.encoding = "utf-8"
 opt.fileencoding = "utf-8"
 opt.fileencodings = "utf-8,iso-2022-jp,euc-jp,cp932"
-opt.fileformats = "unix,dos,mac"
+-- Line ending settings (prefer LF for new files)
+opt.fileformat = "unix"
+opt.fileformats = "unix,dos"
 
 -- Matching brackets highlight timing
 opt.matchtime = 1

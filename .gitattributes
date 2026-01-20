@@ -1,0 +1,37 @@
+# Default: LF for all text files
+* text=auto eol=lf
+
+# Shell scripts - LF (Linux execution)
+*.sh text eol=lf
+*.sh.tmpl text eol=lf
+install.sh text eol=lf
+
+# PowerShell - CRLF (Windows)
+*.ps1 text eol=crlf
+*.ps1.tmpl text eol=crlf
+
+# Cross-platform configs - LF
+*.lua text eol=lf
+*.toml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.nix text eol=lf
+*.vim text eol=lf
+*.md text eol=lf
+
+# Chezmoi templates - LF (default)
+*.tmpl text eol=lf
+# Override for PowerShell templates
+*.ps1.tmpl text eol=crlf
+
+# Windows-only files - CRLF
+*.ahk text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.xml text eol=crlf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.ico binary

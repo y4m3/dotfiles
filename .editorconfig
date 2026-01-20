@@ -83,9 +83,23 @@ indent_style = tab
 # =============================================================================
 # Windows-specific
 # =============================================================================
-[*.ahk]
-# AutoHotkey: 4 spaces
+[*.ps1]
+end_of_line = crlf
 indent_size = 4
+
+[*.ps1.tmpl]
+end_of_line = crlf
+indent_size = 4
+
+[*.ahk]
+end_of_line = crlf
+indent_size = 4
+
+[*.{bat,cmd}]
+end_of_line = crlf
+
+[*.xml]
+end_of_line = crlf
 
 # =============================================================================
 # Documentation

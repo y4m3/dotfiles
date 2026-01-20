@@ -53,4 +53,11 @@ return {
     family = "UDEV Gothic 35NFLG",
     size = 12,
   },
+
+  -- Override any WezTerm config setting (applied last, highest priority)
+  -- config_overrides = {
+  --   leader = { key = "w", mods = "CTRL", timeout_milliseconds = 1000 },
+  --   front_end = "OpenGL",
+  --   -- Any config.* setting can be overridden here
+  -- },
 }

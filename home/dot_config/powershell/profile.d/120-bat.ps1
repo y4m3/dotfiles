@@ -7,14 +7,28 @@
 if (-not $env:BAT_THEME) { $env:BAT_THEME = "tokyonight_storm" }
 if (-not $env:BAT_PAGER) { $env:BAT_PAGER = "less -FRX" }
 
-# Smart cat function: use bat for interactive viewing
+# Remove built-in alias that conflicts with our function
+Remove-Alias -Name cat -Force -ErrorAction SilentlyContinue
+
+# Smart cat function: use bat for interactive viewing, Get-Content for pipes/redirects
 if (Get-Command bat -ErrorAction SilentlyContinue) {
     function global:cat {
-        if ($args.Count -eq 0) {
-            # No arguments: read from stdin
-            $input | bat --paging=auto
-        } else {
-            bat --paging=auto @args
+        # Non-interactive stdout (pipe / redirect) -> use Get-Content
+        if ([Console]::IsOutputRedirected) {
+            Get-Content @args
+            return
         }
+
+        # No arguments -> read from stdin (preserve cat's default behavior)
+        if ($args.Count -eq 0) {
+            $input | ForEach-Object { $_ }
+            return
+        }
+
+        # Interactive view with arguments -> use bat
+        bat --paging=auto @args
     }
+} else {
+    # Fallback to Get-Content
+    function global:cat { Get-Content @args }
 }
