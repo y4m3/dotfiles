@@ -8,8 +8,7 @@ add_newline = true
 format = """
 $directory$git_branch$git_status
 $username$hostname$python$cmd_duration$jobs
-$character
-"""
+$character"""
 
 # ====================
 # Username (show)

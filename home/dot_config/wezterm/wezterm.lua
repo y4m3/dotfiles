@@ -685,4 +685,20 @@ for _, env in ipairs(local_config.environments or {}) do
   end
 end
 
+-- ============================================================
+-- Apply Local Overrides (highest priority)
+-- ============================================================
+-- Allows wezterm.local.lua to override any config setting via config_overrides.
+-- This is applied last, so local settings always take precedence.
+-- Example in wezterm.local.lua:
+--   config_overrides = {
+--     leader = { key = "w", mods = "CTRL", timeout_milliseconds = 1000 },
+--     front_end = "OpenGL",
+--   },
+if local_config.config_overrides then
+  for key, value in pairs(local_config.config_overrides) do
+    config[key] = value
+  end
+end
+
 return config
