@@ -1,0 +1,46 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_215-bat-themes.ps1.tmpl
+# Download Tokyo Night themes for bat and rebuild cache
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+if (-not (Get-Command bat -ErrorAction SilentlyContinue)) {
+    Write-Log "bat not found. Skipping theme setup."
+    exit 0
+}
+
+# Scoop bat themes directory
+$themesDir = "$env:USERPROFILE\scoop\persist\bat\themes"
+if (-not (Test-Path $themesDir)) {
+    New-Item -ItemType Directory -Path $themesDir -Force | Out-Null
+}
+
+$baseUrl = "https://raw.githubusercontent.com/folke/tokyonight.nvim/main/extras/sublime"
+$themes = @("tokyonight_day", "tokyonight_moon", "tokyonight_night", "tokyonight_storm")
+
+Write-Log "Downloading Tokyo Night themes for bat..."
+
+foreach ($theme in $themes) {
+    $url = "$baseUrl/$theme.tmTheme"
+    $dest = Join-Path $themesDir "$theme.tmTheme"
+
+    try {
+        Invoke-WebRequest -Uri $url -OutFile $dest -UseBasicParsing
+        Write-Host "  Downloaded: $theme"
+    } catch {
+        Write-Host "  Failed to download: $theme" -ForegroundColor Yellow
+    }
+}
+
+Write-Log "Rebuilding bat cache..."
+bat cache --build
+
+Write-Log "Done!"
+{{- end -}}
