@@ -34,16 +34,16 @@ if (Get-Command chezmoi -ErrorAction SilentlyContinue) {
     Write-Log "Installing chezmoi to $binDir..."
 
     # Download and run chezmoi installer
-    $installScript = (Invoke-WebRequest -UseBasicParsing 'https://get.chezmoi.io/ps1').Content
-    # Execute with custom bin directory
-    $installScript | Invoke-Expression
+    $installScript = Invoke-RestMethod -Uri 'https://get.chezmoi.io/ps1'
+    # Run in child scope to avoid variable conflicts with our $binDir
+    & ([scriptblock]::Create($installScript))
     # Move chezmoi to ~/.local/bin if installed elsewhere
     $defaultPath = Join-Path $env:USERPROFILE "bin\chezmoi.exe"
     if ((Test-Path $defaultPath) -and -not (Test-Path $chezmoiExe)) {
         Move-Item $defaultPath $chezmoiExe -Force
         # Clean up empty bin directory if it exists
         $defaultBinDir = Join-Path $env:USERPROFILE "bin"
-        if ((Test-Path $defaultBinDir) -and (Get-ChildItem $defaultBinDir).Count -eq 0) {
+        if ((Test-Path $defaultBinDir) -and @(Get-ChildItem $defaultBinDir).Count -eq 0) {
             Remove-Item $defaultBinDir -Force
         }
     }
