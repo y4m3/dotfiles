@@ -43,6 +43,9 @@ set -g renumber-windows on
 # Enable clipboard integration
 set -g set-clipboard on
 
+# Allow OSC 52 passthrough (for SSH clipboard via terminal)
+set -g allow-passthrough on
+
 # True color support for terminals that support it
 set -ga terminal-overrides ",*256col*:Tc"
 set -ga terminal-overrides ",alacritty:Tc"
