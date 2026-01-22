@@ -46,6 +46,7 @@ in
     markdown-toc
     markdownlint-cli2
     mermaid-cli
+    nil # Nix LSP; Mason auto-install disabled
     nixfmt
     prettier
     cspell

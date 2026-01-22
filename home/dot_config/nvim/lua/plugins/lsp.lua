@@ -25,6 +25,10 @@ return {
     opts = function(_, opts)
       opts.servers = opts.servers or {}
 
+      opts.servers.nil_ls = {
+        mason = false, -- Managed by Nix Home Manager
+      }
+
       opts.servers.ruff = {
         mason = false,
         before_init = function(_, config)
