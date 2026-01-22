@@ -46,7 +46,7 @@ in
     markdown-toc
     markdownlint-cli2
     mermaid-cli
-    nixfmt-rfc-style
+    nixfmt
     prettier
     cspell
     pyright # Mason auto-install disabled; managed here for version consistency
