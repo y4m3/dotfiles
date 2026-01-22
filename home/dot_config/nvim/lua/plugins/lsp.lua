@@ -25,9 +25,12 @@ return {
     opts = function(_, opts)
       opts.servers = opts.servers or {}
 
-      opts.servers.nil_ls = {
-        mason = false, -- Managed by Nix Home Manager
-      }
+      -- nil_ls: Nix LSP (Linux only, managed by Nix Home Manager)
+      if vim.fn.has("unix") == 1 then
+        opts.servers.nil_ls = {
+          mason = false,
+        }
+      end
 
       opts.servers.ruff = {
         mason = false,
