@@ -1,17 +1,7 @@
 -- AI tools customizations (overrides for LazyVim extras)
-
--- Enable Copilot LSP for sidekick.nvim NES
-vim.lsp.enable("copilot")
+-- sidekick.nvim uses copilot.lua's bundled LSP server for Next Edit Suggestions (NES)
 
 return {
-  {
-    "mason-org/mason.nvim",
-    opts = {
-      ensure_installed = {
-        "copilot-language-server",
-      },
-    },
-  },
   {
     "zbirenbaum/copilot.lua",
     opts = {
