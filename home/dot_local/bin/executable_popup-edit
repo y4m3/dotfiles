@@ -14,9 +14,9 @@ if [[ -s "$PROMPT_FILE" ]]; then
     # Zellij: toggle floating pane and write chars
     zellij action toggle-floating-panes
     zellij action write-chars "$(cat "$PROMPT_FILE")"
-  elif [[ -f /tmp/popup-edit-target-pane ]]; then
+  elif [[ -f "${XDG_RUNTIME_DIR:-$HOME/.cache}/popup-edit-target-pane" ]]; then
     # tmux: send to target pane
-    CLAUDE_TARGET_PANE="$(cat /tmp/popup-edit-target-pane)"
+    CLAUDE_TARGET_PANE="$(cat "${XDG_RUNTIME_DIR:-$HOME/.cache}/popup-edit-target-pane")"
     tmux send-keys -t "$CLAUDE_TARGET_PANE" -l "$(cat "$PROMPT_FILE")"
   elif [[ -n "${CLAUDE_TARGET_PANE:-${1:-}}" ]]; then
     # tmux: from argument or env
