@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROMPT_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/popup-edit"
+mkdir -p "$PROMPT_DIR"
+
+PROMPT_FILE="$PROMPT_DIR/prompt-$(date +%Y%m%d-%H%M%S).md"
+touch "$PROMPT_FILE"
+
+nvim "$PROMPT_FILE"
+
+if [[ -s "$PROMPT_FILE" ]]; then
+  if [[ -n "${ZELLIJ:-}" ]]; then
+    # Zellij: toggle floating pane and write chars
+    zellij action toggle-floating-panes
+    zellij action write-chars "$(cat "$PROMPT_FILE")"
+  elif [[ -f "${XDG_RUNTIME_DIR:-$HOME/.cache}/popup-edit-target-pane" ]]; then
+    # tmux: send to target pane
+    CLAUDE_TARGET_PANE="$(cat "${XDG_RUNTIME_DIR:-$HOME/.cache}/popup-edit-target-pane")"
+    tmux send-keys -t "$CLAUDE_TARGET_PANE" -l "$(cat "$PROMPT_FILE")"
+  elif [[ -n "${CLAUDE_TARGET_PANE:-${1:-}}" ]]; then
+    # tmux: from argument or env
+    tmux send-keys -t "${CLAUDE_TARGET_PANE:-$1}" -l "$(cat "$PROMPT_FILE")"
+  else
+    # Fallback: copy to clipboard
+    clipboard-copy < "$PROMPT_FILE"
+  fi
+fi
+
+rm -f "$PROMPT_FILE"
