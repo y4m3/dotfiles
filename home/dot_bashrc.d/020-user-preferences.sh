@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # 020-user-preferences.sh — User preferences
 # Category: 0xx (Core)
-# Sets timezone and safety aliases
+# Sets safety aliases and vi mode
 
-# Set timezone to JST (non-interactive also needs this)
-export TZ=Asia/Tokyo
+# Timezone managed by Home Manager (home.sessionVariables.TZ)
 
 # Editor settings moved to 100-editor.sh
 
