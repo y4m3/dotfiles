@@ -385,6 +385,41 @@ local function create_split_action(direction)
 end
 
 -- ============================================================
+-- Helper: Create spawn tab action with workspace-aware args
+-- ============================================================
+-- Same pattern as create_split_action above.
+-- Ensures new tabs spawn with the correct shell for the current workspace.
+local function create_spawn_tab_action()
+  return wezterm.action_callback(function(window, pane)
+    local workspace = window:active_workspace()
+    local env = find_env_by_workspace(workspace)
+
+    local spawn_cmd = {}
+
+    if env and env.connection == "local" and env.args then
+      spawn_cmd.args = env.args
+      spawn_cmd.domain = { DomainName = "local" }
+      if DEBUG_DEFAULT_PROG then
+        wezterm.log_info(string.format(
+          "[spawn_tab] workspace=%s args=%s domain=local",
+          workspace, table.concat(env.args, " ")
+        ))
+      end
+    else
+      spawn_cmd.domain = "CurrentPaneDomain"
+      if DEBUG_DEFAULT_PROG then
+        wezterm.log_info(string.format(
+          "[spawn_tab] workspace=%s domain=CurrentPaneDomain",
+          workspace
+        ))
+      end
+    end
+
+    window:perform_action(act.SpawnCommandInNewTab(spawn_cmd), pane)
+  end)
+end
+
+-- ============================================================
 -- Keys-- ============================================================
 config.keys = {
   -- ------------------------------------------------------------
@@ -465,8 +500,8 @@ config.keys = {
   -- ------------------------------------------------------------
   -- Tab Management
   -- ------------------------------------------------------------
-  -- New tab
-  { key = "c",     mods = "LEADER",       action = act.SpawnTab("CurrentPaneDomain") },
+  -- New tab (workspace-aware: spawns correct shell for current workspace)
+  { key = "c",     mods = "LEADER",       action = create_spawn_tab_action() },
 
   -- Close tab (with confirmation)
   { key = "X",     mods = "LEADER|SHIFT", action = act.CloseCurrentTab({ confirm = true }) },
