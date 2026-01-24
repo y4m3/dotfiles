@@ -111,6 +111,20 @@ keybinds clear-defaults=true {
         bind "/" { SwitchToMode "EnterSearch"; SearchInput 0; }
 
         // ---------------------------------------------------------------------
+        // Popup Text Editor
+        // ---------------------------------------------------------------------
+        bind "e" {
+            Run "popup-edit" {
+                floating true
+                close_on_exit true
+                name "popup-edit"
+                width "40%"
+                height "50%"
+            }
+            SwitchToMode "Normal"
+        }
+
+        // ---------------------------------------------------------------------
         // Session Management
         // ---------------------------------------------------------------------
         // Detach from session
