@@ -1,3 +1,17 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="# {{" right-delimiter="}}"
+#
+# Modify script for .gitconfig
+# - Outputs base configuration managed by chezmoi
+# - Preserves local-only sections (e.g., credential helpers added by gh auth setup-git)
+
+set -euo pipefail
+
+# Save current content to extract local settings later
+CURRENT_CONFIG="$(cat)"
+
+# Output base configuration
+cat << 'BASECONFIG'
 # Include local user-specific settings (name, email, etc.)
 # IMPORTANT: Edit ~/.gitconfig.local before making commits
 [include]
@@ -15,17 +29,17 @@
     root = ~/repos
 
 [credential]
-{{- if eq .chezmoi.os "windows" }}
+# {{- if eq .chezmoi.os "windows" }}
     # Windows: use Git Credential Manager Core
     helper = manager-core
-{{- else }}
+# {{- else }}
     # NOTE: git-credential-cache uses Unix domain sockets and is only available
     # on Linux/Unix systems. On other platforms, configure an appropriate helper
     # in ~/.gitconfig.local to override this default.
     #
     # The following can be overridden in ~/.gitconfig.local.
-    helper = cache --timeout={{ if env "GIT_CREDENTIAL_CACHE_TIMEOUT" }}{{ env "GIT_CREDENTIAL_CACHE_TIMEOUT" }}{{ else }}1800{{ end }}
-{{- end }}
+    helper = cache --timeout=# {{- if env "GIT_CREDENTIAL_CACHE_TIMEOUT" }}# {{ env "GIT_CREDENTIAL_CACHE_TIMEOUT" }}# {{- else }}1800# {{- end }}
+# {{- end }}
 
 [fetch]
     prune = true
@@ -82,3 +96,12 @@
     last = log -1 HEAD
     lg = log --graph --oneline --decorate --all
     amend = commit --amend --no-edit
+BASECONFIG
+
+# Preserve local credential sections (e.g., from gh auth setup-git)
+# These are [credential "https://..."] sections, not the plain [credential] section
+echo "$CURRENT_CONFIG" | awk '
+  /^\[credential "/ { in_section=1; print; next }
+  /^\[/ { in_section=0 }
+  in_section { print }
+'
