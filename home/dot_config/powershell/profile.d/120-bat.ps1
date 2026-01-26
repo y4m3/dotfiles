@@ -8,7 +8,7 @@ if (-not $env:BAT_THEME) { $env:BAT_THEME = "tokyonight_storm" }
 if (-not $env:BAT_PAGER) { $env:BAT_PAGER = "less -FRX" }
 
 # Remove built-in alias that conflicts with our function
-Remove-Alias -Name cat -Force -ErrorAction SilentlyContinue
+Remove-Item alias:cat -Force -ErrorAction SilentlyContinue
 
 # Smart cat function: use bat for interactive viewing, Get-Content for pipes/redirects
 if (Get-Command bat -ErrorAction SilentlyContinue) {
