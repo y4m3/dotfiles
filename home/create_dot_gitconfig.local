@@ -1,6 +1,6 @@
 # Local git configuration (user-specific)
 # This file is created only once and won't be overwritten by chezmoi.
-# 
+#
 # IMPORTANT: You MUST edit this file with your real name and email
 # before making any commits, or git will fail with:
 #   "Please tell me who you are"
@@ -9,6 +9,11 @@
 #   [user]
 #       name = John Doe
 #       email = john.doe@example.com
+#
+# If you use `gh auth setup-git`, add the credential helper here:
+#   [credential "https://github.com"]
+#       helper =
+#       helper = !gh auth git-credential
 #
 # Uncomment and edit the lines below:
 
