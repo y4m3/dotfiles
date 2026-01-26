@@ -121,10 +121,6 @@ config.scrollback_lines = 50000
 -- Window
 config.window_decorations = "RESIZE"
 config.window_padding = { left = 10, right = 0, top = 10, bottom = 0 }
-config.window_background_gradient = {
-  colors = { "#14141a", "#1a1b26", "#1c1c24" },
-  orientation = { Linear = { angle = -15.0 } },
-}
 config.macos_window_background_blur = 20
 config.win32_system_backdrop = "Acrylic"
 
@@ -155,19 +151,30 @@ end
 config.adjust_window_size_when_changing_font_size = true
 config.allow_square_glyphs_to_overflow_width = "WhenFollowedBySpace"
 
--- Colors
-config.color_scheme = "Tokyo Night (Gogh)"
+-- Colors: Tokyo Night Night (from tokyonight.nvim extras)
 config.colors = {
-  split = "#2a2b3d",
-  cursor_bg = "#a9b1d6",
-  cursor_border = "#a9b1d6",
+  foreground = "#c0caf5",
+  background = "#1a1b26",
+  cursor_bg = "#c0caf5",
+  cursor_border = "#c0caf5",
+  cursor_fg = "#1a1b26",
+  selection_bg = "#283457",
+  selection_fg = "#c0caf5",
+  split = "#7aa2f7",
+  compose_cursor = "#ff9e64",
+  scrollbar_thumb = "#292e42",
+
+  ansi = { "#15161e", "#f7768e", "#9ece6a", "#e0af68", "#7aa2f7", "#bb9af7", "#7dcfff", "#a9b1d6" },
+  brights = { "#414868", "#ff899d", "#9fe044", "#faba4a", "#8db0ff", "#c7a9ff", "#a4daff", "#c0caf5" },
+
   tab_bar = {
-    background = "#16161e",
-    active_tab = { bg_color = "#1a1b26", fg_color = "#a9b1d6", intensity = "Normal" },
-    inactive_tab = { bg_color = "#16161e", fg_color = "#565f89" },
-    inactive_tab_hover = { bg_color = "#1a1b26", fg_color = "#787c99" },
-    new_tab = { bg_color = "#16161e", fg_color = "#565f89" },
-    new_tab_hover = { bg_color = "#1a1b26", fg_color = "#787c99" },
+    background = "#1a1b26",
+    inactive_tab_edge = "#16161e",
+    active_tab = { bg_color = "#7aa2f7", fg_color = "#16161e" },
+    inactive_tab = { bg_color = "#292e42", fg_color = "#545c7e" },
+    inactive_tab_hover = { bg_color = "#292e42", fg_color = "#7aa2f7" },
+    new_tab = { bg_color = "#1a1b26", fg_color = "#7aa2f7" },
+    new_tab_hover = { bg_color = "#1a1b26", fg_color = "#7aa2f7" },
   },
 }
 
