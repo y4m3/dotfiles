@@ -4,7 +4,7 @@
 
 # Remove built-in aliases that conflict with our functions
 # PowerShell's alias takes precedence over functions
-Remove-Alias -Name ls -Force -ErrorAction SilentlyContinue
+Remove-Item alias:ls -Force -ErrorAction SilentlyContinue
 
 if (Get-Command eza -ErrorAction SilentlyContinue) {
     # eza aliases
