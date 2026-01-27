@@ -13,7 +13,8 @@ lint:
     echo "==> Running shellcheck on shell scripts..."
     shellcheck -e SC1090,SC1091 \
         home/dot_bashrc.d/*.sh \
-        home/dot_bash_prompt.d/*.sh
+        home/dot_bash_prompt.d/*.sh \
+        home/dot_local/bin/executable_tmux-sessionizer
     echo "==> Running shellcheck on .chezmoiscripts (template-aware)..."
     for f in home/.chezmoiscripts/*.sh.tmpl; do
         # Remove chezmoi template guard lines (starting with double-brace) before shellcheck
@@ -32,7 +33,8 @@ format:
     echo "==> Formatting shell scripts with shfmt..."
     shfmt -w \
         home/dot_bashrc.d/*.sh \
-        home/dot_bash_prompt.d/*.sh
+        home/dot_bash_prompt.d/*.sh \
+        home/dot_local/bin/executable_tmux-sessionizer
     echo "==> Formatting .chezmoiscripts (preserving template guards)..."
     for f in home/.chezmoiscripts/*.sh.tmpl; do
         # Preserve first line (template guard), format middle, preserve last line
@@ -50,5 +52,6 @@ check:
     echo "==> Checking shell script formatting..."
     shfmt -d \
         home/dot_bashrc.d/*.sh \
-        home/dot_bash_prompt.d/*.sh
+        home/dot_bash_prompt.d/*.sh \
+        home/dot_local/bin/executable_tmux-sessionizer
     echo "✓ Formatting check passed"
