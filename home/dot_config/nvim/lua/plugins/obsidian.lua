@@ -23,6 +23,10 @@ return {
       local vaults_str = vim.env.OBSIDIAN_VAULTS
       local workspaces = {}
 
+      if not vaults_str then
+        return {}
+      end
+
       for vault_path in string.gmatch(vaults_str, "[^,]+") do
         vault_path = vim.trim(vault_path)
         if vault_path ~= "" then
@@ -49,7 +53,7 @@ return {
         follow_url_func = function(url)
           local cmd
           if vim.fn.has("win32") == 1 then
-            cmd = { "cmd.exe", "/c", "start", "", url }
+            cmd = { "rundll32", "url.dll,FileProtocolHandler", url }
           elseif vim.fn.has("wsl") == 1 then
             cmd = { "wslview", url }
           else
