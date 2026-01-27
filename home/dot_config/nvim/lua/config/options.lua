@@ -50,3 +50,6 @@ opt.listchars = {
   extends = "›",
   precedes = "‹",
 }
+
+-- statusline非表示（bufferlineがタブラインを担当）
+opt.laststatus = 0

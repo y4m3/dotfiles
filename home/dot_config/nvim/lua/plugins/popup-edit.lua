@@ -6,8 +6,10 @@ return {
       {
         "@",
         function()
-          local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+          local row, col = table.unpack(vim.api.nvim_win_get_cursor(0))
           require("snacks").picker.files({
+            hidden = true,
+            ignored = true,
             confirm = function(picker, item)
               picker:close()
               if item then
