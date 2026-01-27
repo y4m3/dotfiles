@@ -51,7 +51,7 @@ opt.listchars = {
   precedes = "‹",
 }
 
--- statusline非表示（bufferlineがタブラインを担当）
+-- Hide statusline (bufferline handles the tabline)
 opt.laststatus = 0
 
 -- WSL: use wslview for opening URLs
@@ -60,4 +60,24 @@ if vim.fn.has("wsl") == 1 then
   vim.ui.open = function(path, opts)
     vim.fn.jobstart({ "wslview", path }, { detach = true })
   end
+end
+
+-- Windows: use pwsh (PowerShell 7+) for terminal, fallback to powershell 5
+-- Requires full shell configuration for termopen() compatibility
+-- See: https://github.com/neovim/neovim/issues/15634
+if vim.fn.has("win32") == 1 then
+  vim.o.shelltemp = false
+  local shellcmdflag = "-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command "
+    .. "[Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new();"
+    .. "$PSDefaultParameterValues['Out-File:Encoding']='utf8';"
+  vim.o.shellpipe = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
+  vim.o.shellquote = ""
+  vim.o.shellxquote = ""
+  if vim.fn.executable("pwsh") == 1 then
+    vim.o.shell = "pwsh"
+    shellcmdflag = shellcmdflag .. "$PSStyle.OutputRendering = 'PlainText';"
+  else
+    vim.o.shell = "powershell"
+  end
+  vim.o.shellcmdflag = shellcmdflag
 end
