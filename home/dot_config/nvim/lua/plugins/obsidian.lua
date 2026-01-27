@@ -4,7 +4,8 @@ return {
     version = "*",
     ft = "markdown",
     cond = function()
-      return vim.env.OBSIDIAN_VAULTS ~= nil
+      local vaults_str = vim.env.OBSIDIAN_VAULTS
+      return vaults_str ~= nil and vaults_str:match("[^,%s]") ~= nil
     end,
     dependencies = {
       "nvim-lua/plenary.nvim",

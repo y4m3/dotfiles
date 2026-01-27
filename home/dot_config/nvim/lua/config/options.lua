@@ -57,7 +57,7 @@ opt.laststatus = 0
 -- WSL: use wslview for opening URLs
 if vim.fn.has("wsl") == 1 then
   vim.g.netrw_browsex_viewer = "wslview"
-  vim.ui.open = function(url)
-    vim.fn.jobstart({ "wslview", url }, { detach = true })
+  vim.ui.open = function(path, opts)
+    vim.fn.jobstart({ "wslview", path }, { detach = true })
   end
 end
