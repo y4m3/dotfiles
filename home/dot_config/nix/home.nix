@@ -19,6 +19,9 @@ in
     tmux
     zellij
 
+    # WSL utilities
+    wslu
+
     # File operations
     bat
     eza
