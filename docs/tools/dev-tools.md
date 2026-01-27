@@ -160,3 +160,41 @@ ruff check --fix .     # Auto-fix
 ```
 
 Automatically used by Neovim/LazyVim for Python files.
+
+## Git Worktree Management
+
+Integration of ghq repository management with git worktrees for parallel branch development.
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `dev` | Fuzzy select ghq repo or existing worktree |
+| `wt-add [branch]` | Create worktree (interactive or with branch name) |
+| `wt-rm [path]` | Remove worktree with confirmation |
+| `wt-list` | List all worktrees for current repo |
+| `wt-prune` | Remove worktrees for merged branches |
+
+### Directory Structure
+
+Worktrees are created in `$WORKTREE_DIR/<repo-name>/<branch-name>/` (default: `~/repos/.worktrees/`):
+
+```
+~/repos/.worktrees/
+└── my-project/
+    ├── feature-auth/     # worktree for feature/auth branch
+    └── fix-bug-123/      # worktree for fix/bug-123 branch
+```
+
+### Workflow Example
+
+```bash
+# Start work on a feature branch
+cd ~/repos/github.com/user/repo
+wt-add feature/new-feature    # Creates worktree and switches to it
+
+# Work in isolation, then clean up
+wt-prune                      # Remove merged worktrees
+```
+
+**Note:** Branch names are sanitized (/ and . become -) for directory names.

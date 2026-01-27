@@ -151,7 +151,7 @@ end
 config.adjust_window_size_when_changing_font_size = true
 config.allow_square_glyphs_to_overflow_width = "WhenFollowedBySpace"
 
--- Colors: Tokyo Night Night (from tokyonight.nvim extras)
+-- Colors (Tokyo Night from tokyonight.nvim extras)
 config.colors = {
   foreground = "#c0caf5",
   background = "#1a1b26",
@@ -163,13 +163,11 @@ config.colors = {
   split = "#7aa2f7",
   compose_cursor = "#ff9e64",
   scrollbar_thumb = "#292e42",
-
   ansi = { "#15161e", "#f7768e", "#9ece6a", "#e0af68", "#7aa2f7", "#bb9af7", "#7dcfff", "#a9b1d6" },
   brights = { "#414868", "#ff899d", "#9fe044", "#faba4a", "#8db0ff", "#c7a9ff", "#a4daff", "#c0caf5" },
-
   tab_bar = {
-    background = "#1a1b26",
     inactive_tab_edge = "#16161e",
+    background = "#1a1b26",
     active_tab = { bg_color = "#7aa2f7", fg_color = "#16161e" },
     inactive_tab = { bg_color = "#292e42", fg_color = "#545c7e" },
     inactive_tab_hover = { bg_color = "#292e42", fg_color = "#7aa2f7" },

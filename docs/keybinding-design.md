@@ -76,9 +76,10 @@ Shell uses Vi mode (`set -o vi`), so Emacs mode keys (Alt+F/D etc.) can conflict
 │   Ctrl+\ → key                                              │
 │   Terminal tab/pane management, SSH connection switching    │
 ├─────────────────────────────────────────────────────────────┤
-│ Layer 3: Zellij (Terminal Multiplexer)                      │
+│ Layer 3: Zellij/tmux (Terminal Multiplexer)                 │
 │   Ctrl+a → key                                              │
 │   Pane/tab management within each environment               │
+│   (tmux on Linux/WSL, Zellij as alternative)                │
 ├─────────────────────────────────────────────────────────────┤
 │ Layer 4: Vim (Editor)                                       │
 │   Space + key                                               │
@@ -109,7 +110,8 @@ WezTerm
 Operation examples:
 - `Alt+l` → Focus right Windows window
 - `Ctrl+\ → o` → Next WezTerm tab
-- `Ctrl+a → l` → Right Zellij pane
+- `Ctrl+a → l` → Right Zellij/tmux pane
+- `Ctrl+a → F` → tmux-sessionizer (project picker)
 - `Space + ff` → File search in Vim
 
 ---
@@ -121,7 +123,7 @@ Operation examples:
 | Alt | GlazeWM | Windows window management |
 | Alt+Shift | GlazeWM | Window/workspace movement |
 | Ctrl+\ | WezTerm Leader | Terminal tab/pane |
-| Ctrl+a | Zellij Leader | Multiplexer operations |
+| Ctrl+a | tmux/Zellij Leader | Multiplexer operations |
 | Space | Vim Leader | Editor operations |
 | Ctrl+single key | Pass-through | Direct to terminal |
 
@@ -130,6 +132,7 @@ Operation examples:
 | Tool | Leader | Timeout | Behavior after timeout |
 |------|--------|---------|------------------------|
 | WezTerm | Ctrl+\ | 1000ms | Key input passes to terminal |
+| tmux | Ctrl+a (prefix) | - | Waits for next key |
 | Zellij | Ctrl+a | None | Stays in tmux mode (Esc to exit) |
 
 ### 4.2 Leader Key Alternative Transmission
@@ -168,7 +171,7 @@ Same keys for same operations across 3 tools (GlazeWM, Zellij, WezTerm).
 | Scroll/Copy mode | - | [ | [ |
 | Search | - | / | / |
 
-**Note**: WezTerm's `Ctrl+\ → ?` (debug overlay) and Zellij's `?` (tooltip) are different features. Zellij's tooltip is a plugin feature, not via Leader (see 8.6).
+**Note**: WezTerm's `Ctrl+\ → ?` opens the debug overlay for troubleshooting.
 
 ---
 
@@ -460,6 +463,9 @@ Key and display correspondence is unified, but note the different config file no
 | / | Search mode | `SwitchToMode "EnterSearch"` |
 | d | Detach | `Detach` |
 | a | Send Ctrl+a to terminal | `Write 0x01` |
+| e | Popup edit | Opens Neovim popup for text input |
+| F | Session manager | `LaunchOrFocusPlugin "session-manager"` |
+| G | Agent deck | `Run "agent-deck"` |
 
 ### 8.5 Ctrl+a Transmission Explanation
 
@@ -471,44 +477,15 @@ Key and display correspondence is unified, but note the different config file no
 
 This allows sending line-beginning (Ctrl+A) in shell Emacs mode with `Ctrl+a → a`.
 
-### 8.6 Tooltip (Keybinding Hints) Implementation
-
-Zellij's tooltip feature is a **plugin feature**, enabled in layout configuration, not keybinds.
-
-**Important**: This feature is used directly in Normal mode, not via Leader (Ctrl+a).
-
-#### Layout Configuration (e.g., default.kdl)
-
-```kdl
-layout {
-    pane size=1 borderless=true {
-        plugin location="zellij:compact-bar" {
-            tooltip "?"
-        }
-    }
-    pane
-}
-```
-
-#### Behavior
-
-- Press `?` in Normal mode to display keybinding hints
-- Press `?` again to hide (toggle behavior)
-
-#### Impact on Keybinds
-
-Since the `?` key is handled by the plugin, it's not defined in keybinds configuration. Pressing `?` in tmux mode does nothing.
-
-### 8.7 Normal Mode Keys
+### 8.6 Normal Mode Keys
 
 Keys used directly in Normal mode:
 
 | Key | Function | Note |
 |-----|----------|------|
 | Ctrl+a | Enter tmux mode | Leader |
-| ? | Show/hide tooltip | Plugin feature |
 
-### 8.8 Mode Switching (for detailed operations)
+### 8.7 Mode Switching (for detailed operations)
 
 From tmux mode to other modes:
 
@@ -536,7 +513,7 @@ From tmux mode to other modes:
 | w | Session manager (plugin) |
 | c | Configuration (plugin) |
 
-### 8.9 Error Behavior
+### 8.8 Error Behavior
 
 If there's a KDL syntax error in the config file, Zellij displays an error message and exits at startup. To validate config beforehand:
 
@@ -546,7 +523,83 @@ zellij setup --check
 
 ---
 
-## 9. LazyVim Keybinding Details
+## 9. tmux Keybinding Details
+
+tmux is used on Linux/WSL as an alternative to Zellij. Keybindings are designed to match Zellij tmux mode for consistency.
+
+### 9.1 Configuration Policy
+
+Leader key is `Ctrl+a` (prefix), matching Zellij's tmux mode.
+
+### 9.2 Keybinding List
+
+#### Pane Navigation (prefix → key)
+
+| Key | Function |
+|-----|----------|
+| h | Move to left pane |
+| j | Move to down pane |
+| k | Move to up pane |
+| l | Move to right pane |
+| H | Resize pane left |
+| J | Resize pane down |
+| K | Resize pane up |
+| L | Resize pane right |
+
+#### Window/Tab Navigation
+
+| Key | Function |
+|-----|----------|
+| i | Previous window |
+| o | Next window |
+| I | Move window left |
+| O | Move window right |
+| 1-9 | Go to window N |
+| c | New window |
+| X | Close window |
+| Tab | Last window |
+| w | Session/window tree |
+
+#### Pane Management
+
+| Key | Function |
+|-----|----------|
+| v | Split right (vertical layout) |
+| s | Split down (horizontal layout) |
+| x | Close pane |
+| f | Toggle pane zoom |
+| z | Synchronize panes |
+| ; | Last pane |
+| b | Break pane to new window |
+| Space | Cycle layout |
+
+#### Scroll/Copy Mode
+
+| Key | Function |
+|-----|----------|
+| [ | Enter copy mode |
+| / | Search in copy mode |
+
+#### Session Management
+
+| Key | Function |
+|-----|----------|
+| d | Detach session |
+| S | Rename session |
+| N | New session (with name prompt) |
+| F | tmux-sessionizer (project picker) |
+| G | agent-deck (AI agent manager) |
+
+#### Utility
+
+| Key | Function |
+|-----|----------|
+| a | Send Ctrl+a to terminal |
+| e | Popup edit (Neovim floating window) |
+
+---
+
+## 10. LazyVim Keybinding Details
 
 **Leader**: Space
 
@@ -565,9 +618,9 @@ zellij setup --check
 
 ---
 
-## 10. Conflict Analysis
+## 11. Conflict Analysis
 
-### 10.1 Conflict-Free Verification
+### 11.1 Conflict-Free Verification
 
 | Key | GlazeWM | WezTerm | Zellij | Vim | Terminal | Verdict |
 |-----|---------|---------|--------|-----|----------|---------|
@@ -579,7 +632,7 @@ zellij setup --check
 | Ctrl+c/d/l/z | - | Pass | Pass | - | ○ | ✅ Terminal pass-through |
 | ? | - | After Leader | Plugin | - | - | ✅ Separated |
 
-### 10.2 Acceptable Overlaps
+### 11.2 Acceptable Overlaps
 
 | Key | Usage 1 | Usage 2 | Verdict |
 |-----|---------|---------|---------|
@@ -588,19 +641,20 @@ zellij setup --check
 
 ---
 
-## 11. Configuration Files
+## 12. Configuration Files
 
-### 11.1 File Locations
+### 12.1 File Locations
 
 | Tool | Path |
 |------|------|
 | GlazeWM | `~/.glzr/glazewm/config.yaml` |
 | WezTerm | `~/.config/wezterm/wezterm.lua` |
+| tmux | `~/.config/tmux/` (modular: tmux.conf, keybindings.conf, etc.) |
 | Zellij (keybinds) | `~/.config/zellij/config.kdl` |
 | Zellij (layout) | `~/.config/zellij/layouts/default.kdl` |
 | LazyVim | `~/.config/nvim/` |
 
-### 11.2 Configuration Syntax Notes
+### 12.2 Configuration Syntax Notes
 
 Code examples in this design document are **pseudocode** to illustrate concepts. When creating actual config files, refer to each tool's official documentation for accurate syntax.
 
@@ -608,6 +662,7 @@ Code examples in this design document are **pseudocode** to illustrate concepts.
 |------|-----------------|------------------------|
 | GlazeWM | YAML | https://github.com/glzr-io/glazewm |
 | WezTerm | Lua | https://wezfurlong.org/wezterm/config/ |
+| tmux | tmux conf | https://github.com/tmux/tmux/wiki |
 | Zellij | KDL | https://zellij.dev/documentation/ |
 
 Special attention:
@@ -617,7 +672,7 @@ Special attention:
 
 ---
 
-## 12. Processing Flow
+## 13. Processing Flow
 
 ```
 [Physical Keyboard]
@@ -640,18 +695,19 @@ Special attention:
 
 ---
 
-## 13. Quick Reference
+## 14. Quick Reference
 
-### 13.1 Leader List
+### 14.1 Leader List
 
 | Tool | Leader | Timeout | Exit method |
 |------|--------|---------|-------------|
 | GlazeWM | Alt (direct) | - | - |
 | WezTerm | Ctrl+\ | 1000ms | Auto timeout |
+| tmux | Ctrl+a (prefix) | - | - |
 | Zellij | Ctrl+a | None | Esc |
 | Vim | Space | - | - |
 
-### 13.2 Common Operations
+### 14.2 Common Operations
 
 ```
 # Pane/Window Movement
@@ -695,7 +751,14 @@ Ctrl+-/=/0            Decrease/Increase/Reset
 # Copy/Paste (WezTerm)
 Ctrl+Shift+C/V        Copy/Paste
 
+# Session Management
+Ctrl+a → d            tmux/Zellij detach
+Ctrl+a → F            tmux-sessionizer (project picker)
+Ctrl+a → G            agent-deck (AI agent manager)
+
+# Popup Edit
+Ctrl+a → e            tmux/Zellij popup edit (Neovim)
+
 # Help
 Ctrl+\ → ?            WezTerm debug overlay
-?                     Zellij tooltip (direct in Normal mode)
 ```
