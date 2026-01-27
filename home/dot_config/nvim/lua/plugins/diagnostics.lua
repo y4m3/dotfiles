@@ -5,7 +5,7 @@ return {
       diagnostics = {
         virtual_text = false,
         signs = false,
-        underline = true,
+        underline = false,
       },
     },
     keys = {
@@ -13,9 +13,9 @@ return {
         "<leader>ud",
         function()
           local current = vim.diagnostic.config()
-          local enabled = current.virtual_text or current.signs
+          local enabled = current.virtual_text or current.signs or current.underline
           if enabled then
-            vim.diagnostic.config({ virtual_text = false, signs = false })
+            vim.diagnostic.config({ virtual_text = false, signs = false, underline = false })
             vim.notify("Diagnostics disabled", vim.log.levels.INFO)
           else
             vim.diagnostic.config({
@@ -25,6 +25,7 @@ return {
                 prefix = "●",
               },
               signs = true,
+              underline = true,
             })
             vim.notify("Diagnostics enabled", vim.log.levels.INFO)
           end
