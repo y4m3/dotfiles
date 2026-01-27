@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Bash-only script (uses arrays, [[ ]], etc.)
+set -euo pipefail
+
+# Fuzzy find and switch to project directories as tmux sessions
+# Usage: tmux-sessionizer
+#
+# Features:
+#   - Shows existing tmux sessions (prefixed with [session])
+#   - Lists ghq repositories
+#   - Works both inside and outside tmux
+
+# Required commands check
+for cmd in tmux ghq fzf; do
+  if ! command -v "$cmd" &>/dev/null; then
+    echo "$cmd not found"
+    exit 1
+  fi
+done
+
+# Switch or attach to session (handles both inside/outside tmux)
+changeSession() {
+  local change
+  [[ -n "${TMUX:-}" ]] && change="switch-client" || change="attach-session"
+  tmux $change -t "$1"
+}
+
+# Build candidate list
+candidates=()
+
+# 1. Existing tmux sessions (prefixed with [session])
+while IFS= read -r session; do
+  [[ -n "$session" ]] && candidates+=("[session] $session")
+done < <(tmux list-sessions -F '#{session_name}' 2>/dev/null)
+
+# 2. ghq repositories
+while IFS= read -r repo; do
+  candidates+=("$repo")
+done < <(ghq list --full-path)
+
+# 3. Additional directories from config
+config_file="${XDG_CONFIG_HOME:-$HOME/.config}/tmux-sessionizer/create_dirs"
+if [[ -f "$config_file" ]]; then
+  while IFS= read -r dir || [[ -n "$dir" ]]; do
+    [[ -z "$dir" || "$dir" == \#* ]] && continue
+    # Expand ~ safely (without eval)
+    expanded_dir="${dir/#\~/$HOME}"
+    [[ -d "$expanded_dir" ]] && candidates+=("$expanded_dir")
+  done <"$config_file"
+fi
+
+[[ ${#candidates[@]} -eq 0 ]] && {
+  echo "No repositories or sessions"
+  exit 1
+}
+
+# Use fzf with tmux integration if inside tmux, otherwise plain fzf
+if [[ -n "${TMUX:-}" ]]; then
+  selected=$(printf '%s\n' "${candidates[@]}" | fzf --tmux) || true
+else
+  selected=$(printf '%s\n' "${candidates[@]}" | fzf) || true
+fi
+
+[[ -z "$selected" ]] && exit 0
+
+# Handle existing session selection
+if [[ "$selected" == "[session] "* ]]; then
+  session_name="${selected#\[session\] }"
+  changeSession "$session_name"
+  exit 0
+fi
+
+# Create or switch to session for repository
+session_name=$(basename "$selected" | tr '.' '_')
+
+if ! tmux has-session -t="$session_name" 2>/dev/null; then
+  tmux new-session -ds "$session_name" -c "$selected"
+fi
+changeSession "$session_name"

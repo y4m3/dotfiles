@@ -1,0 +1,4 @@
+# Additional directories for tmux-sessionizer
+# Format: one directory per line, supports ~ expansion
+~/.local/share/chezmoi
+~/repos

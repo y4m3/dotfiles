@@ -34,6 +34,7 @@ in
     gh
     ghq
     git
+    gitmux
     lazygit
 
     # Development

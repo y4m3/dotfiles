@@ -12,7 +12,6 @@ keybinds clear-defaults=true {
     // =========================================================================
     normal {
         // No bindings in normal mode - all operations go through Ctrl+a (tmux mode)
-        // The "?" key for tooltip is handled by the compact-bar plugin (see layout)
     }
 
     // =========================================================================
@@ -129,6 +128,24 @@ keybinds clear-defaults=true {
         // ---------------------------------------------------------------------
         // Detach from session
         bind "d" { Detach; }
+
+        // Session Manager (floating plugin)
+        bind "F" {
+            LaunchOrFocusPlugin "session-manager" {
+                floating true
+                move_to_focused_tab true
+            }
+            SwitchToMode "Normal"
+        }
+
+        // Agent Deck (external tool)
+        bind "G" {
+            Run "agent-deck" {
+                floating true
+                close_on_exit true
+            }
+            SwitchToMode "Normal"
+        }
 
         // ---------------------------------------------------------------------
         // Send Ctrl+a to terminal
@@ -345,7 +362,7 @@ plugins {
 // Whether to show tips on startup
 show_startup_tips false
 
-// Use compact layout by default (with tooltip support)
+// Use default layout with zjstatus
 default_layout "default"
 
 // Theme (customize as needed)

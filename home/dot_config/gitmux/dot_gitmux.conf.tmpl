@@ -1,0 +1,30 @@
+{{- if eq .chezmoi.os "linux" -}}
+tmux:
+  symbols:
+    branch: " "
+    hashprefix: ":"
+    ahead: "⇡"
+    behind: "⇣"
+    staged: "+"
+    conflict: "~"
+    modified: "!"
+    untracked: "?"
+    stashed: "$"
+    clean: ""
+  styles:
+    clear: "#[fg=#565f89]"
+    state: "#[fg=#565f89]"
+    branch: "#[fg=#565f89]"
+    remote: "#[fg=#414868]"
+    divergence: "#[fg=#565f89]"
+    staged: "#[fg=#565f89]"
+    conflict: "#[fg=#565f89]"
+    modified: "#[fg=#565f89]"
+    untracked: "#[fg=#414868]"
+    stashed: "#[fg=#414868]"
+    clean: "#[fg=#565f89]"
+  layout: [branch, divergence, flags]
+  options:
+    branch_max_len: 20
+    hide_clean: true
+{{- end -}}

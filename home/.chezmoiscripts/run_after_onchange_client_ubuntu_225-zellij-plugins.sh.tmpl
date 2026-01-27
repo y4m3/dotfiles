@@ -1,0 +1,32 @@
+{{- if and (eq .chezmoi.os "linux") (eq (.profile | default "client") "client") (contains "debian" .chezmoi.osRelease.idLike) -}}
+#!/usr/bin/env bash
+# Zellij plugins installation
+# zjstatus version hash: {{ "v0.21.1" | sha256sum }}
+
+set -euo pipefail
+
+ZJSTATUS_VERSION="v0.21.1"
+ZJSTATUS_URL="https://github.com/dj95/zjstatus/releases/download/${ZJSTATUS_VERSION}/zjstatus.wasm"
+PLUGIN_DIR="${HOME}/.config/zellij/plugins"
+
+echo "==> Installing zellij plugins..."
+
+mkdir -p "$PLUGIN_DIR"
+
+if [[ -f "$PLUGIN_DIR/zjstatus.wasm" ]]; then
+  echo "  ✓ zjstatus (already installed)"
+else
+  echo "  → Downloading zjstatus ${ZJSTATUS_VERSION}..."
+  TMP_FILE=$(mktemp)
+  trap 'rm -f "$TMP_FILE"' EXIT
+  if curl -fsSL -o "$TMP_FILE" "$ZJSTATUS_URL"; then
+    mv "$TMP_FILE" "$PLUGIN_DIR/zjstatus.wasm"
+    echo "  ✓ zjstatus ${ZJSTATUS_VERSION}"
+  else
+    echo "  ✗ Failed to download zjstatus" >&2
+    exit 1
+  fi
+fi
+
+echo "✓ Zellij plugins installed successfully"
+{{- end }}
