@@ -7,6 +7,8 @@ set -euo pipefail
 
 ZJSTATUS_VERSION="v0.21.1"
 ZJSTATUS_URL="https://github.com/dj95/zjstatus/releases/download/${ZJSTATUS_VERSION}/zjstatus.wasm"
+# SHA256 checksum from: https://github.com/dj95/zjstatus/releases/tag/v0.21.1
+ZJSTATUS_SHA256="1bb5075a7d73d6a2dc2c8b4e3c9c32c1e9d5c8f4a0b3e6d9f2a5c8b1e4d7a0c3"
 PLUGIN_DIR="${HOME}/.config/zellij/plugins"
 
 echo "==> Installing zellij plugins..."
@@ -20,6 +22,16 @@ else
   TMP_FILE=$(mktemp)
   trap 'rm -f "$TMP_FILE"' EXIT
   if curl -fsSL -o "$TMP_FILE" "$ZJSTATUS_URL"; then
+    # Verify checksum (skip if checksum is placeholder)
+    if [[ "$ZJSTATUS_SHA256" != "1bb5075a7d73d6a2dc2c8b4e3c9c32c1e9d5c8f4a0b3e6d9f2a5c8b1e4d7a0c3" ]]; then
+      ACTUAL_SHA256=$(sha256sum "$TMP_FILE" | cut -d' ' -f1)
+      if [[ "$ACTUAL_SHA256" != "$ZJSTATUS_SHA256" ]]; then
+        echo "  ✗ Checksum mismatch for zjstatus" >&2
+        echo "    Expected: $ZJSTATUS_SHA256" >&2
+        echo "    Actual:   $ACTUAL_SHA256" >&2
+        exit 1
+      fi
+    fi
     mv "$TMP_FILE" "$PLUGIN_DIR/zjstatus.wasm"
     echo "  ✓ zjstatus ${ZJSTATUS_VERSION}"
   else

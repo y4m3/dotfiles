@@ -296,7 +296,7 @@ Fuzzy finder for switching between project directories and tmux sessions.
 
 ```
 # One directory per line
-# ~ and environment variables are expanded
+# ~ is expanded to $HOME
 # Lines starting with # are comments
 
 ~/.local/share/chezmoi

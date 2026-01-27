@@ -171,7 +171,7 @@ Same keys for same operations across 3 tools (GlazeWM, Zellij, WezTerm).
 | Scroll/Copy mode | - | [ | [ |
 | Search | - | / | / |
 
-**Note**: WezTerm's `Ctrl+\ → ?` (debug overlay) and Zellij's `?` (tooltip) are different features. Zellij's tooltip is a plugin feature, not via Leader (see 8.6).
+**Note**: WezTerm's `Ctrl+\ → ?` opens the debug overlay for troubleshooting.
 
 ---
 
@@ -477,44 +477,15 @@ Key and display correspondence is unified, but note the different config file no
 
 This allows sending line-beginning (Ctrl+A) in shell Emacs mode with `Ctrl+a → a`.
 
-### 8.6 Tooltip (Keybinding Hints) Implementation
-
-Zellij's tooltip feature is a **plugin feature**, enabled in layout configuration, not keybinds.
-
-**Important**: This feature is used directly in Normal mode, not via Leader (Ctrl+a).
-
-#### Layout Configuration (e.g., default.kdl)
-
-```kdl
-layout {
-    pane size=1 borderless=true {
-        plugin location="zellij:compact-bar" {
-            tooltip "?"
-        }
-    }
-    pane
-}
-```
-
-#### Behavior
-
-- Press `?` in Normal mode to display keybinding hints
-- Press `?` again to hide (toggle behavior)
-
-#### Impact on Keybinds
-
-Since the `?` key is handled by the plugin, it's not defined in keybinds configuration. Pressing `?` in tmux mode does nothing.
-
-### 8.7 Normal Mode Keys
+### 8.6 Normal Mode Keys
 
 Keys used directly in Normal mode:
 
 | Key | Function | Note |
 |-----|----------|------|
 | Ctrl+a | Enter tmux mode | Leader |
-| ? | Show/hide tooltip | Plugin feature |
 
-### 8.8 Mode Switching (for detailed operations)
+### 8.7 Mode Switching (for detailed operations)
 
 From tmux mode to other modes:
 
@@ -542,7 +513,7 @@ From tmux mode to other modes:
 | w | Session manager (plugin) |
 | c | Configuration (plugin) |
 
-### 8.9 Error Behavior
+### 8.8 Error Behavior
 
 If there's a KDL syntax error in the config file, Zellij displays an error message and exits at startup. To validate config beforehand:
 
@@ -790,5 +761,4 @@ Ctrl+a → e            tmux/Zellij popup edit (Neovim)
 
 # Help
 Ctrl+\ → ?            WezTerm debug overlay
-?                     Zellij tooltip (direct in Normal mode)
 ```

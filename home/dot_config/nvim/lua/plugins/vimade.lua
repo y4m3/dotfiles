@@ -1,7 +1,7 @@
 return {
   {
     "TaDaa/vimade",
-    -- tmux環境でのみ有効化
+    -- Only enable in tmux environment
     cond = function()
       return vim.env.TMUX ~= nil and vim.env.TMUX ~= ""
     end,

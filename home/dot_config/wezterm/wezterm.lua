@@ -152,7 +152,7 @@ end
 config.adjust_window_size_when_changing_font_size = true
 config.allow_square_glyphs_to_overflow_width = "WhenFollowedBySpace"
 
--- Colors (tokyonight storm from folke/tokyonight.nvim)
+-- Colors (Tokyo Night storm variant - lighter than night for better tab visibility)
 config.colors = {
   foreground = "#c0caf5",
   background = "#24283b",
