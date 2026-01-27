@@ -60,6 +60,13 @@ chezmoi apply
 [Environment]::SetEnvironmentVariable("DOTFILES_INSTALL_PRIVATE_APPS", "true", "User")
 ```
 
+## Features
+
+- **Tokyo Night theme** unified across Neovim, tmux, WezTerm, and Zellij
+- **tmux-sessionizer**: Fuzzy project/session switching with `prefix+F`
+- **Unified keybindings**: Consistent h/j/k/l navigation across all terminal tools
+- **Modular configs**: tmux, Neovim plugins organized for maintainability
+
 ## Architecture
 
 - **Nix Home Manager**: 25+ CLI tools via `~/.config/nix/home.nix`

@@ -271,6 +271,70 @@ Concise notes focused on environment-specific behavior. See official docs for us
 - Features:
   - Mouse enabled, vi copy-mode, 256 colors, renumber windows
 
+#### Session Management
+
+| Key | Action |
+|-----|--------|
+| d | Detach session |
+| S | Rename session |
+| N | New session (name prompt) |
+| F | tmux-sessionizer (project picker) |
+| G | agent-deck (AI agent session manager) |
+| w | Session/window tree |
+
+#### tmux-sessionizer
+
+Fuzzy finder for switching between project directories and tmux sessions.
+
+- Launch: `prefix + F` or `tm` alias
+- Search targets:
+  1. Existing tmux sessions (displayed with `[session]` prefix)
+  2. Repositories managed by ghq
+  3. Additional directories specified in `create_dirs`
+
+**Config file**: `~/.config/tmux-sessionizer/create_dirs`
+
+```
+# One directory per line
+# ~ and environment variables are expanded
+# Lines starting with # are comments
+
+~/.local/share/chezmoi
+~/repos
+~/projects
+```
+
+#### Popup Edit
+
+Quick text input via Neovim in a floating popup window. Useful for composing messages, commands, or notes.
+
+- Launch: `prefix + e`
+- Workflow:
+  1. Opens Neovim in popup window
+  2. Write text, then save and quit (`:wq`)
+  3. Text is automatically sent to the original pane
+- File storage: `$XDG_RUNTIME_DIR/popup-edit/`
+
+**Use cases:**
+- Compose long commands before execution
+- Write commit messages with full editor support
+- Quick notes or text snippets
+
+#### gitmux
+
+Displays Git information (branch, divergence, flags) in the tmux status bar.
+
+- Config: `~/.config/gitmux/.gitmux.conf`
+
+#### Modular Configuration
+
+| File | Purpose |
+|------|---------|
+| `appearance.conf` | Theme, colors, status bar |
+| `keybindings.conf` | Key mappings |
+| `plugins.conf` | TPM plugin configuration |
+| `submodes.conf` | Resize/Tab/Pane/Move mode keys |
+
 ## See Also
 
 - [Keybinding Design](../keybinding-design.md) - Layer 2 (WezTerm) and Layer 3 (Zellij)

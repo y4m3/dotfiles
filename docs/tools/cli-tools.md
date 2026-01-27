@@ -58,6 +58,29 @@ Terminal file manager with image preview support.
 - Minimal configuration: `$EDITOR` integration for text files, directory navigation
 - Keybindings, theme, and other settings use defaults
 
+### trash-cli
+
+**Official**: https://github.com/andreafrancia/trash-cli
+
+Safe file deletion using the FreeDesktop.org trash specification.
+
+**Environment-specific aliases:**
+
+| Command | Action |
+|---------|--------|
+| `tp <file>` | Move file to trash (trash-put) |
+| `del <file>` | Permanent deletion with confirmation |
+| `trash` / `tl` | List trash contents |
+
+**Note:** `rm` is aliased to show a reminder to use `tp` instead. Use `del` for permanent deletion.
+
+**Recovery:**
+
+```bash
+trash-list                    # List trashed files with paths
+trash-restore                 # Interactive restore
+```
+
 ## Navigation & Search
 
 ### fzf
@@ -89,6 +112,19 @@ Smarter `cd` command that learns your habits.
 **Troubleshooting**:
 - **j command not found**: Use in interactive shells. Reload: `exec bash -l` or `source ~/.bashrc.d/910-zoxide.sh`
 
+## Completions
+
+### carapace
+
+**Official**: https://carapace.sh/
+
+Shell-agnostic completion framework providing intelligent completions across bash, zsh, fish, and more.
+
+**Environment-specific:**
+- Enabled via `~/.bashrc.d/170-completion.sh`
+- Provides completions for 1000+ commands
+- Falls back to bash-completion for unsupported commands
+
 ## Display
 
 ### starship
@@ -118,3 +154,14 @@ Terminal-based Markdown reader with style support.
 **Troubleshooting**:
 - **Command not found**: Check PATH: `echo "$PATH" | grep ".local/bin"`. Reload shell: `exec bash -l`
 - **Configuration not applied**: Check file exists: `ls -la ~/.config/glow/glow.yml`. Apply chezmoi: `chezmoi apply ~/.config/glow/glow.yml`
+
+### tldr
+
+**Official**: https://tldr.sh/
+
+Community-maintained simplified man pages with practical examples.
+
+```bash
+tldr tar      # Quick examples for tar command
+tldr --update # Update local cache
+```
