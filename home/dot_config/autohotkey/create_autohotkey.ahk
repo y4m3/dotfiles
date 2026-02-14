@@ -20,10 +20,10 @@ global SpaceUsedAsShift := false  ; whether Shift down was sent for this Space p
 global JJ_THRESHOLD := 200  ; milliseconds
 global lastJPress := 0
 
-; RAlt tap = IME toggle state
-global RAltPressTime := 0
+; LShift tap = IME ON (hiragana) state
+global LShiftPressTime := 0
 
-; RShift tap = IME toggle state
+; RShift tap = IME OFF (ascii) state
 global RShiftPressTime := 0
 
 ; ============================================================
@@ -73,26 +73,41 @@ global RShiftPressTime := 0
 }
 
 ; ============================================================
-; RAlt for IME control
+; RAlt for IME control (disabled)
 ; ============================================================
-; RAlt tap toggles IME, hold acts as normal Alt
-*RAlt::{
-    global RAltPressTime
-    RAltPressTime := A_TickCount
+; ; RAlt tap toggles IME, hold acts as normal Alt
+; *RAlt::{
+;     global RAltPressTime
+;     RAltPressTime := A_TickCount
+;
+;     ; If released quickly, treat as tap. Otherwise act as a normal modifier.
+;     if KeyWait("RAlt", "T0.2") {
+;         ImeToggle()
+;         return
+;     }
+;
+;     Send "{Blind}{RAlt down}"
+;     KeyWait "RAlt"
+;     Send "{Blind}{RAlt up}"
+; }
 
-    ; If released quickly, treat as tap. Otherwise act as a normal modifier.
-    if KeyWait("RAlt", "T0.2") {
-        ImeToggle()
-        return
+; ============================================================
+; LShift tap = IME ON (hiragana), any-combo = normal Shift
+; ============================================================
+~*LShift::{
+    global LShiftPressTime
+    LShiftPressTime := A_TickCount
+}
+
+~*LShift up::{
+    global LShiftPressTime
+    if (A_PriorKey = "LShift") && (A_TickCount - LShiftPressTime < 200) {
+        ImeOn()
     }
-
-    Send "{Blind}{RAlt down}"
-    KeyWait "RAlt"
-    Send "{Blind}{RAlt up}"
 }
 
 ; ============================================================
-; RShift tap = IME toggle, any-combo = normal Shift (generic)
+; RShift tap = IME OFF (ascii), any-combo = normal Shift
 ; ============================================================
 ~*RShift::{
     global RShiftPressTime
@@ -102,7 +117,7 @@ global RShiftPressTime := 0
 ~*RShift up::{
     global RShiftPressTime
     if (A_PriorKey = "RShift") && (A_TickCount - RShiftPressTime < 200) {
-        ImeToggle()
+        ImeOff()
     }
 }
 
