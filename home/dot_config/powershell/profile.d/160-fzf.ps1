@@ -22,9 +22,9 @@ if (Get-Command fzf -ErrorAction SilentlyContinue) {
         $env:FZF_ALT_C_OPTS = "--preview 'eza --tree --color=auto {} 2>nul'"
     }
 
-    # PSFzf module integration (if available)
-    if (Get-Module -ListAvailable -Name PSFzf) {
-        Import-Module PSFzf
-        Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
-    }
+    # PSFzf module integration (disabled: not installed, saves ~25ms from Get-Module -ListAvailable)
+    # if (Get-Module -ListAvailable -Name PSFzf) {
+    #     Import-Module PSFzf
+    #     Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+    # }
 }
