@@ -1,0 +1,12 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_once_client_windows_016-remove-orphan-direnv.ps1.tmpl
+# Remove orphaned 150-direnv.ps1 left over from renaming to 250-direnv.ps1.
+# This file caused direnv to be initialized twice per session.
+
+$orphan = [IO.Path]::Combine($HOME, '.config', 'powershell', 'profile.d', '150-direnv.ps1')
+if (Test-Path $orphan) {
+  Remove-Item -Path $orphan -Force
+  Write-Host '==> Removed orphaned 150-direnv.ps1' -ForegroundColor Cyan
+}
+{{- end -}}
