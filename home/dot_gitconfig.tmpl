@@ -24,6 +24,14 @@
     helper = cache --timeout={{ env "GIT_CREDENTIAL_CACHE_TIMEOUT" | default "1800" }}
 {{- end }}
 
+[credential "https://github.com"]
+    helper =
+    helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+    helper =
+    helper = !gh auth git-credential
+
 [fetch]
     prune = true
 

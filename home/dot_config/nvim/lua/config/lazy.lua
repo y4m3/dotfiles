@@ -21,7 +21,7 @@ require("lazy").setup({
     -- import LazyVim extras (must come before user plugins)
     { import = "lazyvim.plugins.extras.lang.json" },
     { import = "lazyvim.plugins.extras.lang.markdown" },
-    { import = "lazyvim.plugins.extras.lang.nix" },
+    vim.fn.has("unix") == 1 and { import = "lazyvim.plugins.extras.lang.nix" } or {},
     { import = "lazyvim.plugins.extras.lang.python" },
     { import = "lazyvim.plugins.extras.lang.typescript" },
     { import = "lazyvim.plugins.extras.lang.yaml" },

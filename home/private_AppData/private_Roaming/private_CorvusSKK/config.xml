@@ -3,6 +3,7 @@
   <section name="dictionary">
     <list>
       <row path="https://skk-dev.github.io/dict/SKK-JISYO.L.gz" enabled="1" />
+      <row path="https://skk-dev.github.io/dict/SKK-JISYO.jinmei.gz" enabled="1" />
     </list>
   </section>
   <section name="server">
@@ -580,7 +581,7 @@
   </section>
   <section name="jlatin">
     <list>
-      <row la=" " jl="　" />
+      <row la=" " jl=" " />
       <row la="!" jl="！" />
       <row la="&quot;" jl="”" />
       <row la="#" jl="＃" />
