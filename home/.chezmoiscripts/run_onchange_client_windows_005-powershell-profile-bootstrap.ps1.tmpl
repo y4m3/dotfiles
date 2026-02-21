@@ -1,0 +1,61 @@
+{{- if and (eq .chezmoi.os "windows") (eq (.profile | default "client") "client") -}}
+#Requires -Version 5.1
+# run_onchange_client_windows_005-powershell-profile-bootstrap.ps1.tmpl
+# Deploy PowerShell profile bootstraps to the correct Documents folder.
+# Uses GetFolderPath to handle OneDrive Known Folder Move (KFM).
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+function Write-Log {
+    param([string]$Message)
+    Write-Host "==> $Message" -ForegroundColor Cyan
+}
+
+$documentsPath = [Environment]::GetFolderPath('MyDocuments')
+
+# --- PowerShell 7 bootstrap ---
+$ps7Dir = Join-Path $documentsPath 'PowerShell'
+if (-not (Test-Path $ps7Dir)) {
+    New-Item -ItemType Directory -Path $ps7Dir -Force | Out-Null
+}
+
+$ps7Profile = Join-Path $ps7Dir 'Microsoft.PowerShell_profile.ps1'
+$ps7Content = @'
+# PowerShell 7 Profile Loader
+# This file loads the XDG-compliant profile from ~/.config/powershell/
+# Managed by chezmoi - do not edit directly
+
+if ($env:XDG_CONFIG_HOME) {
+    $xdgProfile = Join-Path $env:XDG_CONFIG_HOME "powershell\profile.ps1"
+} else {
+    $xdgProfile = Join-Path $env:USERPROFILE ".config\powershell\profile.ps1"
+}
+if (Test-Path $xdgProfile) {
+    . $xdgProfile
+}
+'@
+Set-Content -Path $ps7Profile -Value $ps7Content -Encoding utf8
+Write-Log "PS7 bootstrap: $ps7Profile"
+
+# --- Windows PowerShell 5.1 bootstrap ---
+$ps51Dir = Join-Path $documentsPath 'WindowsPowerShell'
+if (-not (Test-Path $ps51Dir)) {
+    New-Item -ItemType Directory -Path $ps51Dir -Force | Out-Null
+}
+
+$ps51Profile = Join-Path $ps51Dir 'Microsoft.PowerShell_profile.ps1'
+$ps51Content = @'
+# Windows PowerShell 5.1 Profile Loader
+# This file loads the PowerShell 7 profile for consistency
+# Managed by chezmoi - do not edit directly
+
+$documentsPath = [Environment]::GetFolderPath('MyDocuments')
+$pwshProfile = Join-Path $documentsPath "PowerShell\Microsoft.PowerShell_profile.ps1"
+if (Test-Path $pwshProfile) {
+    . $pwshProfile
+}
+'@
+Set-Content -Path $ps51Profile -Value $ps51Content -Encoding utf8
+Write-Log "PS5.1 bootstrap: $ps51Profile"
+{{- end -}}

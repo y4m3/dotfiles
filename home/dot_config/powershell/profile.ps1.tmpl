@@ -20,8 +20,12 @@ if (Test-Path $profileDir) {
     }
 }
 
-# Local overrides (not managed by chezmoi)
-$localProfile = Join-Path (Split-Path $PROFILE.CurrentUserAllHosts) "profile.local.ps1"
+# Local overrides (not managed by chezmoi, like .bashrc.local)
+if ($env:XDG_CONFIG_HOME) {
+    $localProfile = Join-Path $env:XDG_CONFIG_HOME "powershell\profile.local.ps1"
+} else {
+    $localProfile = Join-Path $env:USERPROFILE ".config\powershell\profile.local.ps1"
+}
 if (Test-Path $localProfile) {
     . $localProfile
 }
