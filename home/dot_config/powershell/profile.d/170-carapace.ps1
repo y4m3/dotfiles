@@ -2,9 +2,10 @@
 # Category: 1xx (Tool configuration)
 # See: https://github.com/carapace-sh/carapace
 
-# carapace - Multi-shell completion framework
+# carapace - Multi-shell completion framework (cached)
 if (Get-Command carapace -ErrorAction SilentlyContinue) {
-    # Initialize carapace for PowerShell
     $env:CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense'
-    carapace _carapace | Out-String | Invoke-Expression
+    Register-DeferredInit -Name 'carapace' -ScriptBlock {
+        Invoke-CachedInit -ToolName 'carapace' -InitCommand @('carapace', '_carapace') -ScoopAppName 'carapace-bin'
+    }
 }
