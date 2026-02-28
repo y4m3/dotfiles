@@ -249,6 +249,11 @@ local function find_env_by_workspace(workspace_name)
   return nil
 end
 
+-- Helper: treat only non-empty argv list as valid spawn args.
+local function has_non_empty_args(args)
+  return type(args) == "table" and #args > 0
+end
+
 -- ============================================================
 -- Dynamic default_prog based on active workspace
 -- ============================================================
@@ -309,7 +314,7 @@ wezterm.on("update-status", function(window, pane)
   last_workspace_cache[window_id] = workspace
 
   local new_default_prog = nil
-  if env and env.connection == "local" and env.args then
+  if env and env.connection == "local" and has_non_empty_args(env.args) then
     new_default_prog = env.args
   end
 
@@ -363,7 +368,7 @@ local function create_split_action(direction)
 
     local spawn_cmd = {}
 
-    if env and env.connection == "local" and env.args then
+    if env and env.connection == "local" and has_non_empty_args(env.args) then
       spawn_cmd.args = env.args
       spawn_cmd.domain = { DomainName = "local" }
       if DEBUG_DEFAULT_PROG then
@@ -401,7 +406,7 @@ local function create_spawn_tab_action()
 
     local spawn_cmd = {}
 
-    if env and env.connection == "local" and env.args then
+    if env and env.connection == "local" and has_non_empty_args(env.args) then
       spawn_cmd.args = env.args
       spawn_cmd.domain = { DomainName = "local" }
       if DEBUG_DEFAULT_PROG then
@@ -437,6 +442,8 @@ config.keys = {
   -- Clipboard operations
   { key = "C",     mods = "CTRL|SHIFT",   action = act.CopyTo("Clipboard") },
   { key = "V",     mods = "CTRL|SHIFT",   action = act.PasteFrom("Clipboard") },
+  { key = "C",     mods = "SUPER",        action = act.CopyTo("Clipboard") },
+  { key = "V",     mods = "SUPER",        action = act.PasteFrom("Clipboard") },
 
   -- Font size controls
   { key = "-",     mods = "CTRL",         action = act.DecreaseFontSize },
@@ -677,7 +684,9 @@ for _, env in ipairs(local_config.environments or {}) do
     entry.args = { "ssh", env.username .. "@" .. env.remote_address }
     entry.domain = { DomainName = "local" }
   else -- local
-    entry.args = env.args
+    if has_non_empty_args(env.args) then
+      entry.args = env.args
+    end
     entry.domain = { DomainName = "local" }
   end
   table.insert(launch_menu, entry)
@@ -691,7 +700,7 @@ for _, env in ipairs(local_config.environments or {}) do
       config.default_gui_startup_args = { "connect", env.workspace_name }
     elseif env.connection == "ssh" then
       config.default_gui_startup_args = { "ssh", env.username .. "@" .. env.remote_address }
-    elseif env.args then
+    elseif has_non_empty_args(env.args) then
       config.default_prog = env.args
     end
     break
@@ -710,7 +719,9 @@ for _, env in ipairs(local_config.environments or {}) do
       spawn_config.args = { "ssh", env.username .. "@" .. env.remote_address }
       spawn_config.domain = { DomainName = "local" }
     else -- local
-      spawn_config.args = env.args
+      if has_non_empty_args(env.args) then
+        spawn_config.args = env.args
+      end
       spawn_config.domain = { DomainName = "local" }
     end
 

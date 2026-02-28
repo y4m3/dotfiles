@@ -20,6 +20,19 @@ path_prepend "/sbin"
 path_prepend "/bin"
 {{- end }}
 
+{{- if eq .chezmoi.os "darwin" }}
+# macOS (Apple Silicon Homebrew + system paths)
+# path_prepend puts the last-called entry at the front of PATH,
+# so Homebrew bin must come last to have highest priority.
+path_prepend "/sbin"
+path_prepend "/usr/sbin"
+path_prepend "/bin"
+path_prepend "/usr/bin"
+path_prepend "/usr/local/bin"
+path_prepend "/opt/homebrew/sbin"
+path_prepend "/opt/homebrew/bin"
+{{- end }}
+
 {{- if eq .chezmoi.os "windows" }}
 # Windows (Git Bash) - Scoop and uv paths
 path_prepend "$HOME/scoop/shims"

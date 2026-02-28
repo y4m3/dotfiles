@@ -1,3 +1,15 @@
+{{- $leader := "Ctrl a" -}}
+{{- if hasKey .chezmoi.config.data "zellij_leader" -}}
+{{-   $leader = .zellij_leader -}}
+{{- end -}}
+{{- $theme := "tokyo-night" -}}
+{{- if hasKey .chezmoi.config.data "zellij_theme" -}}
+{{-   $theme = .zellij_theme -}}
+{{- end -}}
+{{- $layout := "default" -}}
+{{- if hasKey .chezmoi.config.data "zellij_layout" -}}
+{{-   $layout = .zellij_layout -}}
+{{- end -}}
 // =============================================================================
 // Zellij Configuration
 // Path: ~/.config/zellij/config.kdl
@@ -11,18 +23,18 @@ keybinds clear-defaults=true {
     // Only essential keys that work directly without leader
     // =========================================================================
     normal {
-        // No bindings in normal mode - all operations go through Ctrl+a (tmux mode)
+        // No bindings in normal mode - all operations go through {{ $leader }} (tmux mode)
     }
 
     // =========================================================================
-    // Shared: Enter tmux mode with Ctrl+a (Leader)
+    // Shared: Enter tmux mode with {{ $leader }} (Leader)
     // =========================================================================
     shared_except "locked" {
-        bind "Ctrl a" { SwitchToMode "Tmux"; }
+        bind "{{ $leader }}" { SwitchToMode "Tmux"; }
     }
 
     // =========================================================================
-    // Tmux Mode (Leader mode: Ctrl+a → key)
+    // Tmux Mode (Leader mode: {{ $leader }} → key)
     // =========================================================================
     tmux {
         // ---------------------------------------------------------------------
@@ -148,11 +160,11 @@ keybinds clear-defaults=true {
         }
 
         // ---------------------------------------------------------------------
-        // Send Ctrl+a to terminal
+        // Send leader key to terminal
         // Write 0x01 = ASCII code for Ctrl+A (SOH)
         // Use this when you need shell line-beginning in Emacs mode
         // ---------------------------------------------------------------------
-        bind "a" { Write 1; SwitchToMode "Normal"; }
+        {{ if eq $leader "Ctrl a" }}bind "a" { Write 1; SwitchToMode "Normal"; }{{ end }}
 
         // ---------------------------------------------------------------------
         // Mode Switching (for detailed operations)
@@ -337,6 +349,139 @@ keybinds clear-defaults=true {
 }
 
 // =============================================================================
+// Theme: Tokyo Night (night variant)
+// Matches tmux/Ghostty palette for consistent appearance
+// =============================================================================
+// Color Palette:
+//   bg:      #1a1b26 (26 27 38)     fg:      #c0caf5 (192 202 245)
+//   bg_dark: #15161e (21 22 30)     comment: #565f89 (86 95 137)
+//   black:   #383e5a (56 62 90)     red:     #f7768e (247 118 142)
+//   green:   #9ece6a (158 206 106)  yellow:  #e0af68 (224 175 104)
+//   blue:    #7aa2f7 (122 162 247)  magenta: #bb9af7 (187 154 247)
+//   cyan:    #7dcfff (125 207 255)  orange:  #ff9e64 (255 158 100)
+// =============================================================================
+themes {
+    tokyo-night {
+        text_unselected {
+            base 192 202 245
+            background 26 27 38
+            emphasis_0 255 158 100
+            emphasis_1 125 207 255
+            emphasis_2 158 206 106
+            emphasis_3 187 154 247
+        }
+        text_selected {
+            base 192 202 245
+            background 56 62 90
+            emphasis_0 255 158 100
+            emphasis_1 125 207 255
+            emphasis_2 158 206 106
+            emphasis_3 187 154 247
+        }
+        ribbon_unselected {
+            base 86 95 137
+            background 56 62 90
+            emphasis_0 247 118 142
+            emphasis_1 192 202 245
+            emphasis_2 122 162 247
+            emphasis_3 187 154 247
+        }
+        ribbon_selected {
+            base 26 27 38
+            background 122 162 247
+            emphasis_0 247 118 142
+            emphasis_1 255 158 100
+            emphasis_2 187 154 247
+            emphasis_3 158 206 106
+        }
+        table_title {
+            base 158 206 106
+            background 0
+            emphasis_0 255 158 100
+            emphasis_1 125 207 255
+            emphasis_2 158 206 106
+            emphasis_3 187 154 247
+        }
+        table_cell_unselected {
+            base 192 202 245
+            background 26 27 38
+            emphasis_0 255 158 100
+            emphasis_1 125 207 255
+            emphasis_2 158 206 106
+            emphasis_3 187 154 247
+        }
+        table_cell_selected {
+            base 192 202 245
+            background 56 62 90
+            emphasis_0 255 158 100
+            emphasis_1 125 207 255
+            emphasis_2 158 206 106
+            emphasis_3 187 154 247
+        }
+        list_unselected {
+            base 192 202 245
+            background 26 27 38
+            emphasis_0 255 158 100
+            emphasis_1 125 207 255
+            emphasis_2 158 206 106
+            emphasis_3 187 154 247
+        }
+        list_selected {
+            base 192 202 245
+            background 56 62 90
+            emphasis_0 255 158 100
+            emphasis_1 125 207 255
+            emphasis_2 158 206 106
+            emphasis_3 187 154 247
+        }
+        frame_selected {
+            base 122 162 247
+            background 0
+            emphasis_0 255 158 100
+            emphasis_1 125 207 255
+            emphasis_2 187 154 247
+            emphasis_3 0
+        }
+        frame_highlight {
+            base 255 158 100
+            background 0
+            emphasis_0 187 154 247
+            emphasis_1 255 158 100
+            emphasis_2 255 158 100
+            emphasis_3 255 158 100
+        }
+        exit_code_success {
+            base 158 206 106
+            background 0
+            emphasis_0 125 207 255
+            emphasis_1 86 95 137
+            emphasis_2 187 154 247
+            emphasis_3 122 162 247
+        }
+        exit_code_error {
+            base 247 118 142
+            background 0
+            emphasis_0 224 175 104
+            emphasis_1 0
+            emphasis_2 0
+            emphasis_3 0
+        }
+        multiplayer_user_colors {
+            player_1 187 154 247
+            player_2 122 162 247
+            player_3 0
+            player_4 224 175 104
+            player_5 125 207 255
+            player_6 0
+            player_7 247 118 142
+            player_8 0
+            player_9 0
+            player_10 0
+        }
+    }
+}
+
+// =============================================================================
 // Plugin Configuration
 // =============================================================================
 plugins {
@@ -363,10 +508,10 @@ plugins {
 show_startup_tips false
 
 // Use default layout with zjstatus
-default_layout "default"
+default_layout "{{ $layout }}"
 
 // Theme (customize as needed)
-theme "tokyo-night-storm"
+theme "{{ $theme }}"
 
 // Pane frames
 pane_frames false

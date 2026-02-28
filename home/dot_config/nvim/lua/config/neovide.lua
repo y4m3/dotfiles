@@ -60,8 +60,20 @@ vim.keymap.set("n", "<F11>", function()
 end, { desc = "Neovide: toggle fullscreen" })
 
 -- ============================================================================
+-- Clipboard Keymaps (GUI)
+-- ============================================================================
+-- Neovide passes GUI keys (<D-*> on macOS) to Neovim. Define explicit mappings
+-- so copy/paste work as expected in normal/visual/insert/command-line modes.
+if vim.fn.has("mac") == 1 then
+  vim.keymap.set({ "n", "v" }, "<D-c>", '"+y', { desc = "Neovide: copy" })
+  vim.keymap.set({ "n", "v" }, "<D-v>", '"+p', { desc = "Neovide: paste" })
+  vim.keymap.set("i", "<D-v>", "<C-r>+", { desc = "Neovide: paste" })
+  vim.keymap.set("c", "<D-v>", "<C-r>+", { desc = "Neovide: paste" })
+end
+
+-- ============================================================================
 -- macOS Support (for future use)
 -- ============================================================================
-if vim.fn.has("macunix") == 1 then
+if vim.fn.has("mac") == 1 then
   vim.g.neovide_input_macos_option_key_is_meta = "both"
 end

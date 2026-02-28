@@ -19,7 +19,8 @@
   outputs =
     { nixpkgs, home-manager, ... }:
     let
-      system = "x86_64-linux";
+      # Evaluate for the host platform (linux/darwin, x86_64/aarch64).
+      system = builtins.currentSystem;
       pkgs = nixpkgs.legacyPackages.${system};
       # Dynamic username from $USER environment variable (requires --impure)
       username = builtins.getEnv "USER";
