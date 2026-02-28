@@ -26,4 +26,4 @@ These configurations are tailored to a specific workflow and may not be immediat
   - `dev-tools.md` - jq, just, deno, prettier, markdownlint, mermaid, ast-grep, shellcheck, shfmt, yq, Node.js, direnv, uv, pyright, ruff
   - `infra-tools.md` - Docker, lazydocker, btop, lnav
 - **`templates/`** - Reusable configuration templates (e.g., `.envrc` examples)
-- **`post-setup/`** - Post-installation guides requiring manual steps (fonts, Windows GUI apps)
+- **`post-setup/`** - Post-installation guides requiring manual steps (fonts, Windows/macOS GUI apps)

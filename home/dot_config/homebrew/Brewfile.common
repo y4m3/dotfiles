@@ -1,0 +1,21 @@
+# Common GUI apps (macOS)
+# Managed by chezmoi: ~/.config/homebrew/Brewfile.common
+
+tap "felixkratz/formulae"
+
+brew "felixkratz/formulae/borders"
+brew "felixkratz/formulae/sketchybar"
+
+cask "firefox"
+cask "font-jetbrains-mono-nerd-font"
+cask "google-chrome"
+cask "heynote"
+cask "mtgto/macskk/macskk"
+cask "neovide-app"
+cask "nikitabobko/tap/aerospace"
+cask "visual-studio-code"
+cask "zed"
+
+# NOTE: WezTerm is installed manually to avoid cask conflicts during `chezmoi apply`.
+# Manual install example: `brew install --cask wezterm@nightly`
+# cask "wezterm@nightly"

@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+# ~/.zshrc.local — User-specific zsh configuration
+# This file is created by chezmoi using `create_` when it does not exist.
+# After creation it's intentionally left for the user to customize.
+
+# Keep this file minimal and machine/user specific.
+# Examples:
+# export PATH="$HOME/.local/bin:$PATH"
+# alias gs='git status'

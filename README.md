@@ -8,6 +8,10 @@ Dotfiles managed with [chezmoi](https://www.chezmoi.io/) + [Nix Home Manager](ht
 - Ubuntu 24.04+ (WSL2 supported)
   - curl, git
 
+### macOS
+- macOS 14+ (Apple Silicon / arm64)
+- curl, git
+
 ### Windows
 - Windows 10/11
 - PowerShell 5.1+
@@ -44,9 +48,26 @@ $env:DOTFILES_BRANCH = "feature/xxx"; irm https://raw.githubusercontent.com/y4m3
 chezmoi update
 ```
 
+### macOS
+
+```bash
+# 1. Bootstrap
+curl -fsLS https://raw.githubusercontent.com/y4m3/dotfiles/main/install.sh | sh
+
+# 2. Apply dotfiles
+chezmoi apply
+
+# 3. Start a new shell session (required after first Nix install), then apply again
+exec zsh
+chezmoi apply
+
+# 4. Update later
+chezmoi update
+```
+
 ### Windows (with private apps)
 
-Private apps include: LibreWolf, Brave, Proton suite, Linear, Todoist, Zotero.
+Private apps include: LibreWolf, Brave, Proton suite, Linear, Todoist, Zotero (platform-specific subset).
 
 ```powershell
 # Set environment variable before init
@@ -103,8 +124,15 @@ chezmoi diff                # Show differences
 After `chezmoi apply`:
 
 1. Edit `~/.gitconfig.local` with your name/email
-2. Run `exec bash` after first Nix install
+2. Run `exec bash` (Linux/WSL) or `exec zsh` (macOS) after first Nix install
 3. Log out/in for docker group
+
+## Pre-Production Checklist (macOS)
+
+1. Local validation passes (`bash -n`, `shellcheck`, `chezmoi apply --dry-run -v`)
+2. `nix --version` and `home-manager --version` succeed
+3. `echo "$SHELL"` is `/bin/zsh` on macOS
+4. GUI apps are installed from Brewfile and Rancher Desktop runs (`docker version`)
 
 ## Documentation
 

@@ -6,7 +6,7 @@ Manual tasks to complete after `chezmoi apply`. These require interactive user i
 
 ### Required
 - [ ] **Git Configuration** - Edit `~/.gitconfig.local` with your name and email
-- [ ] **Shell Restart** - Run `exec bash` after first Nix installation
+- [ ] **Shell Reload** - Linux: run `exec bash` / macOS: run `exec zsh`
 
 ### Recommended
 - [ ] **Alacritty Terminal** - Install on Windows host (WSL users)
@@ -37,10 +37,16 @@ Verify: `git config user.name && git config user.email`
 
 ## 2. Shell Restart (Required after Nix installation)
 
-After the first `chezmoi apply` installs Nix, restart your shell to load the Nix environment:
+After the first `chezmoi apply` installs Nix, reload your shell to load the Nix environment:
 
 ```bash
 exec bash
+```
+
+On macOS, keep the default login shell (`/bin/zsh`) and run:
+
+```bash
+exec zsh
 ```
 
 Then run `chezmoi apply` again to complete the Home Manager installation.
@@ -138,4 +144,3 @@ cat ~/.ssh/id_ed25519.pub
 ```
 
 See [Security Best Practices](tools/security.md) for details.
-

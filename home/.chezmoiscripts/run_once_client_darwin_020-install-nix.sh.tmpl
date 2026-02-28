@@ -1,0 +1,17 @@
+{{- if and (eq .chezmoi.os "darwin") (eq (.profile | default "client") "client") -}}
+#!/usr/bin/env bash
+# Nix installation using Determinate Systems installer
+set -euo pipefail
+
+if command -v nix >/dev/null 2>&1; then
+  echo "✓ Nix is already installed"
+  exit 0
+fi
+
+echo "==> Installing Nix (Determinate Systems installer)..."
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix |
+  sh -s -- install --determinate --no-confirm
+
+echo ""
+echo "✓ Nix installation complete. Home Manager will be applied next."
+{{- end -}}

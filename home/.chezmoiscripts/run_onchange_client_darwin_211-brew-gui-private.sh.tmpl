@@ -1,0 +1,29 @@
+{{- if and (eq .chezmoi.os "darwin") (eq (.profile | default "client") "client") (.install_private_apps | default false) -}}
+#!/usr/bin/env bash
+# Install private GUI apps via Brewfile
+# Brewfile.private hash: {{ include "dot_config/homebrew/Brewfile.private" | sha256sum }}
+set -euo pipefail
+
+BREW_BIN="/opt/homebrew/bin/brew"
+BREWFILE="${HOME}/.config/homebrew/Brewfile.private"
+
+if [ ! -x "$BREW_BIN" ]; then
+  echo "Error: Homebrew not found at $BREW_BIN" >&2
+  exit 1
+fi
+
+if [ ! -f "$BREWFILE" ]; then
+  echo "Error: Brewfile not found: $BREWFILE" >&2
+  exit 1
+fi
+
+echo "==> Checking private GUI applications..."
+if "$BREW_BIN" bundle check --file="$BREWFILE" >/dev/null 2>&1; then
+  echo "✓ All private GUI applications are already installed"
+  exit 0
+fi
+
+echo "==> Installing private GUI applications via Brewfile..."
+"$BREW_BIN" bundle install --file="$BREWFILE"
+echo "✓ Private GUI applications installed"
+{{- end -}}

@@ -1,0 +1,28 @@
+{{- if and (eq .chezmoi.os "darwin") (eq (.profile | default "client") "client") -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Install SbarLua (Lua API for SketchyBar)
+
+INSTALL_DIR="$HOME/.local/share/sketchybar_lua"
+
+if [[ -f "$INSTALL_DIR/sketchybar.so" ]]; then
+  echo "==> SbarLua already installed at $INSTALL_DIR"
+  exit 0
+fi
+
+echo "==> Installing SbarLua..."
+TMPDIR="$(mktemp -d)"
+trap 'rm -rf "$TMPDIR"' EXIT
+
+git clone https://github.com/FelixKratz/SbarLua.git "$TMPDIR/SbarLua"
+cd "$TMPDIR/SbarLua"
+make install
+
+if [[ -f "$INSTALL_DIR/sketchybar.so" ]]; then
+  echo "==> SbarLua installed successfully"
+else
+  echo "==> ERROR: SbarLua installation failed"
+  exit 1
+fi
+{{- end -}}

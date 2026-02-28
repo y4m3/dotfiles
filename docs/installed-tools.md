@@ -104,19 +104,28 @@ For things that can't be managed by Nix:
 | Script | Purpose |
 |--------|---------|
 | `run_once_..._010-apt-packages.sh.tmpl` | vim-gtk3, unzip, curl (WSL clipboard) |
+| `run_once_..._015-homebrew.sh.tmpl` | Homebrew installation (macOS) |
 | `run_once_..._020-install-nix.sh.tmpl` | Nix installation (Determinate Systems) |
 | `run_onchange_..._110-wezterm.sh.tmpl` | wezterm-mux-server (apt repo) |
 | `run_onchange_..._120-docker.sh.tmpl` | Docker Engine (system service) |
+| `run_onchange_..._120-rancher-desktop.sh.tmpl` | Rancher Desktop (macOS) |
 | `run_onchange_..._135-win32yank.sh.tmpl` | win32yank (WSL clipboard tool) |
+| `run_onchange_..._210-brew-gui-apps.sh.tmpl` | Common GUI apps via `brew bundle` (macOS) |
+| `run_onchange_..._211-brew-gui-private.sh.tmpl` | Private GUI apps via `brew bundle` (macOS, optional) |
 | `run_after_onchange_..._210-apply-home-manager.sh.tmpl` | Home Manager switch |
 | `run_after_onchange_..._215-bat-cache.sh.tmpl` | bat theme cache rebuild |
 | `run_after_onchange_..._220-yazi-plugins.sh.tmpl` | yazi plugins (ya pkg add) |
+
+### Optional Flags
+
+- `DOTFILES_INSTALL_PRIVATE_APPS=true`: Enables `Brewfile.private` on macOS and private winget apps on Windows.
 
 ### Why Not Nix?
 
 - **vim-gtk3**: Required for WSL clipboard integration (`+clipboard` feature)
 - **Nix**: Bootstrap dependency (can't install itself)
 - **Docker**: System service requiring systemd integration
+- **Rancher Desktop**: macOS Docker runtime managed as GUI app (outside Nix scope)
 - **wezterm**: Uses apt repository for mux-server functionality
 - **win32yank**: Windows executable for WSL clipboard (not available in Nix)
 - **yazi plugins**: Managed via `ya pkg add` (yazi's package manager)
