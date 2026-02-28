@@ -26,7 +26,8 @@ AppData/
 {{- if ne .chezmoi.os "darwin" }}
 .config/ghostty/
 .zshrc
-create_dot_zshrc.local
+.zshrc.local
+Library/
 {{- end }}
 
 # Exclude client-only files on server profile
