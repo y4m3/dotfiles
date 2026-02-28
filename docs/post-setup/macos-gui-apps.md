@@ -20,15 +20,15 @@ These scripts are executed during normal `chezmoi apply`.
 
 ## Theme Config (Tokyo Night)
 
-- `~/.config/sketchybar/colors.sh`
-- `~/.config/sketchybar/sketchybarrc`
+- `~/.config/sketchybar/colors.lua`
+- `~/.config/sketchybar/bar.lua`
+- `~/.config/sketchybar/items/init.lua`
 - `~/.config/borders/bordersrc`
 
 ### SketchyBar Layout
 
-- Left: AeroSpace workspace, current media title, play/pause control
-- Right: date/time, network, CPU, memory
-- Center: unused (notch-safe for MacBook Air M2 camera area)
+- Left: AeroSpace workspaces
+- Right: CPU, memory, battery, network, calendar/date-time
 
 ## Service Management (chezmoi)
 
@@ -40,9 +40,6 @@ These scripts are executed during normal `chezmoi apply`.
 
 ## Private Apps (Brewfile.private)
 
-- Brave Browser
-- Linear
-- Todoist
 - Zotero
 - Raindrop.io
 
