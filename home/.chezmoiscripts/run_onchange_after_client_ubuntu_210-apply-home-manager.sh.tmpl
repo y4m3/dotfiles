@@ -22,7 +22,7 @@ fi
 FLAKE_DIR="${HOME}/.config/nix"
 USERNAME="$(whoami)"
 
-# Verify config files exist (should always exist since we use run_after_)
+# Verify config files exist (should always exist since this runs after dotfiles are applied)
 if [ ! -f "$FLAKE_DIR/flake.nix" ] || [ ! -f "$FLAKE_DIR/home.nix" ]; then
   echo "Error: Nix config files not found in $FLAKE_DIR" >&2
   echo "Expected: flake.nix and home.nix" >&2
