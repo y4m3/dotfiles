@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # 200-runtimes.sh -- Language runtime manager initialization
 # Category: 200-299 (Runtime initialization)
 # This file should only perform existence checks and safe initializations
@@ -52,22 +52,22 @@ if [ -z "${CARGO_BUILD_JOBS:-}" ]; then
 {{- end }}
 fi
 
+# User local environment script (uv, etc.)
+if [ -f "$HOME/.local/bin/env" ]; then
+  . "$HOME/.local/bin/env"
+fi
+
 # fnm (Fast Node Manager) - Node.js version manager
+# Falls back to NVM if fnm is not installed
 FNM_DIR="${FNM_DIR:-$HOME/.local/share/fnm}"
 if [ -x "$FNM_DIR/fnm" ]; then
   export PATH="$FNM_DIR:$PATH"
   eval "$("$FNM_DIR/fnm" env)"
-fi
-
-# Starship prompt (enabled via PROMPT_STYLE=starship)
-# Interactive only (prompt is interactive-only)
-if is_interactive; then
-  if command -v starship > /dev/null 2>&1; then
-    if [ "${PROMPT_STYLE:-}" = "starship" ]; then
-      eval "$(starship init bash)"
-
-      __append_history_to_prompts() { builtin history -a; }
-      PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND; }__append_history_to_prompts"
-    fi
+else
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+  # bash_completion is bash-only; skip in zsh
+  if [ -z "${ZSH_VERSION:-}" ]; then
+    [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
   fi
 fi

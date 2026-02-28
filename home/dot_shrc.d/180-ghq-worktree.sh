@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # 180-ghq-worktree.sh — ghq and git worktree integration
 # Dependencies: fzf, ghq, git
 
@@ -82,7 +82,11 @@ if is_interactive && command -v fzf > /dev/null 2>&1 && command -v ghq > /dev/nu
     current_dir=$(pwd)
     [[ "$current_dir" == "$path" || "$current_dir" == "$path"/* ]] && { cd "$main" || return 1; }
     if [[ -n "$(git -C "$path" status --porcelain 2> /dev/null)" ]]; then
-      read -rp "This worktree has uncommitted changes. Remove? [y/N] " confirm
+      if [ -n "${ZSH_VERSION:-}" ]; then
+        read -r "confirm?This worktree has uncommitted changes. Remove? [y/N] "
+      else
+        read -rp "This worktree has uncommitted changes. Remove? [y/N] " confirm
+      fi
       [[ ! "$confirm" =~ ^[Yy] ]] && return 1
     fi
     git worktree remove "$path"
@@ -148,7 +152,11 @@ if is_interactive && command -v fzf > /dev/null 2>&1 && command -v ghq > /dev/nu
     done
     echo
 
-    read -rp "Remove ${#merged_worktrees[@]} worktree(s) and their branches? [y/N] " confirm
+    if [ -n "${ZSH_VERSION:-}" ]; then
+      read -r "confirm?Remove ${#merged_worktrees[@]} worktree(s) and their branches? [y/N] "
+    else
+      read -rp "Remove ${#merged_worktrees[@]} worktree(s) and their branches? [y/N] " confirm
+    fi
     if [[ ! "$confirm" =~ ^[Yy] ]]; then
       echo "Aborted."
       return 0

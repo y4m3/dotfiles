@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # 140-fd.sh — Tool configuration: fd
 # Category: 1xx (Tool configuration)
 # See: https://github.com/sharkdp/fd

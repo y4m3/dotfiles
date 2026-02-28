@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # 130-ripgrep.sh — Tool configuration: ripgrep
 # Category: 1xx (Tool configuration)
 # See: https://github.com/BurntSushi/ripgrep

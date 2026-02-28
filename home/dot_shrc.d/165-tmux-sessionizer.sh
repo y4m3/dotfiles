@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # tmux-sessionizer alias
 
 is_interactive || return
