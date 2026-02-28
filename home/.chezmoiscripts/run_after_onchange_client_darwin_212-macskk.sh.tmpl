@@ -1,0 +1,80 @@
+{{- if and (eq .chezmoi.os "darwin") (eq (.profile | default "client") "client") -}}
+#!/usr/bin/env bash
+# Prepare macSKK dictionaries and validate managed preferences.
+# macskk prefs hash: {{ include "private_Library/private_Containers/private_net.mtgto.inputmethod.macSKK/private_Data/private_Library/private_Preferences/private_net.mtgto.inputmethod.macSKK.plist" | sha256sum }}
+set -euo pipefail
+
+MACSKK_APP=""
+for candidate in \
+  "/Library/Input Methods/macSKK.app" \
+  "/Applications/macSKK.app" \
+  "$HOME/Applications/macSKK.app"
+do
+  if [ -x "$candidate/Contents/MacOS/macSKK" ]; then
+    MACSKK_APP="$candidate"
+    break
+  fi
+done
+
+if [ -z "$MACSKK_APP" ]; then
+  echo "==> macSKK is not installed yet. Skipping macSKK post-config." >&2
+  exit 0
+fi
+
+CONTAINER_DIR="$HOME/Library/Containers/net.mtgto.inputmethod.macSKK/Data"
+DOC_DIR="$CONTAINER_DIR/Documents"
+DICT_DIR="$DOC_DIR/Dictionaries"
+PREF_PATH="$CONTAINER_DIR/Library/Preferences/net.mtgto.inputmethod.macSKK.plist"
+USER_DICT="$DICT_DIR/skk-jisyo.utf8"
+
+mkdir -p "$DICT_DIR"
+
+if [ -f "$PREF_PATH" ]; then
+  plutil -lint "$PREF_PATH" >/dev/null
+fi
+
+if [ ! -f "$USER_DICT" ]; then
+  touch "$USER_DICT"
+fi
+
+update_dict_if_needed() {
+  local dict_path="$1"
+  local dict_url="$2"
+  local dict_name="$3"
+
+  local need_download=0
+  if [ ! -f "$dict_path" ]; then
+    need_download=1
+  else
+    now_epoch=$(date +%s)
+    mod_epoch=$(stat -f %m "$dict_path" 2>/dev/null || echo 0)
+    age_days=$(( (now_epoch - mod_epoch) / 86400 ))
+    if [ "$age_days" -ge 30 ]; then
+      need_download=1
+    fi
+  fi
+
+  if [ "$need_download" -eq 1 ]; then
+    echo "==> Updating macSKK dictionary: $dict_name"
+    local tmp_file
+    tmp_file="$(mktemp "${dict_path}.XXXXXX")"
+    if curl -fsSL "$dict_url" -o "$tmp_file"; then
+      mv "$tmp_file" "$dict_path"
+    else
+      rm -f "$tmp_file"
+      echo "Warning: Failed to update $dict_name; keeping current file." >&2
+    fi
+  fi
+}
+
+for spec in \
+  "SKK-JISYO.L https://raw.githubusercontent.com/skk-dev/dict/master/SKK-JISYO.L" \
+  "SKK-JISYO.jinmei https://raw.githubusercontent.com/skk-dev/dict/master/SKK-JISYO.jinmei"
+do
+  dict_name="${spec%% *}"
+  dict_url="${spec#* }"
+  update_dict_if_needed "$DICT_DIR/$dict_name" "$dict_url" "$dict_name"
+done
+
+echo "macSKK dictionary preparation completed"
+{{- end -}}

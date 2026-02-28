@@ -1,0 +1,37 @@
+{{- if and (eq .chezmoi.os "darwin") (eq (.profile | default "client") "client") -}}
+#!/usr/bin/env bash
+# Home Manager configuration apply (macOS)
+# home.nix hash: {{ include "dot_config/nix/home.nix" | sha256sum }}
+# flake.nix hash: {{ include "dot_config/nix/flake.nix" | sha256sum }}
+# base.nix hash: {{ include "dot_config/nix/modules/base.nix" | sha256sum }}
+# linux.nix hash: {{ include "dot_config/nix/modules/linux.nix" | sha256sum }}
+# darwin.nix hash: {{ include "dot_config/nix/modules/darwin.nix" | sha256sum }}
+set -euo pipefail
+
+if [ -e "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]; then
+  . "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+fi
+
+if ! command -v nix >/dev/null 2>&1; then
+  echo "Error: Nix not found. Please open a new shell and run 'chezmoi apply' again." >&2
+  exit 1
+fi
+
+FLAKE_DIR="${HOME}/.config/nix"
+USERNAME="$(whoami)"
+
+if [ ! -f "$FLAKE_DIR/flake.nix" ] || [ ! -f "$FLAKE_DIR/home.nix" ]; then
+  echo "Error: Nix config files not found in $FLAKE_DIR" >&2
+  echo "Expected: flake.nix and home.nix" >&2
+  exit 1
+fi
+
+echo "==> Applying Home Manager configuration for user: $USERNAME"
+cd "$FLAKE_DIR"
+
+# Determinate Nix can crash while rendering the progress bar in non-interactive runs.
+# Force plain logs to avoid the progress UI path.
+nix --log-format raw run home-manager -- switch --flake ".#${USERNAME}" --impure
+
+echo "✓ Home Manager applied successfully"
+{{- end -}}

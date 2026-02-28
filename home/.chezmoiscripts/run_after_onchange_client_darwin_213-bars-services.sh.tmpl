@@ -1,0 +1,52 @@
+{{- if and (eq .chezmoi.os "darwin") (eq (.profile | default "client") "client") -}}
+#!/usr/bin/env bash
+# Manage SketchyBar and JankyBorders services on macOS.
+# sketchybar config hash: {{ include "dot_config/sketchybar/executable_sketchybarrc" | sha256sum }}
+# borders config hash: {{ include "dot_config/borders/executable_bordersrc" | sha256sum }}
+set -euo pipefail
+
+BREW_BIN="/opt/homebrew/bin/brew"
+
+if [ ! -x "$BREW_BIN" ]; then
+  echo "Error: Homebrew not found at $BREW_BIN" >&2
+  exit 1
+fi
+
+ensure_service_started() {
+  local formula="$1"
+  local service_name="$2"
+
+  if ! "$BREW_BIN" list --formula "$formula" >/dev/null 2>&1; then
+    echo "==> $service_name is not installed yet. Skipping."
+    return 0
+  fi
+
+  # Skip if process is already running to avoid launchctl bootstrap errors
+  if pgrep -x "$service_name" >/dev/null 2>&1; then
+    echo "==> $service_name is already running."
+    return 0
+  fi
+
+  echo "==> Starting $service_name via brew services..."
+  "$BREW_BIN" services start "$service_name" 2>/dev/null || true
+}
+
+ensure_service_started "felixkratz/formulae/sketchybar" "sketchybar"
+ensure_service_started "felixkratz/formulae/borders" "borders"
+
+if command -v sketchybar >/dev/null 2>&1; then
+  sketchybar --reload || true
+fi
+
+if command -v borders >/dev/null 2>&1; then
+  borders \
+    active_color=0xff7dcfff \
+    inactive_color=0xff3b4261 \
+    background_color=0x401a1b26 \
+    style=round \
+    width=5.0 \
+    hidpi=on || true
+fi
+
+echo "SketchyBar and borders services are ready"
+{{- end -}}

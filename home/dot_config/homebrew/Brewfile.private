@@ -1,0 +1,5 @@
+# Private GUI apps (macOS)
+# Applied only when DOTFILES_INSTALL_PRIVATE_APPS=true.
+
+cask "zotero"
+cask "raindropio"

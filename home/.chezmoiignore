@@ -22,6 +22,14 @@ Documents/
 AppData/
 {{- end }}
 
+# Exclude macOS-only files on other platforms
+{{- if ne .chezmoi.os "darwin" }}
+.config/ghostty/
+.zshrc
+.zshrc.local
+Library/
+{{- end }}
+
 # Exclude client-only files on server profile
 {{- if and (hasKey . "profile") (eq .profile "server") }}
 .chezmoiscripts/run_once_client_ubuntu_010-apt-packages.sh.tmpl

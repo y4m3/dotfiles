@@ -1,0 +1,18 @@
+#!/usr/bin/env lua
+
+-- SketchyBar Configuration - Tokyo Night
+-- Entry point for SbarLua
+
+package.cpath = package.cpath
+  .. ";"
+  .. os.getenv("HOME")
+  .. "/.local/share/sketchybar_lua/?.so"
+
+sbar = require("sketchybar")
+
+sbar.begin_config()
+require("init")
+sbar.end_config()
+
+sbar.hotload(true)
+sbar.event_loop()
