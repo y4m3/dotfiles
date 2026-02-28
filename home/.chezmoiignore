@@ -10,6 +10,8 @@
 .chezmoiscripts/run_after_onchange_client_ubuntu_220-yazi-plugins.sh.tmpl
 .config/nix/
 .config/btop/btop.conf
+.config/zellij/
+.config/tmux/
 {{- end }}
 
 # Exclude Windows-specific files on Linux/macOS

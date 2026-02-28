@@ -13,6 +13,29 @@
 
   # Helper function: log error (optional)
   LOG_ROTATION_CHECKED=0
+  is_darwin=false
+  if [ "$(uname -s 2> /dev/null)" = "Darwin" ]; then
+    is_darwin=true
+  fi
+
+  get_file_size() {
+    local file="$1"
+    if [ "$is_darwin" = true ]; then
+      stat -f %z "$file"
+    else
+      stat -c %s "$file"
+    fi
+  }
+
+  get_file_mtime() {
+    local file="$1"
+    if [ "$is_darwin" = true ]; then
+      stat -f %m "$file"
+    else
+      stat -c %Y "$file"
+    fi
+  }
+
   log_error() {
     if [ "${ENABLE_SECURITY_PERMISSIONS_LOG:-0}" -eq 1 ]; then
       local log_file="${XDG_CACHE_HOME:-$HOME/.cache}/security-permissions-errors.log"
@@ -32,8 +55,7 @@
       if [ "$LOG_ROTATION_CHECKED" -eq 0 ] && [ -f "$log_file" ]; then
         LOG_ROTATION_CHECKED=1
         local file_size
-        # Ubuntu 24.04 uses Linux stat format
-        if stat_output=$(stat -c %s "$log_file" 2>&1); then
+        if stat_output=$(get_file_size "$log_file" 2>&1); then
           file_size="$stat_output"
         else
           # Avoid calling log_error() recursively from within log_error().
@@ -132,8 +154,7 @@
   if acquire_cache_lock; then
     if [ -z "${FORCE_SECURITY_PERMISSIONS:-}" ] && [ -f "$CACHE_FILE" ]; then
       # Check if cache is still valid
-      # Ubuntu 24.04 uses Linux stat format
-      if stat_output=$(stat -c %Y "$CACHE_FILE" 2>&1); then
+      if stat_output=$(get_file_mtime "$CACHE_FILE" 2>&1); then
         last_run="$stat_output"
       else
         # Check if it's a permission error (serious)
@@ -172,8 +193,7 @@
       [ "${DEBUG_SECURITY_PERMISSIONS:-0}" -eq 1 ] && echo "Warning: Failed to create cache directory" >&2
     }
     if [ -f "$CACHE_FILE" ]; then
-      # Ubuntu 24.04 uses Linux stat format
-      if stat_output=$(stat -c %Y "$CACHE_FILE" 2>&1); then
+      if stat_output=$(get_file_mtime "$CACHE_FILE" 2>&1); then
         cache_mtime="$stat_output"
       else
         # Check if it's a permission error (serious)

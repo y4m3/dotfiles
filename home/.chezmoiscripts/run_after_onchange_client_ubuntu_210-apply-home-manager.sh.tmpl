@@ -3,6 +3,9 @@
 # Home Manager configuration apply
 # home.nix hash: {{ include "dot_config/nix/home.nix" | sha256sum }}
 # flake.nix hash: {{ include "dot_config/nix/flake.nix" | sha256sum }}
+# base.nix hash: {{ include "dot_config/nix/modules/base.nix" | sha256sum }}
+# linux.nix hash: {{ include "dot_config/nix/modules/linux.nix" | sha256sum }}
+# darwin.nix hash: {{ include "dot_config/nix/modules/darwin.nix" | sha256sum }}
 
 set -euo pipefail
 
@@ -30,7 +33,8 @@ echo "==> Applying Home Manager configuration for user: $USERNAME"
 cd "$FLAKE_DIR"
 
 # Run Home Manager switch with --impure flag (required for builtins.getEnv)
-nix run home-manager -- switch --flake ".#${USERNAME}" --impure
+# Use raw log format to avoid progress UI crashes in non-interactive runs.
+nix --log-format raw run home-manager -- switch --flake ".#${USERNAME}" --impure
 
 echo "✓ Home Manager applied successfully"
 {{- end }}

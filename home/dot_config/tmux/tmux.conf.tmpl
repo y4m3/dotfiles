@@ -1,4 +1,4 @@
-{{- if eq .chezmoi.os "linux" -}}
+{{- if ne .chezmoi.os "windows" -}}
 # =============================================================================
 # tmux Configuration
 # Path: ~/.config/tmux/tmux.conf
@@ -50,6 +50,7 @@ set -g allow-passthrough on
 set -ga terminal-overrides ",*256col*:Tc"
 set -ga terminal-overrides ",alacritty:Tc"
 set -ga terminal-overrides ",xterm-256color:Tc"
+set -ga terminal-overrides ",xterm-ghostty:Tc"
 
 # =============================================================================
 # Prefix Key: Ctrl+a (matches Zellij tmux mode)
@@ -73,4 +74,7 @@ source-file ~/.config/tmux/appearance.conf
 
 # Plugins (TPM, resurrect, continuum, yank)
 source-file ~/.config/tmux/plugins.conf
+
+# Local overrides (machine-specific, created once by chezmoi)
+source-file -q ~/.config/tmux/tmux.local.conf
 {{- end -}}

@@ -28,6 +28,10 @@ return {
       -- Exclude markdown-toc, keep prettier only
       opts.formatters_by_ft.markdown = { "prettier" }
       opts.formatters_by_ft["markdown.mdx"] = { "prettier" }
+      -- We don't use fish shell in this environment.
+      opts.formatters_by_ft.fish = {}
+      opts.formatters = opts.formatters or {}
+      opts.formatters.fish_indent = nil
 
       return opts
     end,
