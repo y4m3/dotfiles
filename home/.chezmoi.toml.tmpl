@@ -10,7 +10,7 @@
 {{-   $isWsl = .chezmoi.kernel.osrelease | lower | contains "microsoft" -}}
 {{- end -}}
 
-{{- /* Install private apps (Windows only, disabled by default) */ -}}
+{{- /* Install private apps (Windows/macOS, disabled by default) */ -}}
 {{- $installPrivateApps := env "DOTFILES_INSTALL_PRIVATE_APPS" | eq "true" -}}
 
 [data]
@@ -18,8 +18,11 @@
     profile = "{{ $profile }}"
     # WSL detection (true if running in Windows Subsystem for Linux)
     is_wsl = {{ $isWsl }}
-    # Install private apps (Proton suite, Linear, etc.) - Windows only
+    # Install private apps - Windows/macOS
+    # macOS: enables Brewfile.private install
     install_private_apps = {{ $installPrivateApps }}
+    # Ghostty leader key for chord keybindings (e.g. "ctrl+w")
+    ghostty_leader = "ctrl+w"
     # Zellij leader key (e.g. "Ctrl a")
     zellij_leader = "Ctrl a"
     # Zellij theme (e.g. "tokyo-night")

@@ -1,0 +1,34 @@
+# Ghostty Local Configuration
+#
+# Machine-specific overrides. This file is created once by chezmoi
+# and never updated afterwards — edit freely.
+#
+# Settings here override the defaults in `config` because
+# Ghostty applies config-file inclusions after the parent file,
+# and later values win.
+#
+# Docs: https://ghostty.org/docs/config/reference
+
+# --- Font ---
+# font-family = UDEV Gothic 35NFLG
+# font-size = 14
+
+# --- Theme ---
+# theme = TokyoNight Storm
+
+# --- Window ---
+# background-opacity = 0.95
+# background-blur = true
+
+# --- Keybindings ---
+# The leader key is set via chezmoi data (ghostty_leader in .chezmoi.toml).
+# To change it, edit ~/.config/chezmoi/chezmoi.toml:
+#
+#   [data]
+#       ghostty_leader = "ctrl+space"
+#
+# Then run `chezmoi apply` to regenerate all keybindings at once.
+#
+# Use this file only for additional per-machine keybind overrides:
+# keybind = super+t=new_tab
+# keybind = super+n=new_window

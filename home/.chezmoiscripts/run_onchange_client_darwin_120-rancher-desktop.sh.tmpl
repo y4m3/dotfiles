@@ -1,0 +1,22 @@
+{{- if and (eq .chezmoi.os "darwin") (eq (.profile | default "client") "client") -}}
+#!/usr/bin/env bash
+# Install Rancher Desktop via Homebrew Cask
+set -euo pipefail
+
+BREW_BIN="/opt/homebrew/bin/brew"
+CASK_NAME="rancher"
+
+if [ ! -x "$BREW_BIN" ]; then
+  echo "Error: Homebrew not found at $BREW_BIN" >&2
+  exit 1
+fi
+
+if "$BREW_BIN" list --cask "$CASK_NAME" >/dev/null 2>&1; then
+  echo "✓ Rancher Desktop already installed"
+  exit 0
+fi
+
+echo "==> Installing Rancher Desktop ($CASK_NAME)..."
+"$BREW_BIN" install --cask "$CASK_NAME"
+echo "✓ Rancher Desktop installed"
+{{- end -}}

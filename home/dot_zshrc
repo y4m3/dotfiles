@@ -1,0 +1,334 @@
+# zsh interactive shell setup (managed by chezmoi)
+
+# Deduplicate PATH entries
+typeset -U path
+
+# Enable completion system
+autoload -Uz compinit && compinit
+
+# Rust environment
+if [ -f "$HOME/.cargo/env" ]; then
+  . "$HOME/.cargo/env"
+fi
+
+# Aliases
+alias v="nvim"
+alias vi="nvim"
+alias vim="nvim"
+
+# Helper: define alias only when not already defined.
+alias_if_not_set() {
+  local name="$1"
+  local value="$2"
+  if ! alias "$name" >/dev/null 2>&1; then
+    alias "$name"="$value"
+  fi
+}
+
+# User local environment script
+if [ -f "$HOME/.local/bin/env" ]; then
+  . "$HOME/.local/bin/env"
+fi
+
+# Node Version Manager
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+
+# Editor defaults for command-line editing widgets
+if command -v nvim >/dev/null 2>&1; then
+  : "${EDITOR:=nvim}"
+  : "${VISUAL:=nvim}"
+fi
+export EDITOR VISUAL
+
+# Homebrew library/toolchain paths
+export PATH="/opt/homebrew/opt/curl/bin:$PATH"
+export PATH="/opt/homebrew/opt/zip/bin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/curl/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/curl/include"
+
+# fzf + zoxide (zsh)
+if [[ -o interactive ]]; then
+  if command -v fzf >/dev/null 2>&1; then
+    eval "$(fzf --zsh)"
+
+    if command -v fd >/dev/null 2>&1; then
+      export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+      export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    fi
+
+    export FZF_DEFAULT_OPTS='--height 40% --reverse --border'
+
+    if command -v bat >/dev/null 2>&1; then
+      export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always {} 2>/dev/null || head -20 {}'"
+    fi
+
+    if command -v eza >/dev/null 2>&1; then
+      export FZF_ALT_C_OPTS="--preview 'eza --tree --color=auto {} 2>/dev/null | head -20'"
+    fi
+  fi
+fi
+
+# Tool aliases and wrappers (zsh parity with bashrc.d)
+if [[ -o interactive ]]; then
+  # Match bash preference: vi-style command line editing.
+  bindkey -v
+
+  alias_if_not_set cp "cp -i"
+  alias_if_not_set mv "mv -i"
+  alias_if_not_set df "df -h"
+  alias_if_not_set du "du -h"
+  alias_if_not_set mkdir "mkdir -pv"
+
+  if command -v eza >/dev/null 2>&1; then
+    alias_if_not_set ls "eza --color=auto --group-directories-first --icons"
+    alias_if_not_set ll "eza -alF --git --icons"
+    alias_if_not_set la "eza -a --icons"
+    alias_if_not_set tree "eza --tree --color=auto --group-directories-first --icons"
+  fi
+
+  if command -v rg >/dev/null 2>&1; then
+    alias_if_not_set grep "rg"
+  fi
+
+  if command -v fd >/dev/null 2>&1; then
+    alias_if_not_set find "fd"
+  fi
+
+  if command -v tmux-sessionizer >/dev/null 2>&1; then
+    alias_if_not_set tm "tmux-sessionizer"
+  fi
+
+  # trash-cli integration (safe delete workflow).
+  if command -v trash-put >/dev/null 2>&1 && command -v trash-list >/dev/null 2>&1; then
+    rm() {
+      printf '\e[2mThis is not the command you are looking for.\e[0m\n' >&2
+      printf '\e[2mUse: tp (trash) or del (permanent)\e[0m\n' >&2
+      return 1
+    }
+
+    tp() {
+      if [[ $# -eq 0 ]]; then
+        printf '\e[2mUsage: tp <file>...\e[0m\n' >&2
+        return 1
+      fi
+      command trash-put "$@"
+      local status=$?
+      if [[ $status -eq 0 ]]; then
+        printf '\e[2mtrashed\e[0m\n'
+      fi
+      return "$status"
+    }
+
+    alias_if_not_set del "command rm -i"
+    alias_if_not_set trash "trash-list"
+    alias_if_not_set tl "trash-list"
+  fi
+
+  # Smart cat wrapper using bat when interactive.
+  cat() {
+    if ! [ -t 1 ]; then
+      command /bin/cat "$@"
+      return
+    fi
+
+    if [ $# -eq 0 ]; then
+      command /bin/cat
+      return
+    fi
+
+    if command -v bat >/dev/null 2>&1; then
+      command bat --paging=auto "$@"
+    elif command -v batcat >/dev/null 2>&1; then
+      command batcat --paging=auto "$@"
+    else
+      command /bin/cat "$@"
+    fi
+  }
+fi
+
+# direnv
+if command -v direnv >/dev/null 2>&1; then
+  eval "$(direnv hook zsh)"
+fi
+
+export _ZO_RESOLVE_SYMLINKS=1
+export _ZO_ECHO=1
+export _ZO_EXCLUDE_DIRS="/tmp:/var/tmp:/run:/proc:/sys:/dev:/snap:$HOME/.cache:$HOME/.local/share:$HOME/**/node_modules:$HOME/**/__pycache__:$HOME/**/.venv:$HOME/**/.git"
+
+if [[ -o interactive ]]; then
+  if command -v zoxide >/dev/null 2>&1; then
+    eval "$(zoxide init zsh --cmd j)"
+  fi
+fi
+
+# ZLE: edit current command in $EDITOR (article-style Ctrl+O + standard Ctrl+X Ctrl+E)
+if [[ -o interactive ]]; then
+  autoload -Uz edit-command-line
+  zle -N edit-command-line
+  bindkey '^O' edit-command-line
+  bindkey '^X^E' edit-command-line
+fi
+
+# ghq + git worktree helpers
+GHQ_ROOT="${GHQ_ROOT:-$HOME/repos}"
+WORKTREE_DIR="${WORKTREE_DIR:-${GHQ_ROOT}/.worktrees}"
+
+if [[ -o interactive ]] && command -v fzf >/dev/null 2>&1 && command -v ghq >/dev/null 2>&1; then
+  dev() {
+    local selected display repo
+    selected="$(
+      ghq list | while IFS= read -r repo; do
+        display="${repo#github.com/}"
+        display="${display#gitlab.com/}"
+        display="${display#bitbucket.org/}"
+        echo -e "${display}\t${repo}"
+      done | fzf --prompt="Repository: " --with-nth=1 -d$'\t'
+    )"
+    [[ -z "$selected" ]] && return 0
+    cd "$(ghq root)/${selected#*$'\t'}" || return 1
+  }
+
+  wt-add() {
+    git rev-parse --git-dir >/dev/null 2>&1 || {
+      echo "Error: Not in a git repository" >&2
+      return 1
+    }
+
+    local repo branch path
+    repo="$(basename "$(git rev-parse --show-toplevel)")"
+    if [[ -n "${1:-}" ]]; then
+      branch="$(echo "$1" | xargs)"
+    else
+      git fetch --all --prune || echo "Warning: git fetch failed" >&2
+      branch="$(git branch -r | grep -v HEAD | sed 's/^[[:space:]]*origin\///' | fzf --prompt="Branch: ")"
+      [[ -z "$branch" ]] && return 0
+      branch="$(echo "$branch" | xargs)"
+    fi
+
+    path="${WORKTREE_DIR}/${repo}/${branch//[\/.]/-}"
+    [[ -d "$path" ]] && { cd "$path" || return 1; return 0; }
+
+    mkdir -p "$(dirname "$path")"
+    if git show-ref --verify --quiet "refs/heads/${branch}"; then
+      git worktree add "$path" "$branch"
+    elif git show-ref --verify --quiet "refs/remotes/origin/${branch}"; then
+      git worktree add "$path" -b "$branch" "origin/${branch}"
+    else
+      git worktree add "$path" -b "$branch"
+    fi
+    cd "$path" || return 1
+  }
+
+  wt-rm() {
+    git rev-parse --git-dir >/dev/null 2>&1 || {
+      echo "Error: Not in a git repository" >&2
+      return 1
+    }
+
+    local path main current_dir
+    main="$(git worktree list --porcelain | head -1 | sed 's/^worktree //')"
+    if [[ -n "${1:-}" ]]; then
+      path="$1"
+      if ! git worktree list --porcelain 2>/dev/null | grep -qFx "worktree ${path}"; then
+        echo "Error: '$path' is not a worktree of this repository" >&2
+        return 1
+      fi
+    else
+      path="$(git worktree list --porcelain | grep '^worktree ' | sed 's/^worktree //' | grep -v "^${main}$" | fzf --prompt="Remove: ")"
+      [[ -z "$path" ]] && return 0
+    fi
+
+    current_dir="$(pwd)"
+    [[ "$current_dir" == "$path" || "$current_dir" == "$path"/* ]] && cd "$main"
+
+    if [[ -n "$(git -C "$path" status --porcelain 2>/dev/null)" ]]; then
+      read -r "?This worktree has uncommitted changes. Remove? [y/N] " confirm
+      [[ ! "$confirm" =~ ^[Yy] ]] && return 1
+    fi
+    git worktree remove "$path"
+  }
+
+  wt-list() {
+    git rev-parse --git-dir >/dev/null 2>&1 || {
+      echo "Error: Not in a git repository" >&2
+      return 1
+    }
+    git worktree list
+  }
+
+  wt-prune() {
+    git rev-parse --git-dir >/dev/null 2>&1 || {
+      echo "Error: Not in a git repository" >&2
+      return 1
+    }
+
+    local main_branch merged_branches main_worktree current_dir
+    local -a merged_worktrees
+    merged_worktrees=()
+    main_worktree="$(git worktree list --porcelain | head -1 | sed 's/^worktree //')"
+
+    if git show-ref --verify --quiet refs/heads/main; then
+      main_branch="main"
+    elif git show-ref --verify --quiet refs/heads/master; then
+      main_branch="master"
+    else
+      echo "Error: Could not find main or master branch" >&2
+      return 1
+    fi
+
+    merged_branches="$(git branch --merged "$main_branch" | sed 's/^[* ]*//' | grep -v "^${main_branch}$")"
+
+    local worktree_path worktree_branch line
+    while IFS= read -r line; do
+      if [[ "$line" == "worktree "* ]]; then
+        worktree_path="${line#worktree }"
+      elif [[ "$line" == "branch "* ]]; then
+        worktree_branch="${line#branch refs/heads/}"
+        if [[ "$worktree_path" != "$main_worktree" ]] && echo "$merged_branches" | grep -qFx "$worktree_branch"; then
+          merged_worktrees+=("${worktree_path}|${worktree_branch}")
+        fi
+      fi
+    done < <(git worktree list --porcelain)
+
+    if [[ ${#merged_worktrees[@]} -eq 0 ]]; then
+      echo "No merged worktrees found."
+      git worktree prune -v
+      return 0
+    fi
+
+    echo "Merged worktrees found:"
+    local entry path branch
+    for entry in "${merged_worktrees[@]}"; do
+      path="${entry%|*}"
+      branch="${entry#*|}"
+      echo "  ${path} (branch: ${branch})"
+    done
+
+    read -r "?Remove ${#merged_worktrees[@]} worktree(s) and their branches? [y/N] " confirm
+    [[ ! "$confirm" =~ ^[Yy] ]] && { echo "Aborted."; return 0; }
+
+    current_dir="$(pwd)"
+    for entry in "${merged_worktrees[@]}"; do
+      path="${entry%|*}"
+      branch="${entry#*|}"
+      if [[ "$current_dir" == "$path" || "$current_dir" == "$path"/* ]]; then
+        cd "$main_worktree" || return 1
+      fi
+      echo "Removing worktree: ${path}"
+      git worktree remove "$path" && echo "Deleting branch: ${branch}" && git branch -d "$branch"
+    done
+    git worktree prune -v
+  }
+fi
+
+# Prompt
+if command -v starship >/dev/null 2>&1; then
+  eval "$(starship init zsh)"
+fi
+
+# Load host-local overrides last so they can override anything above.
+if [ -f "$HOME/.zshrc.local" ]; then
+  source "$HOME/.zshrc.local"
+fi

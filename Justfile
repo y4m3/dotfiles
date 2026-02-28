@@ -55,3 +55,7 @@ check:
         home/dot_bash_prompt.d/*.sh \
         home/dot_local/bin/executable_tmux-sessionizer
     echo "✓ Formatting check passed"
+
+# Validate generated macSKK preferences
+test-macskk:
+    ./scripts/check-macskk-keybindings.sh

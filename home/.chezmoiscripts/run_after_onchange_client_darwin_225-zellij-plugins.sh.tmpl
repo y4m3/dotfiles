@@ -1,0 +1,44 @@
+{{- if and (eq .chezmoi.os "darwin") (eq (.profile | default "client") "client") -}}
+#!/usr/bin/env bash
+# Zellij plugins installation
+# zjstatus version hash: {{ "v0.22.0" | sha256sum }}
+
+set -euo pipefail
+
+ZJSTATUS_VERSION="v0.22.0"
+ZJSTATUS_URL="https://github.com/dj95/zjstatus/releases/download/${ZJSTATUS_VERSION}/zjstatus.wasm"
+# SHA256 checksum from: https://github.com/dj95/zjstatus/releases/tag/v0.22.0
+ZJSTATUS_SHA256="4de426d20b1cbf861272e927aeeb5b49d92c17f0e2bb9d173f85bf7f0154dd53"
+PLUGIN_DIR="${HOME}/.config/zellij/plugins"
+
+echo "==> Installing zellij plugins..."
+
+mkdir -p "$PLUGIN_DIR"
+
+if [[ -f "$PLUGIN_DIR/zjstatus.wasm" ]]; then
+  echo "  ✓ zjstatus (already installed)"
+else
+  echo "  → Downloading zjstatus ${ZJSTATUS_VERSION}..."
+  TMP_FILE=$(mktemp)
+  trap 'rm -f "$TMP_FILE"' EXIT
+  if curl -fsSL -o "$TMP_FILE" "$ZJSTATUS_URL"; then
+    # Verify checksum
+    if [[ "$ZJSTATUS_SHA256" != "SKIP" ]]; then
+      ACTUAL_SHA256=$(shasum -a 256 "$TMP_FILE" | cut -d' ' -f1)
+      if [[ "$ACTUAL_SHA256" != "$ZJSTATUS_SHA256" ]]; then
+        echo "  ✗ Checksum mismatch for zjstatus" >&2
+        echo "    Expected: $ZJSTATUS_SHA256" >&2
+        echo "    Actual:   $ACTUAL_SHA256" >&2
+        exit 1
+      fi
+    fi
+    mv "$TMP_FILE" "$PLUGIN_DIR/zjstatus.wasm"
+    echo "  ✓ zjstatus ${ZJSTATUS_VERSION}"
+  else
+    echo "  ✗ Failed to download zjstatus" >&2
+    exit 1
+  fi
+fi
+
+echo "✓ Zellij plugins installed successfully"
+{{- end }}
