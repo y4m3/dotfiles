@@ -66,5 +66,8 @@ if [ -x "$FNM_DIR/fnm" ]; then
 else
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-  [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+  # bash_completion is bash-only; skip in zsh
+  if [ -z "${ZSH_VERSION:-}" ]; then
+    [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+  fi
 fi

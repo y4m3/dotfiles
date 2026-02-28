@@ -22,7 +22,7 @@ fi
 # Source shared + zsh-specific customizations
 for _d in "$HOME/.shrc.d" "$HOME/.zshrc.d"; do
   if [ -d "$_d" ]; then
-    for _f in "$_d"/*.sh; do
+    for _f in "$_d"/*.sh(N); do
       [ -r "$_f" ] || continue
       . "$_f"
     done
