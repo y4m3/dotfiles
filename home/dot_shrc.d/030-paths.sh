@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # 030-paths.sh — PATH management
 # Category: 0xx (Core) (Core functionality)
 

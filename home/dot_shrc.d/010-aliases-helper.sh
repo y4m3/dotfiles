@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # 010-aliases-helper.sh — Helper functions for alias management
 # Provides common functions for setting aliases in interactive shells
 # while respecting user-defined aliases in .bashrc.local

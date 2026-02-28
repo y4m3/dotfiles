@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # 120-bat.sh — Tool configuration: bat
 # Category: 1xx (Tool configuration)
 # See: https://github.com/sharkdp/bat

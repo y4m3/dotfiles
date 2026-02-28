@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # 100-editor.sh — Editor configuration
 # Category: 1xx (Tools)
 # Sets EDITOR/VISUAL/GIT_EDITOR with nvim preference, vim fallback
@@ -21,13 +21,16 @@ export GIT_EDITOR="$_EDITOR_CMD"
 # History-aware editor functions (interactive shell only)
 if is_interactive; then
   # Helper to record properly quoted command in history
-  _editor_history() {
+  _record_history() {
     local cmd="$1"
     shift
-    if (($#)); then
+    if [ $# -gt 0 ]; then
       local quoted
       quoted=$(printf '%q ' "$@")
-      history -s "$cmd ${quoted% }"
+      cmd="$cmd ${quoted% }"
+    fi
+    if [ -n "${ZSH_VERSION:-}" ]; then
+      print -s "$cmd"
     else
       history -s "$cmd"
     fi
@@ -35,19 +38,19 @@ if is_interactive; then
 
   # v, vi → detected editor (nvim or vim)
   v() {
-    _editor_history "$_EDITOR_CMD" "$@"
+    _record_history "$_EDITOR_CMD" "$@"
     command "$_EDITOR_CMD" "$@"
   }
 
   vi() {
-    _editor_history "$_EDITOR_CMD" "$@"
+    _record_history "$_EDITOR_CMD" "$@"
     command "$_EDITOR_CMD" "$@"
   }
 
   # vim → nvim if available, otherwise native vim
-  if [[ "$_EDITOR_CMD" == "nvim" ]]; then
+  if [ "$_EDITOR_CMD" = "nvim" ]; then
     vim() {
-      _editor_history "nvim" "$@"
+      _record_history "nvim" "$@"
       command nvim "$@"
     }
   fi

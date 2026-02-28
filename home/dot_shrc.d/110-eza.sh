@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # 110-eza.sh — Tool configuration: eza
 # Category: 1xx (Tool configuration)
 # See: https://github.com/eza-community/eza

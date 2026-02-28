@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # 040-security-permissions.sh — Security: strict file permissions for credentials
 # Category: 0xx (Core) (Core functionality)
 # Automatically sets strict permissions on credential files and directories
@@ -276,9 +276,10 @@
 ) # end subshell
 
 _security_permissions_exit=$?
-if [ "${BASH_SOURCE[0]:-}" != "${0:-}" ]; then
-  # Note: In a sourced file, returning the subshell exit code without leaving *any*
-  # temporary variable is impractical in Bash. We keep a single, uniquely-named variable.
-  return "$_security_permissions_exit"
+# Detect sourced context: BASH_SOURCE (bash) or ZSH_EVAL_CONTEXT (zsh)
+if [ -n "${BASH_SOURCE+x}" ]; then
+  [ "${BASH_SOURCE[0]}" != "$0" ] && return "$_security_permissions_exit"
+elif [ -n "${ZSH_EVAL_CONTEXT+x}" ]; then
+  case "$ZSH_EVAL_CONTEXT" in *:file*) return "$_security_permissions_exit" ;; esac
 fi
 exit "$_security_permissions_exit"

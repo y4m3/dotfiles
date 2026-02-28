@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # trash-cli: Safe file deletion
 # Moves files to trash instead of permanent deletion
 
@@ -17,13 +17,13 @@ if command -v trash-put > /dev/null 2>&1 && command -v trash-list > /dev/null 2>
 
   # tp: Move to trash with feedback
   tp() {
-    if [[ $# -eq 0 ]]; then
+    if [ $# -eq 0 ]; then
       printf '\e[2mUsage: tp <file>...\e[0m\n' >&2
       return 1
     fi
     command trash-put "$@"
     local status=$?
-    if [[ $status -eq 0 ]]; then
+    if [ $status -eq 0 ]; then
       printf '\e[2mtrashed\e[0m\n'
     fi
     return "$status"

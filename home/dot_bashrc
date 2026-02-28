@@ -128,16 +128,16 @@ if ! shopt -oq posix; then
     fi
 fi
 
-# Source personal customizations
-_bashrc_d="$HOME/.bashrc.d"
-if [ -d "$_bashrc_d" ]; then
-    for _f in "$_bashrc_d"/*.sh; do
-        [ -r "$_f" ] || continue
-        . "$_f"
-    done
-    unset _f
-fi
-unset _bashrc_d
+# Source shared + bash-specific customizations
+for _d in "$HOME/.shrc.d" "$HOME/.bashrc.d"; do
+    if [ -d "$_d" ]; then
+        for _f in "$_d"/*.sh; do
+            [ -r "$_f" ] || continue
+            . "$_f"
+        done
+    fi
+done
+unset _d _f
 
 # Hostname-specific overrides (loaded after .bashrc.local)
 _hostname_short="${HOSTNAME:-$(hostname -s 2>/dev/null)}"
