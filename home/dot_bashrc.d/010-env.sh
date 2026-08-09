@@ -12,6 +12,6 @@ export LESS="-R -F -M -i"
 
 export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
 
-# bat/delta use "ansi" so colors follow the terminal's Tokyo Night palette;
-# no .tmTheme downloads or bat cache builds needed.
+# bat/delta use "ansi" so colors follow the terminal's color scheme
+# (Tracer). No .tmTheme downloads or bat cache builds needed.
 export BAT_THEME=ansi

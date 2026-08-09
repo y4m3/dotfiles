@@ -16,9 +16,24 @@ Managed with [chezmoi](https://www.chezmoi.io/) and [Nix Home Manager](https://n
   The Windows layer is minimal (terminal, git, shell via winget); development tools live in WSL.
 - `flake.lock` and `lazy-lock.json` are in git.
   Versions change only when you commit a change.
-- herdr is the terminal multiplexer. tmux is the fallback.
-- Colors come from the terminal ANSI palette (`bat`, `delta`).
+- herdr is the terminal multiplexer. Its config lives in `~/.config/herdr/config.toml`.
+  tmux is the fallback.
+- Colors come from the terminal ANSI palette (`bat`, `delta`, `herdr`, tmux).
   Do not put hex color values in tool configurations.
+  The one exception is `wezterm/colors/tracer.toml`, which defines the [Tracer](https://github.com/y4m3/tracer-color) scheme itself.
+
+## Machine-local overrides
+
+chezmoi creates each file below once. After that, the machine owns it, and
+chezmoi never overwrites it again.
+
+| File | Overrides |
+| --- | --- |
+| `~/.bashrc.local` | bash |
+| `~/.gitconfig.local` | git identity |
+| `~/.config/wezterm/local.lua` | WezTerm (font, color scheme, WSL domain, key bindings) |
+| `~/.config/tmux/tmux.local.conf` | tmux |
+| `~/.config/nvim/lua/plugins/*.lua` | nvim — no template file; add files here, lazy.nvim imports the whole directory |
 
 ## Quick start
 
@@ -75,13 +90,14 @@ Do these steps one time on each new machine:
 
 ```
 install.sh / install.ps1     Bootstrap scripts
-lint                         Lint script (shellcheck, shfmt, template sanity)
+lint                         Lint script (shellcheck, shfmt, template sanity; also covers install.sh and itself)
 home/
   .chezmoidata/              Tool list (single source of truth)
   .chezmoiscripts/           Install scripts (apt, Nix, Claude Code, win32yank, mo, winget)
   dot_bashrc, dot_bashrc.d/  Shell initialization
+  dot_config/herdr/          Multiplexer config (primary; tmux is the fallback)
   dot_config/nix/            Nix flake and Home Manager (generated from packages.yaml)
   dot_config/nvim/           LazyVim (markdown, python, sql)
   dot_config/tmux/           Fallback multiplexer
-  dot_config/wezterm/        Terminal emulator
+  dot_config/wezterm/        Terminal emulator (Tracer colors, OS-boundary tabs)
 ```
