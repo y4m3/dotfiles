@@ -7,7 +7,16 @@ REPO="y4m3"
 
 if ! command -v chezmoi >/dev/null 2>&1; then
   echo "==> Installing chezmoi to ${CHEZMOI_BIN_DIR}"
-  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "${CHEZMOI_BIN_DIR}"
+  # A fresh Ubuntu image may lack curl. The apt script installs curl
+  # only after chezmoi runs, so this step falls back to wget.
+  if command -v curl >/dev/null 2>&1; then
+    sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "${CHEZMOI_BIN_DIR}"
+  elif command -v wget >/dev/null 2>&1; then
+    sh -c "$(wget -qO- get.chezmoi.io)" -- -b "${CHEZMOI_BIN_DIR}"
+  else
+    echo "error: curl or wget is required" >&2
+    exit 1
+  fi
   PATH="${CHEZMOI_BIN_DIR}:${PATH}"
 fi
 
