@@ -14,6 +14,7 @@ Documents/
 .bash_profile
 .bashrc.d/
 .config/fd/
+.config/herdr/
 .config/nix/
 .config/nvim/
 .config/tmux/
