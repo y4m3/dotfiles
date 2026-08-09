@@ -1,6 +1,13 @@
 -- lazy.nvim loads this file before it starts up. LazyVim defaults:
 -- https://www.lazyvim.org/configuration/general
 
+-- LazyVim uses none of the remote-plugin providers. Disable them so
+-- checkhealth stays quiet on both platforms.
+vim.g.loaded_node_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+
 -- :Dump [messages] rescues a buffer, or the :messages history, to a file.
 -- A file write is binary-safe. The clipboard provider is not: it rejects
 -- invalid UTF-8, for example checkhealth output on Japanese Windows. It
