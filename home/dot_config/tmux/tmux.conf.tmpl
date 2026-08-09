@@ -1,76 +1,25 @@
-{{- if eq .chezmoi.os "linux" -}}
-# =============================================================================
-# tmux Configuration
-# Path: ~/.config/tmux/tmux.conf
-# Designed to match Zellij keybindings as closely as possible
-# =============================================================================
+# Minimal tmux: fallback multiplexer (herdr is primary). Default keybindings.
 
-# =============================================================================
-# tmux-sensible equivalent settings (without keybindings)
-# =============================================================================
+set -s escape-time 10
+set -s default-terminal "tmux-256color"
+set -ag terminal-overrides ",*:RGB"
 
-# --- Server Options ---
-set -s escape-time 0                    # No ESC delay (Neovim compatibility)
-set -s default-terminal "tmux-256color" # 256 color support
-
-# --- Global Options ---
-set -g history-limit 100000             # Scrollback buffer (matches Zellij)
-set -g display-time 4000                # Message display time (4 seconds)
-set -g status-interval 5                # Status refresh interval (5 seconds)
-set -g focus-events on                  # Neovim autoread support
-set -g status-keys emacs                # Command line uses emacs style
-
-# --- Window Options ---
-setw -g aggressive-resize on            # Resize for multi-client access
-
-# =============================================================================
-# General Settings
-# =============================================================================
-
-# Enable mouse support (matches Zellij mouse_mode)
-set -g mouse on
-
-# Vi mode for copy (matches Zellij vim-like navigation)
-setw -g mode-keys vi
-
-# Start window/pane index at 1 (matches Zellij 1-indexed tabs)
-set -g base-index 1
-setw -g pane-base-index 1
-
-# Renumber windows when one is closed
-set -g renumber-windows on
-
-# Enable clipboard integration
+# Clipboard via OSC52: the outer terminal writes the system clipboard,
+# so copies stay UTF-8 (no clip.exe mojibake) and work over SSH too.
 set -g set-clipboard on
-
-# Allow OSC 52 passthrough (for SSH clipboard via terminal)
+# Let programs inside tmux (nvim) pass their own OSC52 through.
 set -g allow-passthrough on
 
-# True color support for terminals that support it
-set -ga terminal-overrides ",*256col*:Tc"
-set -ga terminal-overrides ",alacritty:Tc"
-set -ga terminal-overrides ",xterm-256color:Tc"
+# Agents rewrite files behind nvim; focus-events drives autoread.
+set -g focus-events on
 
-# =============================================================================
-# Prefix Key: Ctrl+a (matches Zellij tmux mode)
-# =============================================================================
-unbind C-b
-set -g prefix C-a
-bind C-a send-prefix
-
-# =============================================================================
-# Load Configuration Modules
-# =============================================================================
-
-# Key bindings (prefix-based operations)
-source-file ~/.config/tmux/keybindings.conf
-
-# Submodes (Resize/Tab/Pane/Move modes)
-source-file ~/.config/tmux/submodes.conf
-
-# Appearance (Tokyo Night Storm theme)
-source-file ~/.config/tmux/appearance.conf
-
-# Plugins (TPM, resurrect, continuum, yank)
-source-file ~/.config/tmux/plugins.conf
-{{- end -}}
+set -g history-limit 50000
+set -g mouse on
+setw -g mode-keys vi
+bind -T copy-mode-vi v send -X begin-selection
+bind -T copy-mode-vi y send -X copy-selection-and-cancel
+{{ if .is_wsl }}
+# tmux strftime ignores TZ on WSL and renders UTC; use date(1) for both
+# the time and the date (a UTC date is a day behind JST from 00:00-09:00).
+set -g status-right '"#{=21:pane_title}" #(date +"%%H:%%M %%d-%%b-%%y")'
+{{ end -}}
