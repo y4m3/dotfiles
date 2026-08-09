@@ -1,63 +1,20 @@
--- LSP configuration: .venv priority > PATH fallback
--- Python tools prefer project's .venv, fallback to PATH (Nix/uv tool)
-
-local function venv_path(root, exe)
-  if not root then
-    return nil
-  end
-  local is_win = vim.fn.has("win32") == 1
-  local path = is_win and (root .. "\\.venv\\Scripts\\" .. exe .. ".exe") or (root .. "/.venv/bin/" .. exe)
-  return (vim.fn.filereadable(path) == 1) and path or nil
-end
-
-local function get_venv_python(root)
-  if not root then
-    return nil
-  end
-  local is_win = vim.fn.has("win32") == 1
-  local path = is_win and (root .. "\\.venv\\Scripts\\python.exe") or (root .. "/.venv/bin/python")
-  return (vim.fn.filereadable(path) == 1) and path or nil
-end
-
 return {
+  -- One binary supplier: Nix (see .chezmoidata/packages.yaml). Mason stays
+  -- off; this nvim config deploys only on Linux/WSL (.chezmoiignore skips
+  -- it on Windows).
+  { "mason-org/mason.nvim", enabled = false },
+  { "mason-org/mason-lspconfig.nvim", enabled = false },
+
   {
     "neovim/nvim-lspconfig",
-    opts = function(_, opts)
-      opts.servers = opts.servers or {}
-
-      -- nil_ls: Nix LSP (Linux only, managed by Nix Home Manager)
-      if vim.fn.has("unix") == 1 then
-        opts.servers.nil_ls = {
-          mason = false,
-        }
-      end
-
-      opts.servers.ruff = {
-        mason = false,
-        before_init = function(_, config)
-          local root = config.root_dir or ""
-          local ruff = venv_path(root, "ruff") or "ruff"
-          config.cmd = { ruff, "server" }
-        end,
-      }
-
-      opts.servers.pyright = {
-        mason = false,
-        before_init = function(_, config)
-          local root = config.root_dir or ""
-          local pyright = venv_path(root, "pyright-langserver") or "pyright-langserver"
-          config.cmd = { pyright, "--stdio" }
-
-          local python = get_venv_python(root)
-          if python then
-            config.settings = config.settings or {}
-            config.settings.python = config.settings.python or {}
-            config.settings.python.pythonPath = python
-          end
-        end,
-      }
-
-      return opts
-    end,
+    opts = {
+      servers = {
+        -- Python: ty (Astral) does types/completion/navigation; ruff (set up
+        -- by the python extra) does lint/format. pyright stays available for
+        -- second opinions via `uvx pyright` without being wired in here.
+        ty = {},
+        pyright = { enabled = false },
+      },
+    },
   },
 }
