@@ -1,0 +1,26 @@
+{{- if eq .chezmoi.os "windows" -}}
+# Install npm-supplied nvim tools (formatters/linters) declared in
+# .chezmoidata/packages.yaml. Re-runs when that list changes.
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+# Refresh PATH from the registry: node may have installed earlier in this
+# same chezmoi run, so the current process PATH does not see it yet.
+$env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+
+$npmCmd = (Get-Command npm -ErrorAction SilentlyContinue).Source
+if (-not $npmCmd) {
+    $fallback = Join-Path $env:ProgramFiles 'nodejs\npm.cmd'
+    if (Test-Path $fallback) {
+        $npmCmd = $fallback
+    }
+}
+if (-not $npmCmd) {
+    # node comes from winget in this same run on a fresh PC; a rerun picks it up.
+    Write-Warning "npm not found; skipping npm-supplied nvim tools"
+    exit 0
+}
+
+Write-Host "installing: {{ range .packages.npm }}{{ . }} {{ end }}"
+& $npmCmd install -g {{ range .packages.npm }}{{ . }} {{ end }}
+{{ end -}}
