@@ -47,3 +47,5 @@ chezmoi init --apply --branch $branch $repo
 if ($LASTEXITCODE -ne 0) {
     throw "chezmoi init failed with exit code $LASTEXITCODE"
 }
+
+& "$PSScriptRoot\doctor.ps1"
