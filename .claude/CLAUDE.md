@@ -41,7 +41,7 @@ OS selection happens inside the template via guards, not in the filename.
 
 Examples (real files):
 - `run_once_020-ubuntu-install-nix.sh.tmpl`
-- `run_onchange_after_100-ubuntu-home-manager.sh.tmpl`
+- `run_onchange_after_210-ubuntu-home-manager.sh.tmpl`
 
 Verify parsing with `chezmoi managed --include=scripts`. Rendered names must
 look like `010-ubuntu-apt-packages.sh`; chezmoi strips all attributes.

@@ -10,13 +10,13 @@
 # in each project's dev environment, not here.
 #
 # Claude Code itself is NOT here:
-# .chezmoiscripts/run_once_050-linux-claude-code.sh.tmpl bootstraps it once.
+# .chezmoiscripts/run_once_040-linux-claude-code.sh.tmpl bootstraps it once.
 # Then it keeps itself up to date (native auto-updater).
 # chezmoi is NOT here either. install.sh puts it in ~/.local/bin, which
 # shadows any Nix copy. This repo uses one supplier, so this file
 # excludes chezmoi.
 # mo (markdown viewer, inspect) is not in nixpkgs: pinned by
-# .chezmoiscripts/run_onchange_060-linux-mo.sh.tmpl with checksum.
+# .chezmoiscripts/run_onchange_050-linux-mo.sh.tmpl with checksum.
 packages:
   nix:
     cockpit:
