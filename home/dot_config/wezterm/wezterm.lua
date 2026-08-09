@@ -90,9 +90,11 @@ wezterm.on("format-tab-title", function(tab, _, _, _, _, max_width)
   end
 
   local icon = tab.is_active and "●" or "○"
-  -- -7 is the fixed chrome around the label: 4 padding chars plus the
-  -- icon, its trailing space, and one char of slack.
-  label = wezterm.truncate_right(label, math.max(1, max_width - 7))
+  -- -6 is the exact chrome around the label: 4 padding chars, the icon,
+  -- and its trailing space. format-tab-title runs twice. The second run
+  -- gets the tab's allocated width as max_width. Extra slack here removes
+  -- one label character.
+  label = wezterm.truncate_right(label, math.max(1, max_width - 6))
   return string.format("  %s %s  ", icon, label)
 end)
 
