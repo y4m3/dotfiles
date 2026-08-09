@@ -5,11 +5,17 @@
 [Console]::OutputEncoding = [Text.Encoding]::UTF8
 $OutputEncoding = [Text.Encoding]::UTF8
 
-# PSReadLine: prefix history search + inline prediction
-Set-PSReadLineOption -PredictionSource History
-Set-PSReadLineOption -HistorySearchCursorMovesToEnd
-Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
-Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
+# PSReadLine: prefix history search + inline prediction. Non-interactive
+# hosts reject these prediction settings, so guard on ConsoleHost.
+if ($Host.Name -eq 'ConsoleHost') {
+    try {
+        Set-PSReadLineOption -PredictionSource History
+        Set-PSReadLineOption -HistorySearchCursorMovesToEnd
+        Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
+        Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
+    }
+    catch {}
+}
 
 # zoxide: skip on a machine without it, so the profile still loads.
 if (Get-Command zoxide -ErrorAction SilentlyContinue) {
