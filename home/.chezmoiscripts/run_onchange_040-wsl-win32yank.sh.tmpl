@@ -1,0 +1,26 @@
+{{- if .is_wsl -}}
+#!/bin/bash
+# win32yank: UTF-8-safe bridge between WSL and the Windows clipboard.
+# nvim auto-detects it on PATH, so no editor config is needed.
+# Bump VERSION+SHA256 to update; run_onchange re-runs on that change and
+# reinstalls unconditionally (same pattern as mo — an "already installed"
+# guard here would keep the old binary and mark the new hash as applied).
+set -euo pipefail
+
+VERSION="v0.1.1"
+SHA256="247c9a05b94387a884b49d3db13f806b1677dfc38020f955f719be6902260cd6"
+DEST="$HOME/.local/bin/win32yank.exe"
+
+echo "==> Installing win32yank ${VERSION}"
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+curl -fsSL -o "$tmpdir/win32yank.zip" \
+  "https://github.com/equalsraf/win32yank/releases/download/${VERSION}/win32yank-x64.zip"
+echo "${SHA256}  $tmpdir/win32yank.zip" | sha256sum -c --quiet
+
+unzip -q -o "$tmpdir/win32yank.zip" -d "$tmpdir"
+mkdir -p "$(dirname "$DEST")"
+install -m 0755 "$tmpdir/win32yank.exe" "$DEST"
+echo "==> win32yank installed to $DEST"
+{{ end -}}
