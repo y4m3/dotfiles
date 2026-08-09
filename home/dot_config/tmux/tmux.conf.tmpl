@@ -1,4 +1,5 @@
-# Minimal tmux: fallback multiplexer (herdr is primary). Default keybindings.
+# Minimal tmux: fallback multiplexer (herdr is primary). Keybindings and
+# looks mirror herdr: prefix ctrl+g, vim-style keys, terminal-scheme colors.
 
 set -s escape-time 10
 set -s default-terminal "tmux-256color"
@@ -18,8 +19,64 @@ set -g mouse on
 setw -g mode-keys vi
 bind -T copy-mode-vi v send -X begin-selection
 bind -T copy-mode-vi y send -X copy-selection-and-cancel
+
+# herdr uses ctrl+g as its prefix; match it so muscle memory transfers.
+unbind C-b
+set -g prefix C-g
+bind C-g send-prefix
+
+# Splits named after the vim commands they mirror: -v stacks panes top/bottom
+# like :split, -h places them side by side like :vsplit.
+bind s split-window -v -c "#{pane_current_path}"
+bind v split-window -h -c "#{pane_current_path}"
+# choose-tree would collide with the split binding above, so it moves to
+# shift+s, the same slot herdr uses for settings (prefix+shift+s).
+bind S choose-tree -Zs
+
+# vim-style pane movement.
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+
+# Session movement, mirroring herdr's workspace switching on shift+k/j.
+# Window movement stays on the default prefix+p/n, which already matches
+# herdr's tab movement, so it is left unbound here.
+bind K switch-client -p
+bind J switch-client -n
+
+# Number windows from 1 and keep them gapless so the chip numbers match
+# keyboard order.
+set -g base-index 1
+setw -g pane-base-index 1
+set -g renumber-windows on
+
+# Closing the last window moves the client to another session instead of
+# detaching it, so it stays in step with the prefix+K/J session switching.
+set -g detach-on-destroy off
+
+# Reload config without restarting the session.
+bind r source-file ~/.config/tmux/tmux.conf \; display "config reloaded"
+
+# ANSI colors only (no hex): let the terminal color scheme decide the
+# actual hues instead of hardcoding a palette.
+set -g status-style "bg=default,fg=default"
+set -g status-left "#[fg=green,bold] #S #[default]"
+# Chip-style tabs like herdr: padded format, no #F flag since fill/color
+# already marks the active window.
+set -g window-status-format " #I:#W "
+set -g window-status-current-format " #I:#W "
+set -g window-status-current-style "fg=black,bg=green,bold"
+set -g window-status-style "fg=brightblack"
+set -g pane-border-style "fg=brightblack"
+set -g pane-active-border-style "fg=green"
+set -g message-style "fg=yellow"
 {{ if .is_wsl }}
 # tmux strftime ignores TZ on WSL and renders UTC; use date(1) for both
 # the time and the date (a UTC date is a day behind JST from 00:00-09:00).
 set -g status-right '"#{=21:pane_title}" #(date +"%%H:%%M %%d-%%b-%%y")'
 {{ end -}}
+
+# Machine-local overrides (created once by chezmoi, then owned by the
+# machine). -q keeps a missing file silent.
+source-file -q ~/.config/tmux/tmux.local.conf
