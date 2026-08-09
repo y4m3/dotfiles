@@ -1,0 +1,28 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/bin/bash
+# mo (k1LoW/mo): markdown viewer that renders .md in the browser. Serves
+# agent-written documents (Mermaid, KaTeX, live reload); backgrounds itself
+# so `mo report.md` returns the shell immediately.
+# Not in nixpkgs, so this script pins a release binary with checksum
+# verification (same pattern as win32yank). Bump VERSION+SHA256 to update;
+# run_onchange re-runs on that change and reinstalls unconditionally.
+set -euo pipefail
+
+VERSION="v1.6.7"
+# ponytail: amd64 only; add an arch switch if an arm64 machine appears
+SHA256="130666a7c8dfd1528d07f87b21adf5bfc1314707889e85ebbab1a5248d7ded11"
+DEST="$HOME/.local/bin/mo"
+
+echo "==> Installing mo ${VERSION}"
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+curl -fsSL -o "$tmpdir/mo.tar.gz" \
+  "https://github.com/k1LoW/mo/releases/download/${VERSION}/mo_${VERSION}_linux_amd64.tar.gz"
+echo "${SHA256}  $tmpdir/mo.tar.gz" | sha256sum -c --quiet
+
+tar -xzf "$tmpdir/mo.tar.gz" -C "$tmpdir" mo
+mkdir -p "$(dirname "$DEST")"
+install -m 0755 "$tmpdir/mo" "$DEST"
+echo "==> mo installed to $DEST"
+{{ end -}}
