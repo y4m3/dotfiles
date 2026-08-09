@@ -11,7 +11,7 @@ set -g set-clipboard on
 # Let programs inside tmux (nvim) pass their own OSC52 through.
 set -g allow-passthrough on
 
-# Agents rewrite files behind nvim; focus-events drives autoread.
+# Agents rewrite files behind nvim. focus-events drives autoread.
 set -g focus-events on
 
 set -g history-limit 50000
@@ -20,7 +20,7 @@ setw -g mode-keys vi
 bind -T copy-mode-vi v send -X begin-selection
 bind -T copy-mode-vi y send -X copy-selection-and-cancel
 
-# herdr uses ctrl+g as its prefix; match it so muscle memory transfers.
+# herdr uses ctrl+g as its prefix. Match it so the same keystrokes work in both.
 unbind C-b
 set -g prefix C-g
 bind C-g send-prefix
@@ -41,7 +41,7 @@ bind l select-pane -R
 
 # Session movement, mirroring herdr's workspace switching on shift+k/j.
 # Window movement stays on the default prefix+p/n, which already matches
-# herdr's tab movement, so it is left unbound here.
+# herdr's tab movement, so this file leaves it unbound here.
 bind K switch-client -p
 bind J switch-client -n
 
@@ -52,7 +52,7 @@ setw -g pane-base-index 1
 set -g renumber-windows on
 
 # Closing the last window moves the client to another session instead of
-# detaching it, so it stays in step with the prefix+K/J session switching.
+# detaching it. This stays consistent with the prefix+K/J session switching.
 set -g detach-on-destroy off
 
 # Reload config without restarting the session.
@@ -72,8 +72,8 @@ set -g pane-border-style "fg=brightblack"
 set -g pane-active-border-style "fg=green"
 set -g message-style "fg=yellow"
 {{ if .is_wsl }}
-# tmux strftime ignores TZ on WSL and renders UTC; use date(1) for both
-# the time and the date (a UTC date is a day behind JST from 00:00-09:00).
+# tmux strftime ignores TZ on WSL and renders UTC. Use date(1) for both
+# the time and the date. A UTC date is a day behind JST from 00:00-09:00.
 set -g status-right '"#{=21:pane_title}" #(date +"%%H:%%M %%d-%%b-%%y")'
 {{ end -}}
 

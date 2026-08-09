@@ -45,8 +45,8 @@ unset __frag
 # --- Interactive-only below --------------------------------------------------
 case $- in *i*) ;; *) return ;; esac
 
-# History: large, deduped, shared across sessions (write+read hooks are
-# registered idempotently in .bashrc.d/200-integrations.sh)
+# History: large, deduped, shared across sessions. .bashrc.d/200-integrations.sh
+# registers the write and read hooks idempotently.
 HISTSIZE=50000
 HISTFILESIZE=100000
 HISTCONTROL=ignoreboth:erasedups
@@ -54,7 +54,7 @@ shopt -s histappend
 shopt -s checkwinsize
 shopt -s globstar
 
-# --- Fragments (env fragments above are skipped here) ------------------------
+# --- Fragments (this loop skips the env fragments loaded above) -------------
 if [ -d "$HOME/.bashrc.d" ]; then
   for __frag in "$HOME"/.bashrc.d/*.sh; do
     case "$__frag" in */010-env.sh | */810-wsl.sh) continue ;; esac

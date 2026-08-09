@@ -38,8 +38,9 @@ Managed with [chezmoi](https://www.chezmoi.io/) and [Nix Home Manager](https://n
    exec bash
    ```
 
-If a step fails (for example, sudo asks for a password and does not get one),
-correct the problem and run `chezmoi apply` again.
+Some steps can fail. For example, sudo can ask for a password but not
+receive one. If a step fails, correct the problem. Then run `chezmoi apply`
+again.
 
 ### Windows
 

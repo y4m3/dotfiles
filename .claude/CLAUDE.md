@@ -1,18 +1,18 @@
 # Claude Instructions for This Repository
 
-This is a chezmoi-managed dotfiles repository supporting Ubuntu/WSL2 (Nix Home Manager) and Windows (winget).
+This chezmoi-managed dotfiles repository supports Ubuntu/WSL2 (Nix Home Manager) and Windows (winget).
 
 Design principle: the terminal is a cockpit for AI agents (herdr + Claude Code).
-A tool is adopted only when needed (pull-based), one line in `home/.chezmoidata/packages.yaml`.
+Add a tool only when you need it (pull-based): one line in `home/.chezmoidata/packages.yaml`.
 
 ## File Editing Rules
 
 ### Single Source of Truth
 
 - All tools live in `home/.chezmoidata/packages.yaml` (nix / apt / winget groups).
-  Never hand-write a package list anywhere else; configs are generated from this file via templates.
-- One binary supplier: Linux = Nix (Mason disabled in nvim).
-  The Windows layer is minimal (terminal, git, shell via winget); the nvim config is not deployed on Windows.
+  Never hand-write a package list anywhere else. Templates generate all configs from this file.
+- One binary supplier: Nix supplies Linux (nvim disables Mason).
+  The Windows layer is minimal: terminal, git, and shell via winget. chezmoi does not deploy the nvim config on Windows.
 
 ### Chezmoi Template Syntax
 
@@ -43,13 +43,13 @@ Examples (real files):
 - `run_once_020-ubuntu-install-nix.sh.tmpl`
 - `run_onchange_after_100-ubuntu-home-manager.sh.tmpl`
 
-Verify parsing with `chezmoi managed --include=scripts` — names must render as
-`010-ubuntu-apt-packages.sh` (all attributes stripped).
+Verify parsing with `chezmoi managed --include=scripts`. Rendered names must
+look like `010-ubuntu-apt-packages.sh`; chezmoi strips all attributes.
 
 ### `.chezmoiignore`
 
-Patterns match TARGET paths (after attribute stripping), never source names
-(`run_once_...sh.tmpl` will never match).
+Patterns match TARGET paths; chezmoi strips attributes before it matches
+them. Patterns never match source names like `run_once_...sh.tmpl`.
 
 ### Cross-Platform Code
 

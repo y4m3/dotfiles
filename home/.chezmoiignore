@@ -7,9 +7,9 @@ Documents/
 {{ end }}
 
 {{ if eq .chezmoi.os "windows" }}
-# Linux-only targets. nvim/fd/rg configs stay here too: the minimal Windows
-# layer ships no nvim, and nothing on Windows sets RIPGREP_CONFIG_PATH or
-# XDG paths, so deploying them would only create dead files.
+# Linux-only targets. nvim/fd/rg configs stay here too. The minimal
+# Windows layer ships no nvim. Nothing on Windows sets RIPGREP_CONFIG_PATH
+# or XDG paths. So deploying them would only create unused files.
 .bashrc
 .bash_profile
 .bashrc.d/

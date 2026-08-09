@@ -1,6 +1,6 @@
 -- Machine-local WezTerm overrides. Created once by chezmoi, then yours.
--- Return a table; any config.* key works, applied last, so anything here
--- wins over the shared defaults in wezterm.lua.
+-- Return a table. Any config.* key works. WezTerm applies it last, so
+-- anything here wins over the shared defaults in wezterm.lua.
 return {
   -- Font.
   -- font = require("wezterm").font_with_fallback({ "UDEV Gothic 35NFLG" }),
@@ -19,16 +19,16 @@ return {
   -- default_domain = "local",
   -- default_prog = { "pwsh.exe", "-NoLogo" },
 
-  -- Replace the shared launch_menu entirely (tables merge shallowly, so
+  -- Replace the shared launch_menu entirely. Tables merge shallowly, so
   -- returning launch_menu here drops the WSL config's PowerShell entry
-  -- unless it's repeated below).
+  -- unless you repeat it below.
   -- launch_menu = {
   --   { label = "PowerShell", args = { "pwsh.exe", "-NoLogo" }, domain = { DomainName = "local" } },
   --   { label = "cmd", args = { "cmd.exe" }, domain = { DomainName = "local" } },
   -- },
 
-  -- Extra key bindings (the shared config defines the leader Ctrl+, but
-  -- no LEADER bindings; keys returned here are adopted wholesale).
+  -- Extra key bindings. The shared config defines the leader Ctrl+, but
+  -- no LEADER bindings. WezTerm adopts keys returned here wholesale.
   -- keys = {
   --   { key = "p", mods = "LEADER", action = require("wezterm").action.SpawnCommandInNewTab({ args = { "pwsh.exe", "-NoLogo" }, domain = { DomainName = "local" } }) },
   -- },

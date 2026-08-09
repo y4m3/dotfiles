@@ -1,6 +1,7 @@
 {
-  # Rendered by chezmoi; username is baked in so evaluation stays pure
-  # (no --impure, no builtins.getEnv). flake.lock is committed for reproducibility.
+  # chezmoi renders this file and embeds the username directly, so
+  # evaluation stays pure (no --impure, no builtins.getEnv). This repo
+  # commits flake.lock for reproducibility.
   description = "Home Manager configuration for {{ .chezmoi.username }}";
 
   inputs = {

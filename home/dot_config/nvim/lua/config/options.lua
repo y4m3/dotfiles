@@ -1,2 +1,2 @@
--- Options are loaded before lazy.nvim startup. LazyVim defaults:
+-- lazy.nvim loads this file before it starts up. LazyVim defaults:
 -- https://www.lazyvim.org/configuration/general

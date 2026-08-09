@@ -8,10 +8,10 @@ command -v nix &>/dev/null && exit 0
 
 echo "==> Installing Nix"
 installer_args=(install)
-# Fall back to non-systemd (root-only) install when systemd is unavailable
-# (e.g. containers). Checked via /run/systemd/system, not pidof: pidof lives
-# in procps, which a slim image may not have, and a missing pidof would
-# silently pick the daemon-less install on a systemd machine.
+# Use the non-systemd (root-only) install when systemd is unavailable,
+# for example in containers. Checked via /run/systemd/system, not pidof.
+# pidof lives in procps, which a slim image might not have. A missing
+# pidof would silently pick the daemon-less install on a systemd machine.
 if [ ! -d /run/systemd/system ]; then
   installer_args=(install linux --init none)
 fi

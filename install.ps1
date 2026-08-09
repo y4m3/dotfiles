@@ -12,8 +12,9 @@ if (-not (Get-Command chezmoi -ErrorAction SilentlyContinue)) {
     & ([scriptblock]::Create((Invoke-RestMethod 'https://get.chezmoi.io/ps1'))) -BinDir $binDir
     $env:Path = "$binDir;$env:Path"
     # Persist for future shells, not just this bootstrap session. Read and
-    # write the raw registry value: the Environment API expands %VAR%
-    # entries and writing them back would freeze them permanently.
+    # write the raw registry value. The Environment API expands %VAR%
+    # entries. If you write the expanded entries back, they become
+    # permanent, literal values instead of variables.
     $envKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)
     try {
         $userPath = [string]$envKey.GetValue('Path', '',
@@ -29,9 +30,9 @@ if (-not (Get-Command chezmoi -ErrorAction SilentlyContinue)) {
     }
 }
 
-# $PSScriptRoot is empty under `irm ... | iex` ($MyInvocation.MyCommand has
-# no Path there, and StrictMode turns that access into a terminating error);
-# then fall back to init from GitHub.
+# $PSScriptRoot is empty under `irm ... | iex`. There, $MyInvocation.MyCommand
+# has no Path property, and StrictMode turns that access into a terminating
+# error. The script then initializes from GitHub instead.
 $scriptDir = $PSScriptRoot
 if ($scriptDir -and (Test-Path (Join-Path $scriptDir '.chezmoiroot'))) {
     chezmoi init --apply --source=$scriptDir
@@ -40,8 +41,9 @@ if ($scriptDir -and (Test-Path (Join-Path $scriptDir '.chezmoiroot'))) {
 
 $branch = if ($env:DOTFILES_BRANCH) { $env:DOTFILES_BRANCH } else { 'main' }
 chezmoi init --apply --branch $branch $repo
-# ErrorActionPreference only catches terminating errors from cmdlets, not a
-# native command's non-zero exit code (PS 5.1 keeps running either way).
+# ErrorActionPreference only catches terminating errors from cmdlets. It
+# does not catch a native command's non-zero exit code. PS 5.1 keeps
+# running regardless.
 if ($LASTEXITCODE -ne 0) {
     throw "chezmoi init failed with exit code $LASTEXITCODE"
 }

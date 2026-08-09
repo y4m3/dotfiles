@@ -12,8 +12,8 @@
 #              <>= upstream behind/ahead (verbose: u+N/-N counts)
 # Heavy-repo escape hatch: git config bash.showDirtyState false
 
-# Colors: ANSI base codes only. The actual hue is up to the terminal's color
-# scheme (Tracer); adjust the numbers below to retheme the prompt.
+# Colors: ANSI base codes only. The terminal's color scheme (Tracer)
+# determines the actual hue. Adjust the numbers below to retheme the prompt.
 __pc_exit='31' # exit code (red)
 __pc_env='36'  # nix/venv indicator (cyan)
 __pc_host='32' # user@host (green; overridden to 33/yellow over SSH)
@@ -21,16 +21,17 @@ __pc_path='34' # path (blue)
 __pc_git='35'  # git state (magenta)
 __pc_jobs='90' # background job count (bright black)
 
-# SSH state never changes for the life of the session, so decide once here.
+# SSH state never changes during the session, so decide once here.
 if [ -n "${SSH_CONNECTION:-}" ] || [ -n "${SSH_TTY:-}" ]; then
   __pc_host='33'
 fi
 
-# Abbreviate $PWD for display: $HOME -> ~, then, only if the whole path
-# exceeds 40 columns, shorten components from the left (never the last one)
-# to their first character (two characters for dotfiles, e.g. .local -> .l)
-# until it fits. Ported from statusline-command.sh's abbrev_path, reading
-# $PWD directly instead of taking an argument.
+# Abbreviate $PWD for display. Replace $HOME with ~. If the whole path
+# exceeds 40 columns, shorten components from the left (never the last
+# one) to their first character. Use two characters for dotfiles, for
+# example .local becomes .l. Repeat until the path fits. Ported from
+# statusline-command.sh's abbrev_path; this reads $PWD directly instead
+# of taking an argument.
 __prompt_pwd() {
   local p="$PWD" max=40
   if [[ "$p" == "$HOME" ]]; then
@@ -57,13 +58,15 @@ __prompt_pwd() {
   printf '%s' "${parts[*]}"
 }
 
-# Segments that can change on every prompt: exit code of the last command, a
-# nix-shell/venv indicator (direnv can flip these mid-session), and the
-# background job count. Writes plain text (no color escapes) into globals
-# that PS1 references via ${...} (promptvars expansion); PS1 supplies the
-# \[\e[Nm\]...\[\e[0m\] wrapper around them, so an empty segment costs zero
-# display width. Must run before any other PROMPT_COMMAND entry (e.g.
-# `history -a`), since those would clobber $? before it is captured here.
+# These segments can change on every prompt: the exit code of the last
+# command, a nix-shell/venv indicator, and the background job count.
+# direnv can flip the nix-shell/venv indicator mid-session. This function
+# writes plain text into global variables. It adds no color escapes. PS1
+# references these variables through ${...} (promptvars expansion). PS1
+# adds the \[\e[Nm\]...\[\e[0m\] wrapper around them, so an empty segment
+# uses zero display width. This function must run before any other
+# PROMPT_COMMAND entry, for example `history -a`. Otherwise, that entry
+# would clobber $? before this function captures it.
 __prompt_refresh() {
   local ec=$?
 
@@ -104,12 +107,13 @@ fi
 PS1+='\n\[\e['"${__pc_jobs}"'m\]${__prompt_jobs}\[\e[0m\]\$ '
 unset __git_prompt __pc_exit __pc_env __pc_host __pc_path __pc_git __pc_jobs
 
-# Share history across sessions: write after each prompt (-a) and read what
-# other sessions wrote (-n). __prompt_refresh must run first so it captures
-# $? from the last command, not from `history`. Guarded so re-sourcing
-# .bashrc does not stack. A shell still running the old config (which set
-# `history -a; history -n` without __prompt_refresh) only needs the prefix
-# added, not another copy of the history calls.
+# Share history across sessions: write after each prompt (-a) and read
+# what other sessions wrote (-n). __prompt_refresh must run first so it
+# captures $? from the last command, not from `history`. Guarded so
+# re-sourcing .bashrc does not stack. A shell might still run the old
+# config. That config sets `history -a; history -n` without
+# __prompt_refresh. In that case, this script only adds the
+# __prompt_refresh prefix. It does not duplicate the history calls.
 case "${PROMPT_COMMAND:-}" in
 *"__prompt_refresh"*) ;;
 *"history -a"*) PROMPT_COMMAND="__prompt_refresh; ${PROMPT_COMMAND}" ;;
@@ -120,7 +124,7 @@ if command -v direnv >/dev/null 2>&1; then
   eval "$(direnv hook bash)"
 fi
 
-# j <dir> to jump by frecency (keeps old muscle memory; zoxide default is z)
+# j <dir> jumps by frecency. This keeps the old command name; zoxide's default is z.
 if command -v zoxide >/dev/null 2>&1; then
   eval "$(zoxide init bash --cmd j)"
 fi

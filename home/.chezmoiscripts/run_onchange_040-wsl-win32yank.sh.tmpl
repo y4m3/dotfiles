@@ -1,10 +1,11 @@
 {{- if .is_wsl -}}
 #!/bin/bash
 # win32yank: UTF-8-safe bridge between WSL and the Windows clipboard.
-# nvim auto-detects it on PATH, so no editor config is needed.
-# Bump VERSION+SHA256 to update; run_onchange re-runs on that change and
-# reinstalls unconditionally (same pattern as mo — an "already installed"
-# guard here would keep the old binary and mark the new hash as applied).
+# nvim auto-detects it on PATH, so no editor config is necessary.
+# Bump VERSION+SHA256 to update. run_onchange re-runs on that change and
+# reinstalls unconditionally. This matches the pattern for mo. An
+# "already installed" guard here would keep the old binary but mark the
+# new hash as applied.
 set -euo pipefail
 
 VERSION="v0.1.1"

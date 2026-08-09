@@ -8,9 +8,9 @@ echo "==> shellcheck: plain shell files"
 shellcheck -e SC1090,SC1091 home/dot_bashrc.d/*.sh home/dot_local/bin/executable_* \
   install.sh home/dot_bashrc home/dot_bash_profile lint
 
-# --source: without it chezmoi reads template data from the CONFIGURED
-# source dir (~/.local/share/chezmoi), so a worktree would be linted
-# against another branch's .chezmoidata
+# --source: without this flag, chezmoi reads template data from the
+# CONFIGURED source dir (~/.local/share/chezmoi). A worktree would then
+# use another branch's .chezmoidata incorrectly.
 echo "==> shellcheck: templated scripts (rendered)"
 for f in home/.chezmoiscripts/*.sh.tmpl home/dot_bashrc.d/*.sh.tmpl; do
   [ -e "$f" ] || continue
@@ -18,8 +18,9 @@ for f in home/.chezmoiscripts/*.sh.tmpl home/dot_bashrc.d/*.sh.tmpl; do
     echo "template render failed: $f"
     exit 1
   fi
-  # OS-guarded templates render empty on other platforms (e.g. WSL-only
-  # scripts on plain Linux); shellcheck rejects empty input, so skip them
+  # OS-guarded templates render empty on other platforms (for example,
+  # WSL-only scripts on plain Linux). shellcheck rejects empty input.
+  # Skip these files.
   [ -n "$rendered" ] || continue
   if ! printf '%s\n' "$rendered" | shellcheck -e SC1090,SC1091 -; then
     echo "shellcheck failed: $f"

@@ -1,6 +1,6 @@
-{{- /* get, not dot access: chezmoi renders with missingkey=error, so
-.chezmoi.osRelease.idLike aborts every apply on distros without ID_LIKE
-(plain Debian) instead of falling back to id */ -}}
+{{- /* Use get, not dot access. chezmoi renders with missingkey=error. So
+.chezmoi.osRelease.idLike aborts every apply on distros without ID_LIKE,
+for example plain Debian. Dot access does not default to id. get does. */ -}}
 {{- if and (eq .chezmoi.os "linux") (contains "debian" (get .chezmoi.osRelease "idLike" | default .chezmoi.osRelease.id)) -}}
 #!/bin/bash
 # Base packages Nix does not cover well (system integration, build deps).

@@ -7,7 +7,7 @@ return {
     lazy = false,
     init = function()
       -- Detect the inner language of *.tmpl via a scratch buffer named
-      -- after the stripped path; without it every template degrades to
+      -- after the stripped path. Without it, every template degrades to
       -- the generic template.chezmoitmpl filetype.
       vim.g["chezmoi#use_tmp_buffer"] = true
     end,

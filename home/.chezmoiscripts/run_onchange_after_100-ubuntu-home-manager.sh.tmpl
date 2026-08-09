@@ -19,7 +19,7 @@ fi
 if ! command -v nix &>/dev/null; then
   echo "==> nix not on PATH yet; run 'exec bash' then 'chezmoi apply' again" >&2
   # exit 1, not 0: chezmoi records an exit-0 run as done and would never
-  # retry, which makes the advice above a dead end
+  # retry, which makes the advice above pointless
   exit 1
 fi
 
@@ -27,6 +27,6 @@ echo "==> home-manager switch"
 cd "$HOME/.config/nix"
 # Run the CLI pinned by our own flake.lock (a registry copy can be weeks
 # newer than the locked modules and fail evaluation). Username comes from
-# chezmoi — the same value the flake output is keyed on.
+# chezmoi — the flake output uses the same value as its key.
 nix run ".#home-manager" -- switch --flake ".#{{ .chezmoi.username }}"
 {{ end -}}

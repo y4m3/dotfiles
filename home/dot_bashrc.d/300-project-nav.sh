@@ -1,6 +1,6 @@
 # shellcheck shell=bash
-# Project navigation. Worktree management is delegated to Claude Code's
-# built-in worktree support; no custom wt-* helpers.
+# Project navigation. Claude Code's built-in worktree support handles
+# worktree management. This has no custom wt-* helpers.
 
 # Jump to a ghq-managed repository
 dev() {

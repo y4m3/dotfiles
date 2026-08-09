@@ -1,19 +1,20 @@
 ---
 # Single source of truth for installed tools.
 # - packages.nix.* groups render into ~/.config/nix/home.nix (Home Manager)
-# - packages.apt is rendered into the apt bootstrap script
+# - packages.apt renders into the apt bootstrap script
 #
 # Selection principle (agent-age): a tool earns its place only if it serves
 # driving agents, inspecting their output, or intervening by hand.
-# Pull-based: start minimal, add a line here the moment a real need appears.
+# Pull-based: start minimal. Add a line here when a real need appears.
 # Project-specific toolchains (linters, formatters, language servers) belong
 # in each project's dev environment, not here.
 #
-# Claude Code itself is NOT here: it is bootstrapped once by
-# .chezmoiscripts/run_once_050-linux-claude-code.sh.tmpl and then keeps
-# itself up to date (native auto-updater).
-# chezmoi is NOT here either: install.sh puts it in ~/.local/bin, which
-# shadows any Nix copy — one supplier, so it stays out of this list.
+# Claude Code itself is NOT here:
+# .chezmoiscripts/run_once_050-linux-claude-code.sh.tmpl bootstraps it once.
+# Then it keeps itself up to date (native auto-updater).
+# chezmoi is NOT here either. install.sh puts it in ~/.local/bin, which
+# shadows any Nix copy. This repo uses one supplier, so this file
+# excludes chezmoi.
 # mo (markdown viewer, inspect) is not in nixpkgs: pinned by
 # .chezmoiscripts/run_onchange_060-linux-mo.sh.tmpl with checksum.
 packages:
@@ -34,9 +35,10 @@ packages:
       - ripgrep
     intervene:
       - neovim
-      # LSP/format/lint binaries for nvim (Mason is disabled; Nix supplies all).
-      # Python: Astral stack — ty (types/LSP) + ruff; pyright available ad hoc
-      # via `uvx pyright` for second opinions.
+      # LSP/format/lint binaries for nvim (nvim disables Mason; Nix supplies
+      # all).
+      # Python: Astral stack — ty (types/LSP) + ruff; pyright available as
+      # needed via `uvx pyright` for independent checks.
       # lua LSP (lazydev needs it; LazyVim config is built in)
       - lua-language-server
       - markdown-toc
@@ -58,8 +60,8 @@ packages:
     selfcare:
       - shellcheck
       - shfmt
-  # Windows apps (winget IDs). Minimal on purpose: Windows is only the
-  # window onto WSL — a terminal, git (git-bash for Claude Code's Bash
+  # Windows apps (winget IDs). This is intentionally minimal: Windows only
+  # needs to reach WSL — a terminal, git (git-bash for Claude Code's Bash
   # tool), and a shell. Development tools live in WSL.
   winget:
     - Git.Git

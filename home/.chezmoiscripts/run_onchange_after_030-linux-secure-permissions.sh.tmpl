@@ -2,10 +2,10 @@
 #!/bin/bash
 # Tighten permissions on credential files. Runs on apply when this script
 # changes — replaces the old 250-line .bashrc fragment that ran every shell.
-# Must be an after_ script: non-after scripts run before chezmoi writes
-# managed files, so ~/.gitconfig.local would not exist yet on a fresh
-# machine and the chmod would be skipped forever (run_onchange never
-# retries unless this file changes).
+# This must be an after_ script. Non-after scripts run before chezmoi
+# writes managed files. So on a fresh machine, ~/.gitconfig.local would
+# not exist yet, and the script would never chmod it. run_onchange only
+# retries when this file changes, not when the target file appears.
 set -euo pipefail
 
 secure_dir() { [ -d "$1" ] && chmod 700 "$1" || true; }

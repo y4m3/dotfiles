@@ -1,9 +1,11 @@
-# Targets the pre-rebuild dotfiles (main before agent-age) managed and this
-# tree no longer does. chezmoi does not delete formerly-managed files on its
-# own, and .bashrc / lazy.nvim glob these directories — stale fragments and
-# plugin specs would load again on any machine that tracked main.
-# Patterns match TARGET paths. Entries ignored by .chezmoiignore are skipped
-# on that OS. ~/.config/btop/btop.conf stays: btop rewrites it at runtime.
+# This file lists targets that the pre-rebuild dotfiles (main, before
+# agent-age) managed. This tree no longer manages them. chezmoi does not
+# automatically delete formerly-managed files. .bashrc and lazy.nvim glob
+# these directories, so stale fragments and plugin specs would load again
+# on any machine that tracked main.
+# Patterns match TARGET paths. chezmoi skips entries that .chezmoiignore
+# already ignores on that OS. ~/.config/btop/btop.conf stays: btop
+# rewrites it at runtime.
 
 # Shell (old fragment set; the current set is 010-env/100-aliases/
 # 150-completion/200-integrations/300-project-nav/810-wsl)
@@ -63,9 +65,9 @@
 .config/wezterm/README.md
 .config/wezterm/wezterm.local.lua
 
-# nvim: specs main managed and the rebuilt config does not (lazy.nvim
-# imports lua/plugins by glob, so stale specs would load and pull
-# off-lockfile plugins)
+# nvim: this lists specs that main managed but the rebuilt config does
+# not manage. lazy.nvim imports lua/plugins by glob, so stale specs would
+# load and pull off-lockfile plugins.
 .config/nvim/.neoconf.json
 .config/nvim/lua/config/neovide.lua
 .config/nvim/lua/plugins/ai.lua

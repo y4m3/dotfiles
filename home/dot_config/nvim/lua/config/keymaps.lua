@@ -1,1 +1,1 @@
--- Extra keymaps (LazyVim defaults stay untouched). Empty on purpose.
+-- Extra keymaps (LazyVim defaults stay untouched). This file is intentionally empty.
