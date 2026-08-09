@@ -1,0 +1,45 @@
+{{- if eq .chezmoi.os "windows" -}}
+# Install Windows apps via winget. Re-runs when the list in
+# .chezmoidata/packages.yaml changes.
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+$apps = @(
+{{- range .packages.winget }}
+    "{{ . }}"
+{{- end }}
+)
+
+if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    Write-Warning "winget not found; install 'App Installer' from the Microsoft Store first"
+    exit 1
+}
+
+# No 2>$null on winget: under $ErrorActionPreference='Stop' on Windows
+# PowerShell 5.1 a redirected stderr line becomes a terminating error.
+$failed = @()
+foreach ($id in $apps) {
+    # --accept-source-agreements on the probe too: the first-ever winget
+    # run otherwise blocks on an interactive prompt hidden by the pipe
+    $found = winget list --id $id --exact --accept-source-agreements |
+        Select-String -SimpleMatch $id
+    if ($found) {
+        Write-Host "ok: $id"
+    }
+    else {
+        Write-Host "installing: $id"
+        winget install --id $id --exact --silent `
+            --accept-package-agreements --accept-source-agreements
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "install failed: $id (exit code $LASTEXITCODE)"
+            $failed += $id
+        }
+    }
+}
+
+if ($failed.Count -gt 0) {
+    # Exit nonzero so chezmoi does not record this run and retries next apply
+    Write-Warning ("not installed: " + ($failed -join ', '))
+    exit 1
+}
+{{ end -}}
