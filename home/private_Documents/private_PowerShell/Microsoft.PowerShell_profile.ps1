@@ -79,8 +79,9 @@ if ((Get-Command ghq -ErrorAction SilentlyContinue) -and (Get-Command fzf -Error
     function dev {
         $root = ghq root
         # fzf runs the preview through cmd on Windows: keep it one simple
-        # command. Prefer eza; fall back to dir when eza is not resolvable.
-        $previewCmd = if (Get-Command eza -ErrorAction SilentlyContinue) { "eza -la $root\{}" } else { "dir $root\{}" }
+        # command. Quote the path: a ghq root with a space needs one argument.
+        # Prefer eza; fall back to dir when eza is not resolvable.
+        $previewCmd = if (Get-Command eza -ErrorAction SilentlyContinue) { "eza -la `"$root\{}`"" } else { "dir `"$root\{}`"" }
         $repo = ghq list | fzf --prompt 'repo> ' --preview $previewCmd
         if (-not $repo) { return }
         Set-Location (Join-Path $root $repo)
