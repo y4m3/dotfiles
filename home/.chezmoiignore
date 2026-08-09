@@ -7,16 +7,16 @@ Documents/
 {{ end }}
 
 {{ if eq .chezmoi.os "windows" }}
-# Linux-only targets. nvim/fd/rg configs stay here too. The minimal
-# Windows layer ships no nvim. Nothing on Windows sets RIPGREP_CONFIG_PATH
-# or XDG paths. So deploying them would only create unused files.
+# Linux-only targets. fd/rg configs stay here too. Windows ships the nvim
+# config: run_once_110-windows-xdg-env.ps1.tmpl persists XDG_CONFIG_HOME so
+# nvim finds it. Nothing on Windows sets RIPGREP_CONFIG_PATH, so that config
+# would only create an unused file.
 .bashrc
 .bash_profile
 .bashrc.d/
 .config/fd/
 .config/herdr/
 .config/nix/
-.config/nvim/
 .config/tmux/
 .local/bin/
 .ripgreprc

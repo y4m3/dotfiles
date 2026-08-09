@@ -9,10 +9,10 @@ Add a tool only when you need it (pull-based): one line in `home/.chezmoidata/pa
 
 ### Single Source of Truth
 
-- All tools live in `home/.chezmoidata/packages.yaml` (nix / apt / winget groups).
+- All tools live in `home/.chezmoidata/packages.yaml` (`nix` / `apt` / `winget` / `npm` / `uv` / `psgallery` groups).
   Never hand-write a package list anywhere else. Templates generate all configs from this file.
-- One binary supplier: Nix supplies Linux (nvim disables Mason).
-  The Windows layer is minimal: terminal, git, and shell via winget. chezmoi does not deploy the nvim config on Windows.
+- Nix supplies Linux. winget is the main supplier on Windows; `npm`, `uv`, and `psgallery` fill the gaps winget does not cover.
+  chezmoi deploys the nvim config on both platforms. Mason stays disabled on both.
 
 ### Chezmoi Template Syntax
 
@@ -53,7 +53,7 @@ them. Patterns never match source names like `run_once_...sh.tmpl`.
 
 ### Cross-Platform Code
 
-The only config that runs on both platforms is wezterm. When branching by OS:
+nvim, git, and wezterm run on both platforms. When branching by OS:
 ```lua
 local is_win = wezterm.target_triple:find("windows") ~= nil
 ```
@@ -67,6 +67,7 @@ Always verify changes before committing:
 chezmoi diff                 # Show what would change
 chezmoi apply --dry-run -v   # Verbose dry run
 chezmoi apply                # Apply changes
+.\doctor.ps1                 # Windows environment check (read-only)
 ```
 
 ## Coding Standards

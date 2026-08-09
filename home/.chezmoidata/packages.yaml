@@ -67,6 +67,56 @@ packages:
     - Git.Git
     - Microsoft.PowerShell
     - wez.wezterm
+    # nvim on Windows: editor, C compiler (treesitter parser builds),
+    # pickers/git UI (fd/rg, fzf, lazygit), the tree-sitter CLI (parser
+    # builds), shfmt (conform), and node (node-dependent plugins). Also
+    # carries the LSP servers and formatters Nix supplies on Linux
+    # (marksman, stylua, lua-language-server, taplo), plus uv as the
+    # supplier for Python tools (ruff, sqlfluff, ty via packages.uv).
+    - Artempyanykh.Marksman
+    - astral-sh.uv
+    - BrechtSanders.WinLibs.POSIX.UCRT
+    - BurntSushi.ripgrep.MSVC
+    - JesseDuffield.lazygit
+    - JohnnyMorganz.StyLua
+    - junegunn.fzf
+    - LuaLS.lua-language-server
+    - mvdan.shfmt
+    - Neovim.Neovim
+    - OpenJS.NodeJS.LTS
+    - sharkdp.fd
+    - tamasfe.taplo
+    - tree-sitter.tree-sitter-cli
+    # Inspect tools shared with the Linux layer.
+    - dandavison.delta
+    - eza-community.eza
+    - sharkdp.bat
+    # Daily inspect tools shared with the Linux layer; less is delta's pager.
+    - aristocratos.btop4win
+    - GitHub.cli
+    - jftuga.less
+    - jqlang.jq
+    # shellcheck. It pairs with shfmt. Both run in the repo's ./lint script.
+    - koalaman.shellcheck
+    - x-motemen.ghq
+    # Shell navigation for the pwsh side.
+    - ajeetdsouza.zoxide
+  # Consumed ONLY by run_onchange_120-windows-npm-tools.ps1.tmpl. On Linux,
+  # Nix supplies the same tools (see packages.nix.intervene above).
+  npm:
+    - markdown-toc
+    - markdownlint-cli2
+    - prettier
+  # Consumed ONLY by run_onchange_130-windows-uv-tools.ps1.tmpl. On Linux,
+  # Nix supplies the same tools (see packages.nix.intervene above).
+  uv:
+    - ruff
+    - sqlfluff
+    - ty
+  # Consumed ONLY by run_onchange_140-windows-psgallery.ps1.tmpl (PSReadLine
+  # key chords for fzf).
+  psgallery:
+    - PSFzf
   apt:
     - bash-completion
     - build-essential

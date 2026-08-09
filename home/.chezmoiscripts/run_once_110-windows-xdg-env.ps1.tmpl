@@ -1,0 +1,30 @@
+{{- if eq .chezmoi.os "windows" -}}
+# nvim (and other XDG-aware tools) on Windows read the XDG base dirs.
+# nvim splits config/data/state/cache across these four. This makes that
+# manual setting reproducible.
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+$xdgVars = @{
+    XDG_CONFIG_HOME = '.config'
+    XDG_DATA_HOME   = '.local\share'
+    XDG_STATE_HOME  = '.local\state'
+    XDG_CACHE_HOME  = '.cache'
+}
+
+foreach ($name in $xdgVars.Keys) {
+    $target = Join-Path $env:USERPROFILE $xdgVars[$name]
+    $current = [Environment]::GetEnvironmentVariable($name, 'User')
+
+    if ($current -eq $target) {
+        Write-Host "already set: $name=$target"
+    }
+    elseif ($current) {
+        Write-Warning "$name already set to a different value: $current (expected $target). Not overwriting."
+    }
+    else {
+        [Environment]::SetEnvironmentVariable($name, $target, 'User')
+        Write-Host "set: $name=$target"
+    }
+}
+{{ end -}}

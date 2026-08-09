@@ -1,0 +1,30 @@
+{{- if eq .chezmoi.os "windows" -}}
+# Install PSGallery modules declared in .chezmoidata/packages.yaml.
+# Re-runs when that list changes.
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+# Refresh PATH from the registry: pwsh may have installed earlier in this
+# same chezmoi run, so the current process PATH does not see it yet.
+$env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+
+# chezmoi runs .ps1 scripts through Windows PowerShell 5.1, and this
+# machine's 5.1 fails to load PowerShellGet. pwsh 7 bundles a working one,
+# so route Install-Module through it.
+$pwshCmd = (Get-Command pwsh -ErrorAction SilentlyContinue).Source
+if (-not $pwshCmd) {
+    $fallback = Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe'
+    if (Test-Path $fallback) {
+        $pwshCmd = $fallback
+    }
+}
+if (-not $pwshCmd) {
+    # pwsh comes from winget in this same run on a fresh PC; a rerun picks it up.
+    Write-Warning "pwsh not found; skipping PSGallery modules"
+    exit 0
+}
+
+{{ range .packages.psgallery }}
+& $pwshCmd -NoProfile -Command "if (Get-Module -ListAvailable {{ . }}) { 'ok: {{ . }}' } else { Install-Module {{ . }} -Scope CurrentUser -Force; 'installed: {{ . }}' }"
+{{ end -}}
+{{ end -}}

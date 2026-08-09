@@ -1,0 +1,48 @@
+{{- if eq .chezmoi.os "windows" -}}
+# Install uv-supplied nvim tools (Python LSP/formatters) declared in
+# .chezmoidata/packages.yaml. Re-runs when that list changes.
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+# Refresh PATH from the registry: uv may have installed earlier in this
+# same chezmoi run, so the current process PATH does not see it yet.
+$env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+
+$uv = Get-Command uv -ErrorAction SilentlyContinue
+if (-not $uv) {
+    # uv comes from winget in this same run on a fresh PC; a rerun picks it up.
+    Write-Warning "uv not found; skipping uv-supplied nvim tools"
+    exit 0
+}
+
+# uv tool puts entry points in %USERPROFILE%\.local\bin. Append it to the
+# user PATH if missing. Read and write the raw registry value (unexpanded),
+# same non-destructive style as run_once_110-windows-xdg-env: never remove
+# existing entries. Compare entries expanded, case-insensitively, and
+# trailing-backslash-insensitively: an existing entry may already be a
+# literal "C:\Users\...\.local\bin" instead of the %USERPROFILE% form, and
+# that must still count as present so we do not append a duplicate.
+$shimDir = '%USERPROFILE%\.local\bin'
+$shimDirExpanded = [Environment]::ExpandEnvironmentVariables($shimDir).ToLowerInvariant().TrimEnd('\')
+$envKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)
+try {
+    $userPath = [string]$envKey.GetValue('Path', '', [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+    $entries = $userPath -split ';' | Where-Object { $_ }
+    $alreadyPresent = $entries | Where-Object {
+        ([Environment]::ExpandEnvironmentVariables($_).ToLowerInvariant().TrimEnd('\')) -eq $shimDirExpanded
+    }
+    if (-not $alreadyPresent) {
+        $newPath = if ($userPath) { "$userPath;$shimDir" } else { $shimDir }
+        $envKey.SetValue('Path', $newPath, [Microsoft.Win32.RegistryValueKind]::ExpandString)
+        Write-Host "added to PATH: $shimDir"
+    }
+}
+finally {
+    $envKey.Close()
+}
+
+{{ range .packages.uv }}
+Write-Host "installing: {{ . }}"
+uv tool install {{ . }}
+{{ end -}}
+{{ end -}}

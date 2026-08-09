@@ -30,13 +30,53 @@ if (-not (Get-Command chezmoi -ErrorAction SilentlyContinue)) {
     }
 }
 
+# Run doctor.ps1 as a best-effort health check. It must never fail the
+# install: catch errors and report them, do not rethrow.
+function Invoke-Doctor {
+    param([string]$CandidateDir)
+
+    $doctorDir = $CandidateDir
+    if (-not $doctorDir) {
+        # $PSScriptRoot is empty here too (irm | iex path). Ask chezmoi for
+        # the source dir instead: it prints the `home` subdirectory (see
+        # .chezmoiroot), so its parent is the repo root.
+        try {
+            $sourcePath = chezmoi source-path 2>$null
+        }
+        catch {
+            $sourcePath = $null
+        }
+        if (-not $sourcePath) {
+            return
+        }
+        $doctorDir = Split-Path $sourcePath -Parent
+    }
+
+    $doctorPath = Join-Path $doctorDir 'doctor.ps1'
+    if (-not (Test-Path $doctorPath)) {
+        Write-Host "==> doctor.ps1 not found, skipping health check"
+        return
+    }
+
+    try {
+        & $doctorPath
+    }
+    catch {
+        Write-Host "==> doctor.ps1 failed to run: $_"
+    }
+}
+
 # $PSScriptRoot is empty under `irm ... | iex`. There, $MyInvocation.MyCommand
 # has no Path property, and StrictMode turns that access into a terminating
 # error. The script then initializes from GitHub instead.
 $scriptDir = $PSScriptRoot
 if ($scriptDir -and (Test-Path (Join-Path $scriptDir '.chezmoiroot'))) {
     chezmoi init --apply --source=$scriptDir
-    exit $LASTEXITCODE
+    # Capture before Invoke-Doctor: doctor.ps1 ends with its own `exit 0`,
+    # which overwrites $LASTEXITCODE.
+    $initExitCode = $LASTEXITCODE
+    Invoke-Doctor -CandidateDir $scriptDir
+    exit $initExitCode
 }
 
 $branch = if ($env:DOTFILES_BRANCH) { $env:DOTFILES_BRANCH } else { 'main' }
@@ -47,3 +87,5 @@ chezmoi init --apply --branch $branch $repo
 if ($LASTEXITCODE -ne 0) {
     throw "chezmoi init failed with exit code $LASTEXITCODE"
 }
+
+Invoke-Doctor
