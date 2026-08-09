@@ -110,13 +110,10 @@ unset __git_prompt __pc_exit __pc_env __pc_host __pc_path __pc_git __pc_jobs
 # Share history across sessions: write after each prompt (-a) and read
 # what other sessions wrote (-n). __prompt_refresh must run first so it
 # captures $? from the last command, not from `history`. Guarded so
-# re-sourcing .bashrc does not stack. A shell might still run the old
-# config. That config sets `history -a; history -n` without
-# __prompt_refresh. In that case, this script only adds the
-# __prompt_refresh prefix. It does not duplicate the history calls.
+# re-sourcing .bashrc does not stack. If PROMPT_COMMAND already has
+# __prompt_refresh, this does nothing. Otherwise, it adds the full set.
 case "${PROMPT_COMMAND:-}" in
 *"__prompt_refresh"*) ;;
-*"history -a"*) PROMPT_COMMAND="__prompt_refresh; ${PROMPT_COMMAND}" ;;
 *) PROMPT_COMMAND="__prompt_refresh; history -a; history -n${PROMPT_COMMAND:+; $PROMPT_COMMAND}" ;;
 esac
 
