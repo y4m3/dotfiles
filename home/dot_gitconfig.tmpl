@@ -4,11 +4,8 @@
 
 [core]
     autocrlf = input
-{{ if ne .chezmoi.os "windows" -}}
-    # delta/nvim come from Nix; not installed on the minimal Windows layer
     editor = nvim
     pager = delta
-{{ end -}}
 
 [init]
     defaultBranch = main
@@ -31,7 +28,6 @@
 [diff]
     colorMoved = default
 
-{{ if ne .chezmoi.os "windows" -}}
 [interactive]
     diffFilter = delta --color-only
 
@@ -40,7 +36,6 @@
     line-numbers = true
     # "ansi" follows the terminal's color scheme (Tracer) — no hex duplication
     syntax-theme = ansi
-{{ end -}}
 
 {{ if ne .chezmoi.os "windows" -}}
 [credential]
