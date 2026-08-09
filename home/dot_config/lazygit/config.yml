@@ -1,9 +1,0 @@
-# lazygit config
-# Minimal configuration - uses defaults for most settings
-# See: https://github.com/jesseduffield/lazygit
-
-gui:
-  mouseEvents: true
-
-os:
-  editPreset: ""

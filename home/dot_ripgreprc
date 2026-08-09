@@ -1,14 +1,5 @@
-# ~/.ripgreprc — ripgrep settings (managed by chezmoi)
-
-# Basic options
 --smart-case
 --hidden
-
-# Core exclusions
---glob=!/.git
---glob=!node_modules
---glob=!target
---glob=!dist
---glob=!build
---glob=!__pycache__
---glob=!*.pyc
+--glob=!.git/*
+--max-columns=200
+--max-columns-preview

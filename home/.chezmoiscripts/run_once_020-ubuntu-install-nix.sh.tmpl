@@ -1,0 +1,22 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/bin/bash
+# Install Nix (Determinate Systems installer). Runs once per machine.
+set -euo pipefail
+
+command -v nix &>/dev/null && exit 0
+[ -x /nix/var/nix/profiles/default/bin/nix ] && exit 0
+
+echo "==> Installing Nix"
+installer_args=(install)
+# Fall back to non-systemd (root-only) install when systemd is unavailable
+# (e.g. containers). Checked via /run/systemd/system, not pidof: pidof lives
+# in procps, which a slim image may not have, and a missing pidof would
+# silently pick the daemon-less install on a systemd machine.
+if [ ! -d /run/systemd/system ]; then
+  installer_args=(install linux --init none)
+fi
+
+curl -fsSL https://install.determinate.systems/nix | sh -s -- "${installer_args[@]}" --no-confirm
+
+echo "==> Nix installed; restart your shell (exec bash) before 'chezmoi apply' continues to Home Manager"
+{{ end -}}

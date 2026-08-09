@@ -1,0 +1,26 @@
+{ pkgs, ... }:
+
+{
+  home.username = "{{ .chezmoi.username }}";
+  home.homeDirectory = "{{ .chezmoi.homeDir }}";
+
+  # Do not bump on nixpkgs updates; see Home Manager release notes.
+  home.stateVersion = "24.05";
+
+  home.sessionVariables = {
+    TZ = "Asia/Tokyo";
+  };
+
+  programs.home-manager.enable = true;
+
+  # Generated from .chezmoidata/packages.yaml — edit the YAML, not this file.
+  home.packages = with pkgs; [
+    herdr
+{{- range $group, $names := .packages.nix }}
+    # {{ $group }}
+{{- range $names }}
+    {{ . }}
+{{- end }}
+{{- end }}
+  ];
+}

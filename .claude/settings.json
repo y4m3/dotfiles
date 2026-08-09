@@ -1,9 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(make:*)",
-      "Bash(docker:*)",
-      "Bash(chezmoi:*)",
+      "Bash(chezmoi diff:*)",
+      "Bash(chezmoi status:*)",
+      "Bash(chezmoi managed:*)",
+      "Bash(chezmoi apply --dry-run:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",

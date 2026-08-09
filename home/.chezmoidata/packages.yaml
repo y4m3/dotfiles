@@ -1,0 +1,67 @@
+# Single source of truth for installed tools.
+# - packages.nix.* groups are rendered into ~/.config/nix/home.nix (Home Manager)
+# - packages.apt is rendered into the apt bootstrap script
+#
+# Selection principle (agent-age): a tool earns its place only if it serves
+# driving agents, inspecting their output, or intervening by hand.
+# Pull-based: start minimal, add a line here the moment a real need appears.
+# Project-specific toolchains (linters, formatters, language servers) belong
+# in each project's dev environment, not here.
+#
+# Claude Code itself is NOT here: it is bootstrapped once by
+# .chezmoiscripts/run_once_050-linux-claude-code.sh.tmpl and then keeps
+# itself up to date (native auto-updater).
+# chezmoi is NOT here either: install.sh puts it in ~/.local/bin, which
+# shadows any Nix copy — one supplier, so it stays out of this list.
+# mo (markdown viewer, inspect) is not in nixpkgs: pinned by
+# .chezmoiscripts/run_onchange_060-linux-mo.sh.tmpl with checksum.
+packages:
+  nix:
+    cockpit:
+      - tmux # fallback multiplexer (herdr comes via flake input)
+    inspect:
+      - bat
+      - btop
+      - delta
+      - eza
+      - fd
+      - fzf
+      - gh
+      - ghq
+      - git
+      - jq
+      - ripgrep
+    intervene:
+      - neovim
+      # LSP/format/lint binaries for nvim (Mason is disabled; Nix supplies all).
+      # Python: Astral stack — ty (types/LSP) + ruff; pyright available ad hoc
+      # via `uvx pyright` for second opinions.
+      - markdown-toc
+      - markdownlint-cli2
+      - marksman
+      - prettier
+      - ruff
+      - sqlfluff
+      - stylua # lua formatter (conform default for the nvim config itself)
+      - tree-sitter # CLI required by nvim-treesitter (main branch) to build parsers
+      - ty
+      - uv
+    shell:
+      - direnv
+      - zoxide
+    selfcare:
+      - shellcheck
+      - shfmt
+  # Windows apps (winget IDs). Minimal on purpose: Windows is only the
+  # window onto WSL — a terminal, git (git-bash for Claude Code's Bash
+  # tool), and a shell. Development tools live in WSL.
+  winget:
+    - Git.Git
+    - Microsoft.PowerShell
+    - wez.wezterm
+  apt:
+    - bash-completion
+    - build-essential
+    - ca-certificates
+    - curl
+    - unzip # win32yank bootstrap

@@ -1,40 +1,22 @@
 #!/bin/sh
-# Bootstrap script for chezmoi dotfiles
-# Usage:
-#   Local:  ./install.sh
-#   Remote: curl -fsLS https://raw.githubusercontent.com/y4m3/dotfiles/main/install.sh | sh
-#   Branch: DOTFILES_BRANCH=feature/xxx curl -fsLS .../install.sh | sh
+# Bootstrap for Linux/WSL: install chezmoi if missing, then init+apply.
+set -eu
 
-set -e
+CHEZMOI_BIN_DIR="${HOME}/.local/bin"
+REPO="y4m3"
 
-if [ ! "$(command -v chezmoi)" ]; then
-    bin_dir="$HOME/.local/bin"
-    chezmoi="$bin_dir/chezmoi"
-    if [ "$(command -v curl)" ]; then
-        sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$bin_dir"
-    elif [ "$(command -v wget)" ]; then
-        sh -c "$(wget -qO- get.chezmoi.io)" -- -b "$bin_dir"
-    else
-        echo "To install chezmoi, you must have curl or wget installed." >&2
-        exit 1
-    fi
-else
-    chezmoi=chezmoi
+if ! command -v chezmoi >/dev/null 2>&1; then
+  echo "==> Installing chezmoi to ${CHEZMOI_BIN_DIR}"
+  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "${CHEZMOI_BIN_DIR}"
+  PATH="${CHEZMOI_BIN_DIR}:${PATH}"
 fi
 
-# POSIX way to get script's dir: https://stackoverflow.com/a/29834779/12156188
-script_dir="$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P)"
-
-# Check if script_dir looks valid (has .chezmoiroot or is a chezmoi source dir)
-if [ -f "$script_dir/.chezmoiroot" ] || [ -f "$script_dir/.chezmoi.toml.tmpl" ]; then
-    # exec: replace current process with chezmoi init using local source
-    exec "$chezmoi" init --apply "--source=$script_dir"
-else
-    # Piped from curl/wget - clone from GitHub instead
-    branch="${DOTFILES_BRANCH:-main}"
-    if [ "$branch" = "main" ]; then
-        exec "$chezmoi" init --apply y4m3
-    else
-        exec "$chezmoi" init --apply --branch "$branch" y4m3
-    fi
+script_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
+if [ -f "${script_dir}/.chezmoiroot" ]; then
+  # Running from a local clone
+  exec chezmoi init --apply --source="${script_dir}"
 fi
+
+# Running via curl | sh
+branch="${DOTFILES_BRANCH:-main}"
+exec chezmoi init --apply --branch "${branch}" "${REPO}"

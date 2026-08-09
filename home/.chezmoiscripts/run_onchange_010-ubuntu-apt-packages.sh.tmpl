@@ -1,0 +1,29 @@
+{{- /* get, not dot access: chezmoi renders with missingkey=error, so
+.chezmoi.osRelease.idLike aborts every apply on distros without ID_LIKE
+(plain Debian) instead of falling back to id */ -}}
+{{- if and (eq .chezmoi.os "linux") (contains "debian" (get .chezmoi.osRelease "idLike" | default .chezmoi.osRelease.id)) -}}
+#!/bin/bash
+# Base packages Nix does not cover well (system integration, build deps).
+# Re-runs when the rendered package list changes (via .chezmoidata/packages.yaml).
+set -euo pipefail
+
+# Skip inside containers
+[ -f /.dockerenv ] && exit 0
+
+packages=(
+{{- range .packages.apt }}
+  {{ . }}
+{{- end }}
+)
+
+missing=()
+for pkg in "${packages[@]}"; do
+  dpkg -s "$pkg" &>/dev/null || missing+=("$pkg")
+done
+
+if [ ${#missing[@]} -gt 0 ]; then
+  echo "==> apt: installing ${missing[*]}"
+  sudo apt-get update -qq
+  sudo apt-get install -y "${missing[@]}"
+fi
+{{ end -}}

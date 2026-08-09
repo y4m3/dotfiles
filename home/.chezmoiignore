@@ -1,35 +1,22 @@
-# Files to ignore after initial creation
-# These files are created once by chezmoi but not updated thereafter
+# Patterns match TARGET paths (attributes like dot_/run_/.tmpl already stripped).
+# Script gating lives in each script's template guard, not here.
 
-# Exclude Nix-related files on Windows
-# Also exclude btop.conf (causes Scoop install failure if file exists)
-{{- if eq .chezmoi.os "windows" }}
-.chezmoiscripts/run_once_client_ubuntu_010-apt-packages.sh.tmpl
-.chezmoiscripts/run_once_client_ubuntu_020-install-nix.sh.tmpl
-.chezmoiscripts/run_after_onchange_client_ubuntu_210-apply-home-manager.sh.tmpl
-.chezmoiscripts/run_after_onchange_client_ubuntu_220-yazi-plugins.sh.tmpl
-.config/nix/
-.config/btop/btop.conf
-{{- end }}
-
-# Exclude Windows-specific files on Linux/macOS
-{{- if ne .chezmoi.os "windows" }}
-.config/autohotkey/
-.config/powershell/
+{{ if ne .chezmoi.os "windows" }}
+# Windows-only targets
 Documents/
-AppData/
-{{- end }}
+{{ end }}
 
-# Exclude client-only files on server profile
-{{- if and (hasKey . "profile") (eq .profile "server") }}
-.chezmoiscripts/run_once_client_ubuntu_010-apt-packages.sh.tmpl
-.chezmoiscripts/run_once_client_ubuntu_020-install-nix.sh.tmpl
-.chezmoiscripts/run_after_onchange_client_ubuntu_210-apply-home-manager.sh.tmpl
-.chezmoiscripts/run_onchange_client_ubuntu_110-wezterm.sh.tmpl
-.chezmoiscripts/run_onchange_client_ubuntu_120-docker.sh.tmpl
-.chezmoiscripts/run_after_onchange_client_ubuntu_220-yazi-plugins.sh.tmpl
+{{ if eq .chezmoi.os "windows" }}
+# Linux-only targets. nvim/fd/rg configs stay here too: the minimal Windows
+# layer ships no nvim, and nothing on Windows sets RIPGREP_CONFIG_PATH or
+# XDG paths, so deploying them would only create dead files.
+.bashrc
+.bash_profile
+.bashrc.d/
+.config/fd/
 .config/nix/
-{{- end }}
-
-# SKK user dictionary (contains personal data, not synced)
-.skk/
+.config/nvim/
+.config/tmux/
+.local/bin/
+.ripgreprc
+{{ end }}

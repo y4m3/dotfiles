@@ -1,81 +1,65 @@
-# Include local user-specific settings (name, email, etc.)
-# IMPORTANT: Edit ~/.gitconfig.local before making commits
+# Managed by chezmoi. Identity lives in ~/.gitconfig.local (created once).
 [include]
     path = ~/.gitconfig.local
 
 [core]
+    autocrlf = input
+{{ if ne .chezmoi.os "windows" -}}
+    # delta/nvim come from Nix; not installed on the minimal Windows layer
+    editor = nvim
     pager = delta
-    editor = vim
-    hooksPath = ~/.git-templates/hooks
+{{ end -}}
 
 [init]
     defaultBranch = main
 
-[ghq]
-    root = ~/repos
+[pull]
+    rebase = true
 
-[credential]
-{{- if eq .chezmoi.os "windows" }}
-    # Windows: use Git Credential Manager Core
-    helper = manager-core
-{{- else }}
-    # Linux: use git-credential-cache with timeout
-    # Override in ~/.gitconfig.local if needed (e.g., for gh auth setup-git)
-    helper = cache --timeout={{ env "GIT_CREDENTIAL_CACHE_TIMEOUT" | default "1800" }}
-{{- end }}
+[push]
+    autoSetupRemote = true
 
 [fetch]
     prune = true
 
-[pull]
-    rebase = false
-    ff = only
+[rerere]
+    enabled = true
 
-[push]
-    default = simple
+[merge]
+    conflictstyle = zdiff3
 
-[status]
-    submoduleSummary = true
+[diff]
+    colorMoved = default
 
+{{ if ne .chezmoi.os "windows" -}}
 [interactive]
     diffFilter = delta --color-only
 
 [delta]
     navigate = true
-    side-by-side = true
     line-numbers = true
-    features = tokyo-night
+    # "ansi" follows the terminal's Tokyo Night palette — no hex duplication
+    syntax-theme = ansi
+{{ end -}}
 
-[delta "tokyo-night"]
-    syntax-theme = OneHalfDark
-    file-style = bold #7aa2f7
-    hunk-header-style = bold #bb9af7
-    minus-style = syntax "#382a33"
-    minus-non-emph-style = syntax "#2a1f26"
-    minus-empty-style = syntax "#2a1f26"
-    plus-style = syntax "#1f2d2d"
-    plus-non-emph-style = syntax "#142322"
-    plus-empty-style = syntax "#142322"
-    zero-style = syntax "#1a1b26"
-    line-numbers-zero-style = "#3b4261"
-    line-numbers-minus-style = "#f7768e"
-    line-numbers-plus-style = "#9ece6a"
+{{ if ne .chezmoi.os "windows" -}}
+[credential]
+    helper = cache --timeout=3600
 
-[merge]
-    conflictstyle = diff3
+# gh holds the GitHub token; no hourly re-prompt, nothing written to disk
+[credential "https://github.com"]
+    helper = !gh auth git-credential
+{{ else -}}
+[credential]
+    # Git for Windows bundles Git Credential Manager; cache needs a Unix
+    # socket and gh is not on the minimal winget list
+    helper = manager
+{{ end -}}
 
-[diff]
-    colorMoved = default
-    algorithm = histogram
-    mnemonicPrefix = true
-    renames = copies
+[ghq]
+    root = ~/repos
 
-[alias]
-    st = status -sb
-    co = checkout
-    br = branch
-    ci = commit
-    unstage = reset HEAD --
-    last = log -1 HEAD
-    lg = log --graph --oneline --decorate --all
-    amend = commit --amend --no-edit
+{{ if eq .chezmoi.os "windows" -}}
+[core]
+    autocrlf = false
+{{ end -}}
