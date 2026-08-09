@@ -114,7 +114,11 @@ config.swallow_mouse_click_on_window_focus = true
 -- See local.lua itself for examples.
 local local_path = wezterm.config_dir .. "/local.lua"
 local ok, overrides = pcall(dofile, local_path)
-if ok and type(overrides) == "table" then
+if not ok then
+  -- Without this, a broken local.lua fails closed and silently drops all
+  -- machine-local settings. Visible in the debug overlay (Ctrl+Shift+L).
+  wezterm.log_error("failed to load " .. local_path .. ": " .. tostring(overrides))
+elseif type(overrides) == "table" then
   for k, v in pairs(overrides) do
     config[k] = v
   end

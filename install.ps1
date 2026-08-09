@@ -40,3 +40,8 @@ if ($scriptDir -and (Test-Path (Join-Path $scriptDir '.chezmoiroot'))) {
 
 $branch = if ($env:DOTFILES_BRANCH) { $env:DOTFILES_BRANCH } else { 'main' }
 chezmoi init --apply --branch $branch $repo
+# ErrorActionPreference only catches terminating errors from cmdlets, not a
+# native command's non-zero exit code (PS 5.1 keeps running either way).
+if ($LASTEXITCODE -ne 0) {
+    throw "chezmoi init failed with exit code $LASTEXITCODE"
+}

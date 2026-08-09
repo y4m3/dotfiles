@@ -5,7 +5,8 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 echo "==> shellcheck: plain shell files"
-shellcheck -e SC1090,SC1091 home/dot_bashrc.d/*.sh home/dot_local/bin/executable_*
+shellcheck -e SC1090,SC1091 home/dot_bashrc.d/*.sh home/dot_local/bin/executable_* \
+  install.sh home/dot_bashrc home/dot_bash_profile lint
 
 # --source: without it chezmoi reads template data from the CONFIGURED
 # source dir (~/.local/share/chezmoi), so a worktree would be linted
