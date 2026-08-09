@@ -57,8 +57,9 @@ config.hide_tab_bar_if_only_one_tab = true
 
 -- Drop the native title bar (no more "wslhost.exe" caption) and let the
 -- tab bar carry the integrated buttons instead. With 2+ tabs the tab bar
--- covers drag + min/max/close; with a single tab there is zero chrome at
--- all, so move/close falls back to Win-key shortcuts.
+-- covers drag + min/max/close; with a single tab there is zero chrome,
+-- but CTRL+SHIFT+drag still moves the window and Win-key shortcuts still
+-- cover minimize/maximize/close.
 config.window_decorations = "INTEGRATED_BUTTONS|RESIZE"
 
 -- Retro (non-fancy) tab bar: plain text chips instead of the fancy
@@ -71,7 +72,7 @@ config.tab_max_width = 28
 -- pane is wslhost.exe. Show the distro instead; for anything else, strip
 -- the path and the ".exe" so pwsh.exe reads as pwsh. Prefix the label
 -- with a filled or hollow dot marking whether the tab is active.
-wezterm.on("format-tab-title", function(tab)
+wezterm.on("format-tab-title", function(tab, _, _, _, _, max_width)
   local pane = tab.active_pane
   local distro = (pane.domain_name or ""):match("^WSL:(.+)$")
   local label
@@ -89,6 +90,9 @@ wezterm.on("format-tab-title", function(tab)
   end
 
   local icon = tab.is_active and "●" or "○"
+  -- -7 is the fixed chrome around the label: 4 padding chars plus the
+  -- icon, its trailing space, and one char of slack.
+  label = wezterm.truncate_right(label, math.max(1, max_width - 7))
   return string.format("  %s %s  ", icon, label)
 end)
 
