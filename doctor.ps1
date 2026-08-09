@@ -6,19 +6,40 @@ Set-StrictMode -Version Latest
 
 $warnings = 0
 
-# a. winget packages declared in packages.yaml are actually installed.
+try {
+
+# packages.yaml backs check a and the PSGallery check below. Skip both
+# when it is missing.
 $yamlPath = Join-Path $PSScriptRoot 'home\.chezmoidata\packages.yaml'
-$yaml = Get-Content $yamlPath -Raw
-$block = [regex]::Match($yaml, '(?ms)^  winget:\r?\n(.*?)(?=^  \S)').Groups[1].Value
-$wingetIds = [regex]::Matches($block, '(?m)^\s*-\s+(\S+)') | ForEach-Object { $_.Groups[1].Value }
-foreach ($id in $wingetIds) {
-    $found = winget list --id $id --exact --disable-interactivity | Select-String -SimpleMatch $id
-    if ($found) {
-        Write-Host "ok: winget package installed: $id"
-    }
-    else {
-        Write-Host "warn: winget package missing: $id"
-        $warnings++
+$yamlExists = Test-Path $yamlPath
+if ($yamlExists) {
+    $yaml = Get-Content $yamlPath -Raw
+}
+else {
+    Write-Host "warn: packages.yaml not found: $yamlPath"
+    $warnings++
+}
+
+# winget backs check a's per-package loop only.
+$wingetAvailable = [bool](Get-Command winget -ErrorAction SilentlyContinue)
+if (-not $wingetAvailable) {
+    Write-Host "warn: winget command not found"
+    $warnings++
+}
+
+# a. winget packages declared in packages.yaml are actually installed.
+if ($yamlExists -and $wingetAvailable) {
+    $block = [regex]::Match($yaml, '(?ms)^  winget:\r?\n(.*?)(?=^  \S)').Groups[1].Value
+    $wingetIds = [regex]::Matches($block, '(?m)^\s*-\s+(\S+)') | ForEach-Object { $_.Groups[1].Value }
+    foreach ($id in $wingetIds) {
+        $found = winget list --id $id --exact --disable-interactivity | Select-String -SimpleMatch $id
+        if ($found) {
+            Write-Host "ok: winget package installed: $id"
+        }
+        else {
+            Write-Host "warn: winget package missing: $id"
+            $warnings++
+        }
     }
 }
 
@@ -50,15 +71,17 @@ if ($uvCmd -and $uvCmd.Source -match '\\\.local\\bin\\') {
 }
 
 # PSGallery modules declared in packages.yaml are actually installed.
-$psgalleryBlock = [regex]::Match($yaml, '(?ms)^  psgallery:\r?\n(.*?)(?=^  \S)').Groups[1].Value
-$psgalleryModules = [regex]::Matches($psgalleryBlock, '(?m)^\s*-\s+(\S+)') | ForEach-Object { $_.Groups[1].Value }
-foreach ($mod in $psgalleryModules) {
-    if (Get-Module -ListAvailable $mod) {
-        Write-Host "ok: PSGallery module installed: $mod"
-    }
-    else {
-        Write-Host "warn: PSGallery module missing: $mod"
-        $warnings++
+if ($yamlExists) {
+    $psgalleryBlock = [regex]::Match($yaml, '(?ms)^  psgallery:\r?\n(.*?)(?=^  \S)').Groups[1].Value
+    $psgalleryModules = [regex]::Matches($psgalleryBlock, '(?m)^\s*-\s+(\S+)') | ForEach-Object { $_.Groups[1].Value }
+    foreach ($mod in $psgalleryModules) {
+        if (Get-Module -ListAvailable $mod) {
+            Write-Host "ok: PSGallery module installed: $mod"
+        }
+        else {
+            Write-Host "warn: PSGallery module missing: $mod"
+            $warnings++
+        }
     }
 }
 
@@ -101,24 +124,36 @@ else {
 # raw registry value (unexpanded): the Environment API expands %VAR%
 # entries, which would hide the real, unexpanded duplicates/typos.
 $envKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment')
-$userPath = [string]$envKey.GetValue('Path', '', [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
-$envKey.Close()
+if (-not $envKey) {
+    Write-Host "warn: could not open registry key: HKCU\Environment"
+    $warnings++
+}
+else {
+    $userPath = [string]$envKey.GetValue('Path', '', [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+    $envKey.Close()
 
-$seen = @{}
-foreach ($entry in ($userPath -split ';' | Where-Object { $_ })) {
-    $norm = $entry.ToLowerInvariant().TrimEnd('\')
-    if ($seen.ContainsKey($norm)) {
-        Write-Host "warn: duplicate PATH entry: $entry"
-        $warnings++
+    $seen = @{}
+    foreach ($entry in ($userPath -split ';' | Where-Object { $_ })) {
+        $norm = $entry.ToLowerInvariant().TrimEnd('\')
+        if ($seen.ContainsKey($norm)) {
+            Write-Host "warn: duplicate PATH entry: $entry"
+            $warnings++
+        }
+        else {
+            $seen[$norm] = $true
+        }
+        $expanded = [Environment]::ExpandEnvironmentVariables($entry)
+        if (-not (Test-Path $expanded)) {
+            Write-Host "warn: PATH entry does not exist: $entry"
+            $warnings++
+        }
     }
-    else {
-        $seen[$norm] = $true
-    }
-    $expanded = [Environment]::ExpandEnvironmentVariables($entry)
-    if (-not (Test-Path $expanded)) {
-        Write-Host "warn: PATH entry does not exist: $entry"
-        $warnings++
-    }
+}
+
+}
+catch {
+    Write-Host "warn: doctor check failed: $_"
+    $warnings++
 }
 
 Write-Host "`n$warnings warning(s)"
