@@ -1,0 +1,47 @@
+{
+  # chezmoi renders this file and embeds the username directly, so
+  # evaluation stays pure (no --impure, no builtins.getEnv). This repo
+  # commits flake.lock for reproducibility.
+  description = "Home Manager configuration for {{ .chezmoi.username }}";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    herdr = {
+      url = "github:herdrdev/herdr/v0.8.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs =
+    {
+      nixpkgs,
+      home-manager,
+      herdr,
+      ...
+    }:
+    let
+      system = "x86_64-linux";
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [
+          (final: prev: {
+            herdr = herdr.packages.${system}.default;
+          })
+        ];
+      };
+    in
+    {
+      homeConfigurations."{{ .chezmoi.username }}" = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = [ ./home.nix ];
+      };
+
+      # The home-manager CLI itself, pinned by this flake's lock — the apply
+      # script runs this instead of an unpinned registry copy.
+      packages.${system}.home-manager = home-manager.packages.${system}.home-manager;
+    };
+}

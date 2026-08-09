@@ -1,31 +1,6 @@
-{{- /* Determine environment type (priority: environment variable > default) */ -}}
-{{- $profile := env "DOTFILES_PROFILE" -}}
-{{- if not $profile -}}
-{{-   $profile = "client" -}}
-{{- end -}}
-
-{{- /* Detect WSL environment */ -}}
-{{- $isWsl := false -}}
+{{- $isWSL := false -}}
 {{- if eq .chezmoi.os "linux" -}}
-{{-   $isWsl = .chezmoi.kernel.osrelease | lower | contains "microsoft" -}}
+{{-   $isWSL = .chezmoi.kernel.osrelease | lower | contains "microsoft" -}}
 {{- end -}}
-
-{{- /* Install private apps (Windows/macOS, disabled by default) */ -}}
-{{- $installPrivateApps := env "DOTFILES_INSTALL_PRIVATE_APPS" | eq "true" -}}
-
 [data]
-    # Environment type: client (default) or server
-    profile = "{{ $profile }}"
-    # WSL detection (true if running in Windows Subsystem for Linux)
-    is_wsl = {{ $isWsl }}
-    # Install private apps - Windows/macOS
-    # macOS: enables Brewfile.private install
-    install_private_apps = {{ $installPrivateApps }}
-    # Ghostty leader key for chord keybindings (e.g. "ctrl+w")
-    ghostty_leader = "ctrl+w"
-    # Zellij leader key (e.g. "Ctrl a")
-    zellij_leader = "Ctrl a"
-    # Zellij theme (e.g. "tokyo-night")
-    zellij_theme = "tokyo-night"
-    # Zellij default layout name
-    zellij_layout = "default"
+    is_wsl = {{ $isWSL }}

@@ -1,9 +1,0 @@
-# ~/.config/bat/config — bat defaults
-# See: https://github.com/sharkdp/bat#configuration
-# Tokyo Night themes installed via .chezmoiexternal.toml
-
-# Always use colors
---color=always
-
-# Show line numbers, grid and changes
---style=header,grid,numbers,changes

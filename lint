@@ -1,0 +1,37 @@
+#!/bin/bash
+# Lint the dotfiles source tree: shellcheck + shfmt + template sanity.
+# Requires: shellcheck, shfmt (via Nix Home Manager), chezmoi.
+set -euo pipefail
+cd "$(dirname "$0")"
+
+echo "==> shellcheck: plain shell files"
+shellcheck -e SC1090,SC1091 home/dot_bashrc.d/*.sh home/dot_local/bin/executable_* \
+  install.sh home/dot_bashrc home/dot_bash_profile lint
+
+# --source: without this flag, chezmoi reads template data from the
+# CONFIGURED source dir (~/.local/share/chezmoi). A worktree would then
+# use another branch's .chezmoidata incorrectly.
+echo "==> shellcheck: templated scripts (rendered)"
+for f in home/.chezmoiscripts/*.sh.tmpl home/dot_bashrc.d/*.sh.tmpl; do
+  [ -e "$f" ] || continue
+  if ! rendered=$(chezmoi execute-template --source "$PWD" <"$f"); then
+    echo "template render failed: $f"
+    exit 1
+  fi
+  # OS-guarded templates render empty on other platforms (for example,
+  # WSL-only scripts on plain Linux). shellcheck rejects empty input.
+  # Skip these files.
+  [ -n "$rendered" ] || continue
+  if ! printf '%s\n' "$rendered" | shellcheck -e SC1090,SC1091 -; then
+    echo "shellcheck failed: $f"
+    exit 1
+  fi
+done
+
+echo "==> shfmt (fix findings with: shfmt -i 2 -w <file>)"
+shfmt -i 2 -d home/dot_bashrc.d/*.sh
+
+echo "==> chezmoi template sanity"
+chezmoi execute-template --source "$PWD" <home/.chezmoi.toml.tmpl >/dev/null
+
+echo "OK"

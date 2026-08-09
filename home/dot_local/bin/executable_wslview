@@ -1,0 +1,26 @@
+#!/bin/sh
+# Minimal wslview replacement (upstream archived wslu).
+# Opens a URL or file with the default Windows handler.
+set -eu
+
+[ $# -ge 1 ] || {
+  echo "usage: wslview <url-or-path>" >&2
+  exit 1
+}
+
+target="$1"
+if [ -e "$target" ]; then
+  target=$(wslpath -w "$target")
+fi
+
+# Open through ShellExecute (Start-Process). The obvious routes both fail.
+# cmd.exe /c start gets the URL unquoted from WSL interop. It splits the
+# URL at "&" and expands %VAR%. explorer.exe opens a folder window
+# instead of the browser when the URL has a query string. The target
+# crosses into Windows as an environment variable (WSLENV, /w =
+# WSL-to-Win32). So no command-line quoting layer can mangle it.
+export WSLVIEW_TARGET="$target"
+export WSLENV="${WSLENV:+$WSLENV:}WSLVIEW_TARGET/w"
+# shellcheck disable=SC2016  # $env: expands in PowerShell, not here
+exec /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe \
+  -NoProfile -NonInteractive -Command 'Start-Process -FilePath $env:WSLVIEW_TARGET'

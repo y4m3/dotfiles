@@ -1,0 +1,32 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/bin/bash
+# Apply Home Manager whenever one of its inputs changes.
+# Change detection (chezmoi re-runs this script when these hashes change).
+# Only the nix package group matters here — hashing all of .packages would
+# re-run the switch for apt/winget-only edits. home.nix.tmpl must be in the
+# list, or edits to sessionVariables/programs.* never trigger a switch:
+#   packages: {{ .packages.nix | toJson | sha256sum }}
+#   home:     {{ include "dot_config/nix/home.nix.tmpl" | sha256sum }}
+#   flake:    {{ include "dot_config/nix/flake.nix.tmpl" | sha256sum }}
+#   lock:     {{ include "dot_config/nix/flake.lock" | sha256sum }}
+set -euo pipefail
+
+# shellcheck disable=SC1091
+if [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+  . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+fi
+
+if ! command -v nix &>/dev/null; then
+  echo "==> nix not on PATH yet; run 'exec bash' then 'chezmoi apply' again" >&2
+  # exit 1, not 0: chezmoi records an exit-0 run as done and would never
+  # retry, which makes the advice above pointless
+  exit 1
+fi
+
+echo "==> home-manager switch"
+cd "$HOME/.config/nix"
+# Run the CLI pinned by our own flake.lock (a registry copy can be weeks
+# newer than the locked modules and fail evaluation). Username comes from
+# chezmoi — the flake output uses the same value as its key.
+nix run ".#home-manager" -- switch --flake ".#{{ .chezmoi.username }}"
+{{ end -}}

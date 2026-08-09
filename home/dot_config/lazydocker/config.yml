@@ -1,6 +1,0 @@
-# lazydocker config
-# Minimal configuration - uses defaults for most settings
-# See: https://github.com/jesseduffield/lazydocker
-
-logs:
-  timestamps: false

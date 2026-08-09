@@ -1,0 +1,16 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/bin/bash
+# Bootstrap Claude Code via the native installer (runs once per machine).
+# The native install auto-updates in the background afterwards, so chezmoi
+# deliberately does not manage its version. Tune the channel later in
+# ~/.claude/settings.json (autoUpdatesChannel: "latest" | "stable").
+set -euo pipefail
+
+command -v claude >/dev/null 2>&1 && exit 0
+[ -x "$HOME/.local/bin/claude" ] && exit 0
+
+echo "==> Installing Claude Code (native)"
+# This installer follows a rolling release with no pinnable stable asset.
+# Tools with a stable asset (win32yank, mo) pin a checksum instead.
+curl -fsSL https://claude.ai/install.sh | bash
+{{ end -}}

@@ -1,0 +1,20 @@
+# Tracer color scheme for WezTerm.
+# This file is generated. Do not edit it. Edit build/build.py.
+[colors]
+foreground = "#B8C7BC"
+background = "#111C18"
+cursor_bg = "#6FE89B"
+cursor_fg = "#06120C"
+cursor_border = "#6FE89B"
+selection_bg = "#2B4038"
+selection_fg = "#B8C7BC"
+split = "#354941"
+scrollbar_thumb = "#354941"
+
+ansi = ["#14201C", "#CA6860", "#4FB87C", "#D3AA64", "#539EC0", "#9279B1", "#4FAFA6", "#A7B5AA"]
+brights = ["#788880", "#DD6E64", "#6FE89B", "#EDC67F", "#70BCE0", "#A88BC8", "#6FD6CC", "#D4E0D6"]
+
+[metadata]
+name = "Tracer"
+author = "y4m3"
+origin_url = "https://github.com/y4m3/tracer-color"

@@ -1,11 +1,6 @@
 return {
-  {
-    "folke/tokyonight.nvim",
-    opts = function(_, opts)
-      opts.style = "night"
-      -- Enable transparent background in tmux for window-style support
-      opts.transparent = vim.env.TMUX ~= nil and vim.env.TMUX ~= ""
-      return opts
-    end,
-  },
+  -- Tracer (y4m3/tracer-color), the same palette the terminal runs, so the
+  -- editor and the terminal share one source of color truth.
+  { "y4m3/tracer-color" },
+  { "LazyVim/LazyVim", opts = { colorscheme = "tracer" } },
 }

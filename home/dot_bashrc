@@ -1,147 +1,69 @@
-#!/usr/bin/env bash
-# ~/.bashrc managed by chezmoi
-# Shared, machine-agnostic defaults only. Personal preferences belong in
-# `~/.bashrc.d/` or `~/.bashrc.local` and host-specific tweaks in
-# `~/.bashrc.$HOSTNAME`.
+# shellcheck shell=bash
+# ~/.bashrc — single-pass init.
+# Layout: env/PATH (non-interactive safe) -> interactive guard -> options ->
+# fragments in ~/.bashrc.d/ -> ~/.bashrc.local overrides (always last).
 
-# Only run for interactive shells
-case "$-" in *i*) ;; *) return;; esac
+# --- Environment -------------------------------------------------------------
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
-# Load system-wide defaults if present
-if [ -f /etc/bash.bashrc ]; then
-    . /etc/bash.bashrc
+# --- PATH (built once; first entry wins) -------------------------------------
+__path_prepend() {
+  case ":$PATH:" in
+  *":$1:"*) ;;
+  *) [ -d "$1" ] && PATH="$1:$PATH" ;;
+  esac
+}
+__path_prepend "/nix/var/nix/profiles/default/bin"
+__path_prepend "$HOME/.nix-profile/bin"
+__path_prepend "$HOME/.local/bin"
+export PATH
+unset -f __path_prepend
+
+# Nix daemon environment (NIX_PATH, certs, etc.)
+# shellcheck disable=SC1091
+if [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+  . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 fi
 
-# Utility
-has() { command -v "$1" &>/dev/null; }
-
-# XDG
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_CACHE_HOME="$HOME/.cache"
-
-# PATH
-export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
-
-# Add cargo bin if rust is installed
-if [ -d "$HOME/.cargo/bin" ]; then
-    PATH="$HOME/.cargo/bin:$PATH"
+# Home Manager session variables (TZ etc. from home.nix sessionVariables)
+# shellcheck disable=SC1091
+if [ -e "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
+  . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
 fi
 
-# History
-HISTSIZE=10000
-HISTFILESIZE=20000
-HISTCONTROL=ignoreboth
-shopt -s histappend
-PROMPT_COMMAND='history -a'
-export HISTTIMEFORMAT='%F %T '
-
-# Shell options
-shopt -s checkwinsize globstar cdspell dirspell
-set -o noclobber
-set -o notify
-
-# Terminal and readline tweaks (only when a real terminal is present)
-if [ -t 0 ]; then
-    stty -ixon
-    bind 'set bell-style none'
-    bind 'set show-all-if-ambiguous on'
-    bind 'set completion-ignore-case on'
-    bind '"\e[A": history-search-backward'
-    bind '"\e[B": history-search-forward'
-fi
-
-# Editor settings in ~/.bashrc.d/100-editor.sh
-export GPG_TTY=$(tty 2>/dev/null)
-
-# less
-export LESS='-R -F -X'
-export LESS_TERMCAP_mb=$'\e[1;31m'
-export LESS_TERMCAP_md=$'\e[1;36m'
-export LESS_TERMCAP_me=$'\e[0m'
-export LESS_TERMCAP_so=$'\e[1;44;33m'
-export LESS_TERMCAP_se=$'\e[0m'
-export LESS_TERMCAP_us=$'\e[1;32m'
-export LESS_TERMCAP_ue=$'\e[0m'
-[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
-
-# Build and permissions
-export MAKEFLAGS="-j$(nproc)"
-umask 022
-
-# chroot indicator
-if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
-
-# Load local overrides early (before prompt setup)
-# This allows PROMPT_STYLE to be set in ~/.bashrc.local
-if [ -f "$HOME/.bashrc.local" ]; then
-    . "$HOME/.bashrc.local"
-fi
-
-# Prompt and history
-PROMPT_COMMAND='__last_status=$?; history -a'
-
-# Prompt selection priority: 1) $PROMPT_STYLE env var (set in ~/.bashrc.local), 2) bare (default)
-_prompt_dir="$HOME/.bash_prompt.d"
-_prompt_loaded=false
-PROMPT_STYLE="${PROMPT_STYLE:-bare}"
-if [ -d "$_prompt_dir" ] && [ -r "$_prompt_dir/${PROMPT_STYLE}.sh" ]; then
-    . "$_prompt_dir/${PROMPT_STYLE}.sh"
-    _prompt_loaded=true
-fi
-
-# If selected style didn't load, use a sensible fallback
-if [ "$_prompt_loaded" != true ]; then
-    case "$TERM" in xterm-color|*-256color) color_prompt=yes;; esac
-    if [ "$color_prompt" = yes ]; then
-        PS1='[${__last_status}] ${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-    else
-        PS1='[${__last_status}] ${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
-    fi
-    unset color_prompt
-    case "$TERM" in xterm*|rxvt*) PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1";; esac
-fi
-unset _prompt_dir _prompt_loaded
-
-# Colors (uses dircolors if available)
-if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
-    alias diff='diff --color=auto'
-fi
-
-# Start ssh-agent if not already running and we have a terminal
-if [ -t 0 ] && [ -z "$SSH_AUTH_SOCK" ]; then
-    eval "$(ssh-agent -s)" > /dev/null
-fi
-
-# Enable programmable completion if available
-if ! shopt -oq posix; then
-    if [ -f /usr/share/bash-completion/bash_completion ]; then
-        . /usr/share/bash-completion/bash_completion
-    elif [ -f /etc/bash_completion ]; then
-        . /etc/bash_completion
-    fi
-fi
-
-# Source shared + bash-specific customizations
-for _d in "$HOME/.shrc.d" "$HOME/.bashrc.d"; do
-    if [ -d "$_d" ]; then
-        for _f in "$_d"/*.sh; do
-            [ -r "$_f" ] || continue
-            . "$_f"
-        done
-    fi
+# Env fragments: exports only, so non-interactive shells (agents, ssh
+# commands) also get EDITOR, RIPGREP_CONFIG_PATH, BROWSER.
+for __frag in "$HOME/.bashrc.d/010-env.sh" "$HOME/.bashrc.d/810-wsl.sh"; do
+  # shellcheck disable=SC1090
+  [ -r "$__frag" ] && . "$__frag"
 done
-unset _d _f
+unset __frag
 
-# Hostname-specific overrides (loaded after .bashrc.local)
-_hostname_short="${HOSTNAME:-$(hostname -s 2>/dev/null)}"
-if [ -n "$_hostname_short" ] && [ -f "$HOME/.bashrc.$_hostname_short" ]; then
-    . "$HOME/.bashrc.$_hostname_short"
+# --- Interactive-only below --------------------------------------------------
+case $- in *i*) ;; *) return ;; esac
+
+# History: large, deduped, shared across sessions. .bashrc.d/200-integrations.sh
+# registers the write and read hooks idempotently.
+HISTSIZE=50000
+HISTFILESIZE=100000
+HISTCONTROL=ignoreboth:erasedups
+shopt -s histappend
+shopt -s checkwinsize
+shopt -s globstar
+
+# --- Fragments (this loop skips the env fragments loaded above) -------------
+if [ -d "$HOME/.bashrc.d" ]; then
+  for __frag in "$HOME"/.bashrc.d/*.sh; do
+    case "$__frag" in */010-env.sh | */810-wsl.sh) continue ;; esac
+    # shellcheck disable=SC1090
+    [ -r "$__frag" ] && . "$__frag"
+  done
+  unset __frag
 fi
-unset _hostname_short
+
+# --- Machine-local overrides (kept last so they win) -------------------------
+# shellcheck disable=SC1091
+[ -r "$HOME/.bashrc.local" ] && . "$HOME/.bashrc.local"

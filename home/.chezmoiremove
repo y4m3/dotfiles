@@ -1,0 +1,101 @@
+# This file lists targets that the pre-rebuild dotfiles (main, before
+# agent-age) managed. This tree no longer manages them. chezmoi does not
+# automatically delete formerly-managed files. .bashrc and lazy.nvim glob
+# these directories, so stale fragments and plugin specs would load again
+# on any machine that tracked main.
+# Patterns match TARGET paths. chezmoi skips entries that .chezmoiignore
+# already ignores on that OS. ~/.config/btop/btop.conf stays: btop
+# rewrites it at runtime.
+
+# Shell (old fragment set; the current set is 010-env/100-aliases/
+# 150-completion/200-integrations/300-project-nav/810-wsl)
+.bash_prompt.d
+.bashrc.d/010-aliases-helper.sh
+.bashrc.d/020-paths.sh
+.bashrc.d/020-user-preferences.sh
+.bashrc.d/030-paths.sh
+.bashrc.d/040-security-permissions.sh
+.bashrc.d/100-editor.sh
+.bashrc.d/110-eza.sh
+.bashrc.d/120-bat.sh
+.bashrc.d/125-trash-cli.sh
+.bashrc.d/130-ripgrep.sh
+.bashrc.d/140-fd.sh
+.bashrc.d/150-direnv.sh
+.bashrc.d/160-fzf.sh
+.bashrc.d/165-tmux-sessionizer.sh
+.bashrc.d/170-completion.sh
+.bashrc.d/180-ghq-worktree.sh
+.bashrc.d/200-runtimes.sh
+.bashrc.d/210-starship.sh
+.bashrc.d/810-wsl-editors.sh
+.bashrc.d/910-zoxide.sh
+.bashrc.d/README.md
+
+# Dropped tools (whole config directories, including old bat theme externals)
+.config/alacritty
+.config/autohotkey
+.config/bat
+.config/powershell
+.config/tmux-sessionizer
+.config/yazi
+.config/zellij
+.git-templates
+.glzr
+.vim
+.config/cspell/cspell.json
+.config/gitmux/.gitmux.conf
+.config/glow/glow.yml
+.config/lazydocker/config.yml
+.config/lazygit/config.yml
+.config/markdownlint-cli2.jsonc
+.config/starship.toml
+.config/systemd/user/wezterm-mux.service
+.local/share/cspell/user.txt
+.fdignore
+.vimrc
+
+# tmux: the current config is the single tmux.conf
+.config/tmux/appearance.conf
+.config/tmux/keybindings.conf
+.config/tmux/plugins.conf
+.config/tmux/submodes.conf
+
+# wezterm: local.lua replaced wezterm.local.lua
+.config/wezterm/README.md
+.config/wezterm/wezterm.local.lua
+
+# nvim: this lists specs that main managed but the rebuilt config does
+# not manage. lazy.nvim imports lua/plugins by glob, so stale specs would
+# load and pull off-lockfile plugins.
+.config/nvim/.neoconf.json
+.config/nvim/lua/config/neovide.lua
+.config/nvim/lua/plugins/ai.lua
+.config/nvim/lua/plugins/bufferline.lua
+.config/nvim/lua/plugins/cspell.lua
+.config/nvim/lua/plugins/denops.lua
+.config/nvim/lua/plugins/diagnostics.lua
+.config/nvim/lua/plugins/extras.lua
+.config/nvim/lua/plugins/formatting.lua
+.config/nvim/lua/plugins/fuzzy-motion.lua
+.config/nvim/lua/plugins/incline.lua
+.config/nvim/lua/plugins/kensaku.lua
+.config/nvim/lua/plugins/obsidian.lua
+.config/nvim/lua/plugins/popup-edit.lua
+.config/nvim/lua/plugins/silentsaver.lua
+.config/nvim/lua/plugins/skkeleton.lua
+.config/nvim/lua/plugins/snacks.lua
+.config/nvim/lua/plugins/statusline.lua
+.config/nvim/lua/plugins/treesitter.lua
+.config/nvim/lua/plugins/vimade.lua
+.config/nvim/lua/plugins/zettel-meta.lua
+
+# Old shell helpers in ~/.local/bin
+.local/bin/clipboard-copy
+.local/bin/clipboard-paste
+.local/bin/popup-edit
+.local/bin/tmux-sessionizer
+
+# Windows (files only — the parent directories hold unmanaged content)
+AppData/Roaming/CorvusSKK/config.xml
+Documents/WindowsPowerShell/Microsoft.PowerShell_profile.ps1

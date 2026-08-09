@@ -1,0 +1,8 @@
+{{- if .is_wsl -}}
+# shellcheck shell=bash
+# WSL-only environment (this file is empty on non-WSL machines).
+# Sourced for non-interactive shells too, so agents can open a browser.
+
+# URL/file opening via our local wslview wrapper (~/.local/bin/wslview)
+export BROWSER=wslview
+{{ end -}}
