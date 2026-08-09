@@ -27,10 +27,11 @@ require("lazy").setup({
     { import = "lazyvim.plugins.extras.lang.python" },
     { import = "lazyvim.plugins.extras.lang.sql" },
     { import = "lazyvim.plugins.extras.lang.markdown" },
+    { import = "lazyvim.plugins.extras.lang.toml" },
     { import = "plugins" },
   },
   defaults = { lazy = false, version = false },
-  install = { colorscheme = { "tokyonight", "habamax" } },
+  install = { colorscheme = { "tracer", "habamax" } },
   -- Plugin updates are an intentional act: run :Lazy update, then commit
   -- the refreshed lazy-lock.json via chezmoi. No background update checks.
   checker = { enabled = false },

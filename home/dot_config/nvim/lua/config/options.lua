@@ -1,3 +1,2 @@
 -- Options are loaded before lazy.nvim startup. LazyVim defaults:
 -- https://www.lazyvim.org/configuration/general
--- Clipboard strategy (WSL/OSC52) is configured here once decided.

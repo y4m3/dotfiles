@@ -36,6 +36,7 @@ packages:
       # LSP/format/lint binaries for nvim (Mason is disabled; Nix supplies all).
       # Python: Astral stack — ty (types/LSP) + ruff; pyright available ad hoc
       # via `uvx pyright` for second opinions.
+      - lua-language-server # lua LSP (lazydev needs it; LazyVim config is built in)
       - markdown-toc
       - markdownlint-cli2
       - marksman
@@ -43,9 +44,11 @@ packages:
       - ruff
       - sqlfluff
       - stylua # lua formatter (conform default for the nvim config itself)
+      - taplo # TOML LSP (chezmoi config, herdr config)
       - tree-sitter # CLI required by nvim-treesitter (main branch) to build parsers
       - ty
       - uv
+      - yamllint # guards packages.yaml edits
     shell:
       - direnv
       - zoxide

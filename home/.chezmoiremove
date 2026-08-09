@@ -70,7 +70,6 @@
 .config/nvim/lua/config/neovide.lua
 .config/nvim/lua/plugins/ai.lua
 .config/nvim/lua/plugins/bufferline.lua
-.config/nvim/lua/plugins/colorscheme.lua
 .config/nvim/lua/plugins/cspell.lua
 .config/nvim/lua/plugins/denops.lua
 .config/nvim/lua/plugins/diagnostics.lua
