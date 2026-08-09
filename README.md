@@ -2,7 +2,7 @@
 
 These dotfiles configure an agent-first development environment.
 The primary platform is Ubuntu on WSL2.
-Windows gets a minimal configuration.
+Windows is a full second workstation.
 
 Managed with [chezmoi](https://www.chezmoi.io/) and [Nix Home Manager](https://nix-community.github.io/home-manager/).
 
@@ -12,8 +12,9 @@ Managed with [chezmoi](https://www.chezmoi.io/) and [Nix Home Manager](https://n
   A tool gets a place only if it helps you drive agents, examine their output, or make changes by hand.
 - One file lists all tools: `home/.chezmoidata/packages.yaml`.
   To add a tool, add one line to this file.
-- One binary supplier: Nix supplies Linux.
-  The Windows layer is minimal (terminal, git, shell via winget); development tools live in WSL.
+- Nix supplies Linux.
+  winget is the main supplier on Windows.
+  npm, uv, and PSGallery supply the tools that winget does not carry.
 - `flake.lock` and `lazy-lock.json` are in git.
   Versions change only when you commit a change.
 - herdr is the terminal multiplexer. Its config lives in `~/.config/herdr/config.toml`.
@@ -21,6 +22,14 @@ Managed with [chezmoi](https://www.chezmoi.io/) and [Nix Home Manager](https://n
 - Colors come from the terminal ANSI palette (`bat`, `delta`, `herdr`, tmux).
   Do not put hex color values in tool configurations.
   The one exception is `wezterm/colors/tracer.toml`, which defines the [Tracer](https://github.com/y4m3/tracer-color) scheme itself.
+
+## Windows layer
+
+An install script sets the four XDG base directory variables. nvim then reads its config from `~/.config/nvim`, the same path as Linux.
+Windows runs the same nvim toolchain as Linux: the editor, a C compiler for treesitter parser builds, the tree-sitter CLI, the LSP servers, and the formatters. Mason stays disabled.
+git uses nvim and delta on both platforms.
+The PowerShell profile gives the same shell behavior as bash: the same two-line prompt, the same aliases (`ls`, `ll`, `la`, `lt` from eza, `cat` from bat), `j` for zoxide, `dev` to jump to a ghq repository, and fzf on Ctrl+r and Ctrl+t.
+Nix does not run on Windows, so tool versions can differ from the Linux versions.
 
 ## Machine-local overrides
 
@@ -65,6 +74,9 @@ again.
    irm https://raw.githubusercontent.com/y4m3/dotfiles/main/install.ps1 | iex
    ```
 
+2. Start a new PowerShell session.
+   The install sets environment variables and PATH entries. Only a new session picks them up.
+
 ## Manual steps
 
 Do these steps one time on each new machine:
@@ -74,26 +86,30 @@ Do these steps one time on each new machine:
   Then run `chezmoi add ~/.config/nvim/lazy-lock.json` and commit the file.
 - Windows: install a font if you want one.
   Set it in `~/.config/wezterm/local.lua`.
-- Windows: if OneDrive moves your `Documents` folder, make a link to the PowerShell profile.
+- Windows: check whether OneDrive moved your `Documents` folder.
+  If it did, make a link to the PowerShell profile.
+- Windows: run `.\doctor.ps1` to confirm the environment.
 
 ## Maintenance
 
-- To add a package: edit `home/.chezmoidata/packages.yaml`. Then run `chezmoi apply`.
+- To add a package: add one line to the matching group (`nix`, `winget`, `npm`, `uv`, `psgallery`, or `apt`) in `home/.chezmoidata/packages.yaml`. Then run `chezmoi apply`.
 - To update Nix packages: run `nix flake update` in `~/.config/nix`.
   Then run `chezmoi add ~/.config/nix/flake.lock`, run `chezmoi apply`, and commit `flake.lock`.
   Without the `chezmoi add` step, `chezmoi apply` reverts the updated lock file.
 - To update nvim plugins: run `:Lazy update`.
   Then run `chezmoi add ~/.config/nvim/lazy-lock.json` and commit the file.
 - To check the shell scripts: run `./lint`.
+- Windows: run `.\doctor.ps1` to check the environment. It compares the declared packages against the machine, and it reports a tool that comes from a package manager this repo does not declare.
 
 ## Layout
 
 ```
 install.sh / install.ps1     Bootstrap scripts
 lint                         Lint script (shellcheck, shfmt, template sanity; also covers install.sh and itself)
+doctor.ps1                   Windows environment health check (read-only)
 home/
   .chezmoidata/              Tool list (single source of truth)
-  .chezmoiscripts/           Install scripts (apt, Nix, Claude Code, win32yank, mo, winget)
+  .chezmoiscripts/           Install scripts (apt, Nix, Claude Code, win32yank, mo, winget, Windows XDG variables, npm, uv, PSGallery)
   dot_bashrc, dot_bashrc.d/  Shell initialization
   dot_config/herdr/          Multiplexer config (primary; tmux is the fallback)
   dot_config/nix/            Nix flake and Home Manager (generated from packages.yaml)
