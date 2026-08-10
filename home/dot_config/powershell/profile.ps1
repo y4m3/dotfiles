@@ -27,11 +27,6 @@ if ($Host.Name -eq 'ConsoleHost') {
     catch {}
 }
 
-# zoxide: skip on a machine without it, so the profile still loads.
-if (Get-Command zoxide -ErrorAction SilentlyContinue) {
-    Invoke-Expression (& { (zoxide init powershell --cmd j | Out-String) })
-}
-
 # Editor and pager environment (mirrors dot_bashrc.d/010-env.sh).
 if (Get-Command nvim -ErrorAction SilentlyContinue) {
     $env:EDITOR = 'nvim'
@@ -233,6 +228,13 @@ function prompt {
     return "$line1`n$line2"
 }
 
+# zoxide: skip on a machine without it, so the profile still loads. This
+# has to come after `prompt` is defined: zoxide's init wraps whatever
+# prompt exists when it runs, and a later definition would drop the hook
+# that records the directories visited.
+if (Get-Command zoxide -ErrorAction SilentlyContinue) {
+    Invoke-Expression (& { (zoxide init powershell --cmd j | Out-String) })
+}
 # Machine-local settings, the pwsh counterpart of ~/.bashrc.local. chezmoi
 # does not manage this file, so it survives every apply. Keep it last: it
 # overrides everything above. Literal ~/.config, like the loader: that is
