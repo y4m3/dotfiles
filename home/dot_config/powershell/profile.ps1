@@ -67,15 +67,31 @@ if (Get-Command fzf -ErrorAction SilentlyContinue) {
     }
 }
 
-# PSFzf: fzf-powered PSReadLine key chords. Key chords are interactive-only,
-# so this sits inside the same ConsoleHost guard as the PSReadLine block
-# above.
-if ($Host.Name -eq 'ConsoleHost' -and (Get-Module -ListAvailable PSFzf)) {
-    try {
-        Import-Module PSFzf
-        Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+# PSFzf: fzf-powered PSReadLine key chords. Importing it costs ~800ms at
+# startup and only two chords are ever used, so bind stubs that import on
+# the first press instead. Key chords are interactive-only, so this sits
+# inside the same ConsoleHost guard as the PSReadLine block above. The
+# Get-Module -ListAvailable probe is gone too: it cost 63ms to learn
+# something the first press finds out for free.
+if ($Host.Name -eq 'ConsoleHost') {
+    # No "already loaded" flag is needed: Set-PsFzfOption rewires both
+    # chords to PSFzf's own handlers, so this stub is gone the moment it
+    # succeeds. On failure the stub stays and reports again on the next
+    # press.
+    $__initPsFzf = {
+        try {
+            Import-Module PSFzf -ErrorAction Stop
+            Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r' | Out-Null
+            return $true
+        }
+        catch { Write-Warning "PSFzf is not available: $_"; return $false }
     }
-    catch {}
+    Set-PSReadLineKeyHandler -Key 'Ctrl+t' -BriefDescription 'PSFzf provider (loads on first use)' -ScriptBlock {
+        if (& $__initPsFzf) { Invoke-FzfPsReadlineHandlerProvider }
+    }
+    Set-PSReadLineKeyHandler -Key 'Ctrl+r' -BriefDescription 'PSFzf history (loads on first use)' -ScriptBlock {
+        if (& $__initPsFzf) { Invoke-FzfPsReadlineHandlerHistory }
+    }
 }
 
 # Jump to a ghq-managed repository (mirrors dot_bashrc.d/300-project-nav.sh).
