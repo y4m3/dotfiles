@@ -44,11 +44,6 @@
 # gh holds the GitHub token; no hourly re-prompt, nothing written to disk
 [credential "https://github.com"]
     helper = !gh auth git-credential
-{{ else -}}
-[credential]
-    # Git for Windows bundles Git Credential Manager. cache needs a Unix
-    # socket, and gh is not on the minimal winget list
-    helper = manager
 {{ end -}}
 
 [ghq]
