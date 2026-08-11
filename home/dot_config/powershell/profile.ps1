@@ -119,8 +119,7 @@ if ((Get-Command ghq -ErrorAction SilentlyContinue) -and (Get-Command fzf -Error
 #              u+N/-N upstream ahead/behind (u= when equal)
 # Deliberate omission: the bash side's `git config bash.showDirtyState`
 # escape hatch is not ported.
-# ponytail: two git calls per prompt; add the escape hatch if a heavy repo
-# makes the prompt slow.
+# ponytail: add the escape hatch if a heavy repo makes the prompt slow.
 
 # Colors: ANSI base codes only, same numbers as the bash prompt. The
 # terminal's color scheme supplies the actual hue.
@@ -136,6 +135,11 @@ $__pc_jobs = '90' # background job count (bright black)
 $__pc_isAdmin = ([Security.Principal.WindowsPrincipal] `
         [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole( `
         [Security.Principal.WindowsBuiltInRole]::Administrator)
+
+# Resolve git once. The segment runs on every render, and Get-Command is
+# very expensive when the command is missing: a full PATH walk plus module
+# auto-discovery.
+$__pc_hasGit = [bool](Get-Command git -ErrorAction SilentlyContinue)
 
 # Abbreviate $PWD for display. Replace $HOME with ~. If the whole path
 # exceeds 40 characters, shorten components from the left (never the last
@@ -165,12 +169,52 @@ function __prompt_pwd {
     return ($parts -join '\')
 }
 
-# Git segment for line 1. One `git status --porcelain=v2 --branch` call
-# builds the branch name (or short SHA when detached) and the dirty/
-# upstream markers. A second call checks for a stash. Both calls are
-# skipped when the first one fails (not a repo).
+# Find the git directory that holds the refs for $PWD, without starting
+# git. Returns $null outside a repository, which is what lets the prompt
+# skip git entirely there.
+function __prompt_gitdir {
+    $gitdir = $null
+    if ($env:GIT_DIR) {
+        $gitdir = [IO.Path]::GetFullPath([IO.Path]::Combine($PWD.Path, $env:GIT_DIR))
+    }
+    else {
+        $dir = $PWD.Path
+        while ($dir) {
+            $candidate = [IO.Path]::Combine($dir, '.git')
+            if ([IO.Directory]::Exists($candidate)) { $gitdir = $candidate; break }
+            if ([IO.File]::Exists($candidate)) {
+                # A linked worktree or a submodule stores "gitdir: <path>" here.
+                if ([IO.File]::ReadAllText($candidate).Trim() -match '^gitdir:\s*(.+)$') {
+                    $gitdir = $matches[1].Trim()
+                    if (-not [IO.Path]::IsPathRooted($gitdir)) {
+                        $gitdir = [IO.Path]::GetFullPath([IO.Path]::Combine($dir, $gitdir))
+                    }
+                    break
+                }
+                return $null
+            }
+            $parent = [IO.Path]::GetDirectoryName($dir)
+            if (-not $parent -or $parent -eq $dir) { return $null }
+            $dir = $parent
+        }
+    }
+    return $gitdir
+}
+
+# Git segment for line 1. __prompt_gitdir locates the git directory by
+# walking the filesystem, so a non-repository directory never starts git
+# at all. Inside a repository, one `git status --porcelain=v2 --branch
+# --show-stash` call builds the branch name (or short SHA when detached),
+# the dirty/upstream markers, and the stash marker. --show-stash keeps the
+# stash count out of this file's hands: it survives `git gc` folding
+# refs/stash into packed-refs, and it reads the main repository's stash
+# from inside a linked worktree.
 function __prompt_git {
-    $lines = git status --porcelain=v2 --branch 2>$null
+    if (-not $__pc_hasGit) { return '' }
+
+    if (-not (__prompt_gitdir)) { return '' }
+
+    $lines = git status --porcelain=v2 --branch --show-stash 2>$null
     if (-not $?) { return '' }
 
     $branch = ''
@@ -180,10 +224,12 @@ function __prompt_git {
     $unstaged = $false
     $staged = $false
     $untracked = $false
+    $stashed = $false
 
     foreach ($line in $lines) {
         if ($line -match '^# branch\.head (.+)$') { $branch = $matches[1]; continue }
         if ($line -match '^# branch\.oid (.+)$') { $oid = $matches[1]; continue }
+        if ($line -match '^# stash \d+$') { $stashed = $true; continue }
         if ($line -match '^# branch\.ab \+(\d+) -(\d+)$') {
             $ahead = [int]$matches[1]; $behind = [int]$matches[2]; continue
         }
@@ -210,8 +256,7 @@ function __prompt_git {
         $seg += if ($ahead -eq $behind) { ' u=' } else { " u+$ahead/-$behind" }
     }
 
-    git rev-parse --verify -q refs/stash *>$null
-    if ($?) { $seg += '$' }
+    if ($stashed) { $seg += '$' }
 
     return " `e[${__pc_git}m($seg)`e[0m"
 }
