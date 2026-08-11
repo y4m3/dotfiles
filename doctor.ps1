@@ -1,4 +1,5 @@
-# Read-only environment health check for Windows. Never throws; always
+# Read-only environment health check for Windows. It changes nothing but
+# one temp file of its own, which it takes away again. Never throws; always
 # exits 0. Reports "ok:"/"warn:" lines and a final warning count so drift
 # (an "accidentally working" setup) shows up before it bites.
 $ErrorActionPreference = 'Stop'
@@ -39,6 +40,51 @@ if ($yamlExists -and $wingetAvailable) {
         else {
             Write-Host "warn: winget package missing: $id"
             $warnings++
+        }
+    }
+
+    # A second winget package can ship the same binaries under a different
+    # id: BurntSushi.ripgrep.GNU installs its own rg.exe beside the declared
+    # .MSVC one. Both land on PATH, whichever comes first wins, and the
+    # check above still says the declared package is installed. Take the
+    # installed ids from `winget export` rather than `winget list`, which
+    # truncates a long id in its table.
+    # export is the one winget command that writes. A guid, not a pid: pids
+    # are reused, and the file removed below has to be one this run made.
+    $exportPath = Join-Path ([IO.Path]::GetTempPath()) "doctor-winget-$([guid]::NewGuid()).json"
+    $installedIds = @()
+    try {
+        winget export -o $exportPath --disable-interactivity --accept-source-agreements 2>&1 | Out-Null
+        $export = Get-Content -LiteralPath $exportPath -Raw | ConvertFrom-Json
+        $installedIds = @($export.Sources.Packages.PackageIdentifier)
+    }
+    catch {
+        # Under Set-StrictMode an export with nothing in it is an exception
+        # rather than an empty result. Nothing outside this check reads
+        # these ids, so a failure costs this check and stops there.
+        $installedIds = @()
+    }
+    finally {
+        Remove-Item -LiteralPath $exportPath -ErrorAction SilentlyContinue
+    }
+
+    if (-not $installedIds) {
+        Write-Host "warn: could not read the installed winget packages (skipping the shadowing check)"
+        $warnings++
+    }
+    else {
+        foreach ($id in $wingetIds) {
+            # Publisher.Name names the package; whatever follows is the
+            # build variant, and that is what these packages differ by.
+            $family = $id -replace '^([^.]+\.[^.]+).*', '$1'
+            foreach ($other in $installedIds) {
+                # A sibling that is declared too was asked for; only an
+                # undeclared one is a surprise on PATH.
+                if ($wingetIds -notcontains $other -and ($other -eq $family -or $other -like "$family.*")) {
+                    Write-Host "warn: $other is installed next to the declared $id and can shadow it on PATH"
+                    $warnings++
+                }
+            }
         }
     }
 }

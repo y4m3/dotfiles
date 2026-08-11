@@ -99,7 +99,7 @@ Do these steps one time on each new machine:
 - To update nvim plugins: run `:Lazy update`.
   Then run `chezmoi add ~/.config/nvim/lazy-lock.json` and commit the file.
 - To check the shell scripts: run `./lint`.
-- Windows: run `.\doctor.ps1` to check the environment. It compares the declared packages against the machine, and it reports a tool that comes from a package manager this repo does not declare.
+- Windows: run `.\doctor.ps1` to check the environment. It compares the declared packages against the machine, and it reports a tool that comes from a package manager this repo does not declare, or from a second build of a declared winget package.
 - Linux: run `./doctor.sh`, the same check for the other side. It reports a declared Nix package that is missing or shadowed by a copy earlier on PATH, a PATH entry that is duplicated or gone, and a git identity still unset.
 
 ## Layout
