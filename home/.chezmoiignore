@@ -15,6 +15,9 @@
 .bashrc
 .bash_profile
 .bashrc.d/
+# The two local hooks follow .bashrc: nothing on Windows reads them.
+.bashrc.local
+.bashrc.env.local
 .config/fd/
 .config/herdr/
 .config/nix/

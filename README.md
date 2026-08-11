@@ -39,7 +39,8 @@ chezmoi never overwrites it again.
 
 | File | Overrides |
 | --- | --- |
-| `~/.bashrc.local` | bash |
+| `~/.bashrc.env.local` | bash environment — exports and PATH only, read before the interactive guard so scripts, ssh commands, and agents see it too |
+| `~/.bashrc.local` | bash — aliases, functions, and anything else interactive-only |
 | `~/.gitconfig.local` | git identity |
 | `~/.config/wezterm/local.lua` | WezTerm (font, color scheme, WSL domain, key bindings) |
 | `~/.config/tmux/tmux.local.conf` | tmux |
