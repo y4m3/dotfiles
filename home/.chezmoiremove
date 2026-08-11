@@ -36,7 +36,6 @@
 .config/alacritty
 .config/autohotkey
 .config/bat
-.config/powershell
 .config/tmux-sessionizer
 .config/yazi
 .config/zellij
@@ -80,6 +79,7 @@
 .config/nvim/lua/plugins/fuzzy-motion.lua
 .config/nvim/lua/plugins/incline.lua
 .config/nvim/lua/plugins/kensaku.lua
+.config/nvim/lua/plugins/none-ls.lua
 .config/nvim/lua/plugins/obsidian.lua
 .config/nvim/lua/plugins/popup-edit.lua
 .config/nvim/lua/plugins/silentsaver.lua
@@ -96,6 +96,10 @@
 .local/bin/popup-edit
 .local/bin/tmux-sessionizer
 
+# pwsh: the profile is one file at .config/powershell/profile.ps1 now, so
+# the old fragment directory has to go. Do not list .config/powershell
+# itself: this tree manages the body inside it.
+.config/powershell/profile.d
+
 # Windows (files only — the parent directories hold unmanaged content)
 AppData/Roaming/CorvusSKK/config.xml
-Documents/WindowsPowerShell/Microsoft.PowerShell_profile.ps1
