@@ -15,12 +15,17 @@ __path_prepend() {
   *":$1:"*) ;;
   *) [ -d "$1" ] && PATH="$1:$PATH" ;;
   esac
+  # Always succeed: this is exposed to ~/.bashrc.env.local, where a missing
+  # directory must not make that file's last command fail.
+  return 0
 }
 __path_prepend "/nix/var/nix/profiles/default/bin"
 __path_prepend "$HOME/.nix-profile/bin"
 __path_prepend "$HOME/.local/bin"
 export PATH
-unset -f __path_prepend
+# __path_prepend stays defined until after ~/.bashrc.env.local below, which
+# needs it. A plain PATH="$dir:$PATH" doubles the entry every time a shell
+# starts inside another one.
 
 # Nix daemon environment (NIX_PATH, certs, etc.)
 # shellcheck disable=SC1091
@@ -41,6 +46,18 @@ for __frag in "$HOME/.bashrc.d/010-env.sh" "$HOME/.bashrc.d/810-wsl.sh"; do
   [ -r "$__frag" ] && . "$__frag"
 done
 unset __frag
+
+# Machine-local environment, sourced before the interactive guard. Tool
+# installers (rustup and friends) append PATH lines to ~/.bashrc and
+# ~/.bash_profile, which this tree manages and reverts on the next apply.
+# ~/.bashrc.local is the usual home for such edits, but it sits after the
+# guard, so it never runs for `bash -lc` or the shell sshd starts for
+# `ssh host cmd`. Put exports only here: this file runs in non-interactive
+# shells too. `__path_prepend <dir>` is available to it and is the safe way
+# to extend PATH there.
+# shellcheck disable=SC1091
+[ -r "$HOME/.bashrc.env.local" ] && . "$HOME/.bashrc.env.local"
+unset -f __path_prepend
 
 # --- Interactive-only below --------------------------------------------------
 case $- in *i*) ;; *) return ;; esac
