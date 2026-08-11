@@ -79,6 +79,7 @@
 .config/nvim/lua/plugins/fuzzy-motion.lua
 .config/nvim/lua/plugins/incline.lua
 .config/nvim/lua/plugins/kensaku.lua
+.config/nvim/lua/plugins/none-ls.lua
 .config/nvim/lua/plugins/obsidian.lua
 .config/nvim/lua/plugins/popup-edit.lua
 .config/nvim/lua/plugins/silentsaver.lua
