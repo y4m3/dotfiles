@@ -41,10 +41,21 @@
 [credential]
     helper = cache --timeout=3600
 
-# gh holds the GitHub token; no hourly re-prompt, nothing written to disk
-[credential "https://github.com"]
-    helper = !gh auth git-credential
 {{ end -}}
+# gh holds the GitHub token; no hourly re-prompt, nothing written to disk.
+# gh is on both package lists (nix: gh, winget: GitHub.cli), so this works
+# on either OS. The empty helper first resets the list: credential.helper
+# accumulates, and Git for Windows registers Git Credential Manager in its
+# own system gitconfig, so without the reset GCM answers for GitHub before
+# gh is ever asked. Every other host still falls through to whatever the
+# system file registers.
+[credential "https://github.com"]
+    helper =
+    helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+    helper =
+    helper = !gh auth git-credential
 
 [ghq]
     root = ~/repos
