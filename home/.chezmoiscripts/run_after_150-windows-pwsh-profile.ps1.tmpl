@@ -101,8 +101,10 @@ else {
         }
     }
 
+    # CreateDirectory takes the path literally and does nothing when the
+    # directory is already there, so neither wildcard rules nor a check first.
     $dir = Split-Path $profilePath -Parent
-    if (-not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
+    $null = [IO.Directory]::CreateDirectory($dir)
     # UTF-8 without a BOM: pwsh reads it correctly and git keeps it clean.
     [IO.File]::WriteAllText($profilePath, $loader, [Text.UTF8Encoding]::new($false))
     Write-Host "wrote the loader: $profilePath"
