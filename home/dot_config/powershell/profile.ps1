@@ -248,9 +248,60 @@ function prompt {
 # has to come after `prompt` is defined: zoxide's init wraps whatever
 # prompt exists when it runs, and a later definition would drop the hook
 # that records the directories visited.
-if (Get-Command zoxide -ErrorAction SilentlyContinue) {
-    Invoke-Expression (& { (zoxide init powershell --cmd j | Out-String) })
+#
+# The generated init script is cached: `zoxide init` costs a child
+# process (~75ms) to print text that only changes when zoxide itself
+# does. The binary's mtime invalidates it, and the command name is part
+# of the file name so renaming it does not pick up a stale cache.
+# ponytail: mtime of the resolved binary; delete the cache by hand if a
+# shim hides an upgrade.
+$__zoxideCmd = 'j'
+$__zoxide = Get-Command zoxide -ErrorAction SilentlyContinue
+if ($__zoxide) {
+    $__cacheDir = if ($env:XDG_CACHE_HOME) { Join-Path $env:XDG_CACHE_HOME 'powershell' }
+    else { Join-Path $env:USERPROFILE '.cache\powershell' }
+    $__zoxideInit = Join-Path $__cacheDir "zoxide-init-$__zoxideCmd.ps1"
+
+    try {
+        # A zero-byte cache is left over from a version of this script that
+        # wrote the init output before checking it. Its mtime carries no
+        # signal, so rebuild whenever the file is empty, not just when it is
+        # older than the binary.
+        if (-not [IO.File]::Exists($__zoxideInit) -or
+            (Get-Item $__zoxideInit).Length -eq 0 -or
+            [IO.File]::GetLastWriteTimeUtc($__zoxideInit) -lt [IO.File]::GetLastWriteTimeUtc($__zoxide.Source)) {
+            if (-not [IO.Directory]::Exists($__cacheDir)) { [void][IO.Directory]::CreateDirectory($__cacheDir) }
+            # A failed or empty init must not reach the cache: its mtime
+            # would be newer than the binary's, so nothing would regenerate
+            # it until zoxide itself was upgraded.
+            $__zoxideText = zoxide init powershell --cmd $__zoxideCmd | Out-String
+            if ($LASTEXITCODE -ne 0 -or -not $__zoxideText.Trim()) {
+                throw "zoxide init failed (exit $LASTEXITCODE)"
+            }
+            # Publish through a rename: a second shell starting at the same
+            # moment must never dot-source a half-written file.
+            $__zoxideTmp = "$__zoxideInit.$PID.tmp"
+            try {
+                [IO.File]::WriteAllText($__zoxideTmp, $__zoxideText, [Text.UTF8Encoding]::new($false))
+                [IO.File]::Move($__zoxideTmp, $__zoxideInit, $true)
+            }
+            finally {
+                # A Move that loses to a shell dot-sourcing the cache, or to a
+                # directory sitting on the name, leaves this sibling behind and
+                # nothing else ever collects it: one orphan per shell start.
+                if ([IO.File]::Exists($__zoxideTmp)) { [IO.File]::Delete($__zoxideTmp) }
+            }
+        }
+        . $__zoxideInit
+    }
+    catch {
+        # An unwritable cache must not cost the shell its zoxide. Same guard as
+        # above: never run the output of a failed init.
+        $__zoxideText = zoxide init powershell --cmd $__zoxideCmd | Out-String
+        if ($LASTEXITCODE -eq 0 -and $__zoxideText.Trim()) { Invoke-Expression $__zoxideText }
+    }
 }
+
 # Machine-local settings, the pwsh counterpart of ~/.bashrc.local. chezmoi
 # does not manage this file, so it survives every apply. Keep it last: it
 # overrides everything above. Literal ~/.config, like the loader: that is
