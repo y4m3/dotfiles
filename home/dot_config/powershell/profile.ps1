@@ -1,5 +1,14 @@
 # PowerShell 7 profile. Carries the prompt ported from
 # dot_bashrc.d/200-integrations.sh, so it is no longer "deliberately small".
+#
+# $PROFILE is NOT this file. PowerShell derives $PROFILE from the Personal
+# known folder, which OneDrive "Known Folder Move" redirects into the
+# OneDrive tree. chezmoi writes to the literal %USERPROFILE%\Documents, so
+# on a redirected machine the two paths are different directories and this
+# file would never load. run_after_150-windows-pwsh-profile.ps1 resolves
+# the real $PROFILE and drops a loader there that dot-sources this file.
+# It recognises an earlier body by the first line above, so keep that line
+# as it is.
 
 # UTF-8 everywhere (Japanese-safe pipes, redirects, and interactive input)
 [Console]::InputEncoding = [Text.Encoding]::UTF8
@@ -223,3 +232,12 @@ function prompt {
 
     return "$line1`n$line2"
 }
+
+# Machine-local settings, the pwsh counterpart of ~/.bashrc.local. chezmoi
+# does not manage this file, so it survives every apply. Keep it last: it
+# overrides everything above. Literal ~/.config, like the loader: that is
+# where chezmoi puts the body regardless of XDG_CONFIG_HOME.
+# -LiteralPath: [ and ] are legal in a Windows user name, and the default
+# -Path would take them for a wildcard.
+$__localProfile = Join-Path $env:USERPROFILE '.config\powershell\profile.local.ps1'
+if (Test-Path -LiteralPath $__localProfile) { . $__localProfile }

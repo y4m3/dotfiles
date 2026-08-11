@@ -2,8 +2,9 @@
 # Script gating lives in each script's template guard, not here.
 
 {{ if ne .chezmoi.os "windows" }}
-# Windows-only targets
-Documents/
+# Windows-only targets. The pwsh profile body sits under .config so that
+# OneDrive folder redirection cannot move it; nothing reads it on Linux.
+.config/powershell/
 {{ end }}
 
 {{ if eq .chezmoi.os "windows" }}
