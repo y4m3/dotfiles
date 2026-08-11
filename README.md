@@ -88,7 +88,7 @@ Do these steps one time on each new machine:
   Set it in `~/.config/wezterm/local.lua`.
 - Windows: check whether OneDrive moved your `Documents` folder.
   If it did, make a link to the PowerShell profile.
-- Windows: run `.\doctor.ps1` to confirm the environment.
+- Windows: run `.\doctor.ps1` to confirm the environment. Linux: run `./doctor.sh`.
 
 ## Maintenance
 
@@ -100,6 +100,7 @@ Do these steps one time on each new machine:
   Then run `chezmoi add ~/.config/nvim/lazy-lock.json` and commit the file.
 - To check the shell scripts: run `./lint`.
 - Windows: run `.\doctor.ps1` to check the environment. It compares the declared packages against the machine, and it reports a tool that comes from a package manager this repo does not declare.
+- Linux: run `./doctor.sh`, the same check for the other side. It reports a declared Nix package that is missing or shadowed by a copy earlier on PATH, a PATH entry that is duplicated or gone, and a git identity still unset.
 
 ## Layout
 
@@ -107,6 +108,7 @@ Do these steps one time on each new machine:
 install.sh / install.ps1     Bootstrap scripts
 lint                         Lint script (shellcheck, shfmt, template sanity; also covers install.sh and itself)
 doctor.ps1                   Windows environment health check (read-only)
+doctor.sh                    Linux environment health check (read-only)
 home/
   .chezmoidata/              Tool list (single source of truth)
   .chezmoiscripts/           Install scripts (apt, Nix, Claude Code, win32yank, mo, winget, Windows XDG variables, npm, uv, PSGallery)
