@@ -1,7 +1,6 @@
 return {
-  -- One binary supplier: Nix (see .chezmoidata/packages.yaml). Mason stays
-  -- off. This nvim config deploys only on Linux/WSL (.chezmoiignore skips
-  -- it on Windows).
+  -- Nix supplies Linux; mise and uv supply Windows editor tools.
+  -- Both platforms deploy this config. Keep Mason off to avoid duplicates.
   { "mason-org/mason.nvim", enabled = false },
   { "mason-org/mason-lspconfig.nvim", enabled = false },
 

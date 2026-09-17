@@ -1,0 +1,6 @@
+# Generated from packages.mise. Edit packages.yaml, not this file.
+# Project-local tools override these editor defaults.
+[tools]
+{{ range $tool, $version := .packages.mise -}}
+{{ $tool | quote }} = {{ $version | quote }}
+{{ end -}}

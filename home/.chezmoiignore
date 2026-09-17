@@ -5,6 +5,7 @@
 # Windows-only targets. The pwsh profile body sits under .config so that
 # OneDrive folder redirection cannot move it; nothing reads it on Linux.
 .config/powershell/
+.config/mise/
 {{ end }}
 
 {{ if eq .chezmoi.os "windows" }}

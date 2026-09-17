@@ -33,12 +33,13 @@ if ($yamlExists -and $wingetAvailable) {
     $block = [regex]::Match($yaml, '(?ms)^  winget:\r?\n(.*?)(?=^  \S)').Groups[1].Value
     $wingetIds = [regex]::Matches($block, '(?m)^\s*-\s+(\S+)') | ForEach-Object { $_.Groups[1].Value }
     foreach ($id in $wingetIds) {
-        $found = winget list --id $id --exact --disable-interactivity | Select-String -SimpleMatch $id
-        if ($found) {
+        $listing = @(winget list --id $id --exact --source winget --accept-source-agreements --disable-interactivity)
+        $probeExit = $LASTEXITCODE
+        if ($probeExit -eq 0) {
             Write-Host "ok: winget package installed: $id"
         }
         else {
-            Write-Host "warn: winget package missing: $id"
+            Write-Host "warn: winget package missing or lookup failed: $id (exit $probeExit)"
             $warnings++
         }
     }
@@ -54,7 +55,8 @@ if ($yamlExists -and $wingetAvailable) {
     $exportPath = Join-Path ([IO.Path]::GetTempPath()) "doctor-winget-$([guid]::NewGuid()).json"
     $installedIds = @()
     try {
-        winget export -o $exportPath --disable-interactivity --accept-source-agreements 2>&1 | Out-Null
+        winget export -o $exportPath --source winget --disable-interactivity --accept-source-agreements 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw 'winget export failed' }
         $export = Get-Content -LiteralPath $exportPath -Raw | ConvertFrom-Json
         $installedIds = @($export.Sources.Packages.PackageIdentifier)
     }
@@ -90,9 +92,9 @@ if ($yamlExists -and $wingetAvailable) {
 }
 
 # b. Expected commands resolve, and not via an undeclared package manager.
-$commands = 'git', 'pwsh', 'wezterm', 'nvim', 'rg', 'fd', 'node', 'gcc', 'zoxide', 'fzf', 'lazygit', 'shfmt', 'tree-sitter', `
+$commands = 'git', 'pwsh', 'mise', 'nvim', 'rg', 'fd', 'node', 'gcc', 'tar', 'curl', 'zoxide', 'fzf', 'lazygit', 'shfmt', 'tree-sitter', `
     'lua-language-server', 'marksman', 'stylua', 'taplo', 'uv', 'ruff', 'ty', 'sqlfluff', 'prettier', 'markdownlint-cli2', 'markdown-toc', `
-    'bat', 'eza', 'delta', 'gh', 'ghq', 'jq', 'btop4win', 'less', 'shellcheck'
+    'bat', 'eza', 'delta', 'gh', 'ghq', 'jq', 'less', 'shellcheck'
 foreach ($cmd in $commands) {
     $resolved = Get-Command $cmd -ErrorAction SilentlyContinue
     if (-not $resolved) {
@@ -108,13 +110,18 @@ foreach ($cmd in $commands) {
     }
 }
 
-# uv's tool-shim dir (~\.local\bin) is where `uv tool install` puts entry
-# points, not where uv itself lives. uv must come from winget.
-$uvCmd = Get-Command uv -ErrorAction SilentlyContinue
-if ($uvCmd -and $uvCmd.Source -match '\\\.local\\bin\\') {
-    Write-Host "warn: uv resolved from its own tool-shim dir, not winget: $($uvCmd.Source)"
-    $warnings++
+# Detect old machine PATH runtimes shadowing mise, without changing PATH.
+$miseData = if ($env:MISE_DATA_DIR) { $env:MISE_DATA_DIR }
+elseif ($env:XDG_DATA_HOME) { Join-Path $env:XDG_DATA_HOME 'mise' }
+else { Join-Path $env:LOCALAPPDATA 'mise' }
+foreach ($cmd in @('node', 'uv', 'tree-sitter', 'marksman', 'stylua', 'lua-language-server', 'taplo', 'shfmt', 'shellcheck', 'prettier', 'markdownlint-cli2', 'markdown-toc')) {
+    $resolved = Get-Command $cmd -ErrorAction SilentlyContinue
+    if ($resolved -and -not $resolved.Source.StartsWith($miseData.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) {
+        Write-Host "warn: $cmd is outside mise: $($resolved.Source). Keep it until the migration is verified."
+        $warnings++
+    }
 }
+Write-Host 'info: WezTerm is installed separately using its official installer; btop4win is not required'
 
 # PSGallery modules declared in packages.yaml are actually installed.
 if ($yamlExists) {

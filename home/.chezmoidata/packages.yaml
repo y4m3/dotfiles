@@ -6,8 +6,8 @@
 # Selection principle (agent-age): a tool earns its place only if it serves
 # driving agents, inspecting their output, or intervening by hand.
 # Pull-based: start minimal. Add a line here when a real need appears.
-# Project-specific toolchains (linters, formatters, language servers) belong
-# in each project's dev environment, not here.
+# Project-specific toolchains belong in each project's dev environment.
+# The editor tools below are defaults for files without a project toolchain.
 #
 # Claude Code itself is NOT here:
 # .chezmoiscripts/run_once_040-linux-claude-code.sh.tmpl bootstraps it once.
@@ -60,54 +60,47 @@ packages:
     selfcare:
       - shellcheck
       - shfmt
-  # Windows apps (winget IDs). This is intentionally minimal: Windows only
-  # needs to reach WSL — a terminal, git (git-bash for Claude Code's Bash
-  # tool), and a shell. Development tools live in WSL.
+  # Windows shared shell/editor infrastructure. WezTerm and other GUI apps
+  # are installed separately with official installers; no btop4win.
   winget:
     - Git.Git
     - Microsoft.PowerShell
-    - wez.wezterm
-    # nvim on Windows: editor, C compiler (treesitter parser builds),
-    # pickers/git UI (fd/rg, fzf, lazygit), the tree-sitter CLI (parser
-    # builds), shfmt (conform), and node (node-dependent plugins). Also
-    # carries the LSP servers and formatters Nix supplies on Linux
-    # (marksman, stylua, lua-language-server, taplo), plus uv as the
-    # supplier for Python tools (ruff, sqlfluff, ty via packages.uv).
-    - Artempyanykh.Marksman
-    - astral-sh.uv
+    - jdx.mise
+    # Native parser builds still need a C compiler. Update deliberately.
     - BrechtSanders.WinLibs.POSIX.UCRT
     - BurntSushi.ripgrep.MSVC
     - JesseDuffield.lazygit
-    - JohnnyMorganz.StyLua
     - junegunn.fzf
-    - LuaLS.lua-language-server
-    - mvdan.shfmt
     - Neovim.Neovim
-    - OpenJS.NodeJS.LTS
     - sharkdp.fd
-    - tamasfe.taplo
-    - tree-sitter.tree-sitter-cli
     # Inspect tools shared with the Linux layer.
     - dandavison.delta
     - eza-community.eza
     - sharkdp.bat
     # Daily inspect tools shared with the Linux layer; less is delta's pager.
-    - aristocratos.btop4win
     - GitHub.cli
     - jftuga.less
     - jqlang.jq
-    # shellcheck. It pairs with shfmt. Both run in the repo's ./lint script.
-    - koalaman.shellcheck
     - x-motemen.ghq
     # Shell navigation for the pwsh side.
     - ajeetdsouza.zoxide
-  # Consumed ONLY by run_onchange_120-windows-npm-tools.ps1.tmpl. On Linux,
-  # Nix supplies the same tools (see packages.nix.intervene above).
-  npm:
-    - markdown-toc
-    - markdownlint-cli2
-    - prettier
-  # Consumed ONLY by run_onchange_130-windows-uv-tools.ps1.tmpl. On Linux,
+  # Windows only. Rendered to ~/.config/mise/config.toml. Node follows its
+  # selected major; editor tools are pinned. Projects own their overrides.
+  # Explicit backends avoid falling back to Unix-only asdf plugins.
+  mise:
+    node: "24"
+    "aqua:astral-sh/uv": "latest"
+    "aqua:artempyanykh/marksman": "2026-02-08"
+    "aqua:JohnnyMorganz/StyLua": "2.5.2"
+    "aqua:LuaLS/lua-language-server": "3.19.1"
+    "aqua:tamasfe/taplo": "0.10.0"
+    "aqua:mvdan/sh": "3.14.1"
+    "aqua:koalaman/shellcheck": "0.11.0"
+    "aqua:tree-sitter/tree-sitter": "0.26.11"
+    "npm:markdown-toc": "1.2.0"
+    "npm:markdownlint-cli2": "0.23.2"
+    "npm:prettier": "3.9.6"
+  # Consumed ONLY by run_onchange_after_130-windows-uv-tools.ps1.tmpl. On Linux,
   # Nix supplies the same tools (see packages.nix.intervene above).
   uv:
     - ruff

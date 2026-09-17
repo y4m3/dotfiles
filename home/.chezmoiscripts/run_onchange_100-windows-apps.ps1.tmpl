@@ -21,14 +21,22 @@ $failed = @()
 foreach ($id in $apps) {
     # --accept-source-agreements on the probe too: the first-ever winget
     # run otherwise blocks on an interactive prompt hidden by the pipe
-    $found = winget list --id $id --exact --accept-source-agreements |
-        Select-String -SimpleMatch $id
+    $listing = @(winget list --id $id --exact --source winget --accept-source-agreements)
+    $probeExit = $LASTEXITCODE
+    # APPINSTALLER_CLI_ERROR_NO_APPLICATIONS_FOUND is an absent package,
+    # not a source/network failure. Do not treat other errors as absence.
+    if ($probeExit -ne 0 -and $probeExit -ne -1978335212) {
+        Write-Warning "lookup failed: $id (exit code $probeExit)"
+        $failed += $id
+        continue
+    }
+    $found = $probeExit -eq 0
     if ($found) {
         Write-Host "ok: $id"
     }
     else {
         Write-Host "installing: $id"
-        winget install --id $id --exact --silent `
+        winget install --id $id --exact --source winget --silent `
             --accept-package-agreements --accept-source-agreements
         if ($LASTEXITCODE -ne 0) {
             Write-Warning "install failed: $id (exit code $LASTEXITCODE)"

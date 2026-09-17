@@ -53,9 +53,16 @@ if (Get-Command bat -ErrorAction SilentlyContinue) {
     function cat { bat -pp @args }
 }
 
-if (Get-Command btop4win -ErrorAction SilentlyContinue) {
-    # bash-parity name: the Linux side calls it btop
-    Set-Alias btop btop4win
+# Keep mise shims ahead of old system-wide runtimes, even when Windows
+# combines machine PATH before user PATH. Shims also work in child nvim.
+$__miseData = if ($env:MISE_DATA_DIR) { $env:MISE_DATA_DIR }
+elseif ($env:XDG_DATA_HOME) { Join-Path $env:XDG_DATA_HOME 'mise' }
+else { Join-Path $env:LOCALAPPDATA 'mise' }
+$__miseShims = Join-Path $__miseData 'shims'
+if (Test-Path -LiteralPath $__miseShims) {
+    $env:Path = (@($__miseShims) + @($env:Path -split ';' | Where-Object {
+        $_ -and $_.TrimEnd('\') -ine $__miseShims.TrimEnd('\')
+    })) -join ';'
 }
 
 # fzf defaults (mirrors dot_bashrc.d/200-integrations.sh).
