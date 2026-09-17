@@ -1,5 +1,6 @@
 # Bootstrap for Windows: install chezmoi if missing, then init+apply.
-# Configs (PowerShell profile, WezTerm, nvim) plus winget apps from .chezmoidata/packages.yaml.
+# Configs plus winget/mise/uv tools from .chezmoidata/packages.yaml.
+# WezTerm itself and other GUI apps use official installers outside bootstrap.
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 

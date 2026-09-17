@@ -5,11 +5,12 @@
 # Windows-only targets. The pwsh profile body sits under .config so that
 # OneDrive folder redirection cannot move it; nothing reads it on Linux.
 .config/powershell/
+.config/mise/
 {{ end }}
 
 {{ if eq .chezmoi.os "windows" }}
 # Linux-only targets. fd/rg configs stay here too. Windows ships the nvim
-# config: run_once_110-windows-xdg-env.ps1.tmpl persists XDG_CONFIG_HOME so
+# config: run_before_100-windows-xdg-env.ps1.tmpl persists XDG_CONFIG_HOME so
 # nvim finds it. Nothing on Windows sets RIPGREP_CONFIG_PATH, so that config
 # would only create an unused file.
 .bashrc

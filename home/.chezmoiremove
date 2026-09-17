@@ -1,3 +1,6 @@
+{{ if ne .chezmoi.os "windows" -}}
+# Windows migrations retain legacy files for explicit review (see doctor).
+# The existing Linux cleanup policy below is unchanged.
 # This file lists targets that the pre-rebuild dotfiles (main, before
 # agent-age) managed. This tree no longer manages them. chezmoi does not
 # automatically delete formerly-managed files. .bashrc and lazy.nvim glob
@@ -103,3 +106,4 @@
 
 # Windows (files only — the parent directories hold unmanaged content)
 AppData/Roaming/CorvusSKK/config.xml
+{{ end -}}

@@ -1,5 +1,5 @@
 {{- if eq .chezmoi.os "windows" -}}
-# Install PSGallery modules declared in .chezmoidata/packages.yaml.
+# Install PSGallery modules after winget has supplied PowerShell.
 # Re-runs when that list changes.
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -11,7 +11,8 @@ $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [En
 # chezmoi runs .ps1 scripts through Windows PowerShell 5.1, and this
 # machine's 5.1 fails to load PowerShellGet. pwsh 7 bundles a working one,
 # so route Install-Module through it.
-$pwshCmd = (Get-Command pwsh -ErrorAction SilentlyContinue).Source
+$pwshCommand = Get-Command pwsh -ErrorAction SilentlyContinue
+$pwshCmd = if ($pwshCommand) { $pwshCommand.Source } else { $null }
 if (-not $pwshCmd) {
     $fallback = Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe'
     if (Test-Path $fallback) {
@@ -20,11 +21,13 @@ if (-not $pwshCmd) {
 }
 if (-not $pwshCmd) {
     # pwsh comes from winget in this same run on a fresh PC; a rerun picks it up.
-    Write-Warning "pwsh not found; skipping PSGallery modules"
-    exit 0
+    throw 'pwsh not found; install PowerShell and rerun chezmoi apply'
 }
 
+$failed = @()
 {{ range .packages.psgallery }}
-& $pwshCmd -NoProfile -Command "if (Get-Module -ListAvailable {{ . }}) { 'ok: {{ . }}' } else { Install-Module {{ . }} -Scope CurrentUser -Force; 'installed: {{ . }}' }"
+& $pwshCmd -NoProfile -Command "`$ErrorActionPreference = 'Stop'; if (Get-Module -ListAvailable {{ . }}) { 'ok: {{ . }}' } else { Install-Module {{ . }} -Scope CurrentUser -Force; 'installed: {{ . }}' }"
+if ($LASTEXITCODE -ne 0) { $failed += '{{ . }}' }
 {{ end -}}
+if ($failed.Count -gt 0) { throw ('PSGallery installation failed: ' + ($failed -join ', ')) }
 {{ end -}}

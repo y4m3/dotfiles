@@ -1,5 +1,5 @@
 return {
-  -- shellcheck comes from Nix (see .chezmoidata/packages.yaml). No Mason
+  -- shellcheck comes from Nix on Linux, mise on Windows. No Mason
   -- install needed. This skips bash-language-server (Node-based). nvim
   -- assigns bash files ft=sh, so only sh needs wiring.
   {

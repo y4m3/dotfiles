@@ -23,8 +23,7 @@ function Read-TextOrNull($path) {
 # path under Windows PowerShell 5.1 (which runs this script) and pwsh 7.
 $documents = [Environment]::GetFolderPath('MyDocuments')
 if (-not $documents) {
-    Write-Warning 'Could not resolve the Documents folder; skipping the pwsh profile loader'
-    exit 0
+    throw 'Could not resolve Documents; cannot deploy the PowerShell profile loader'
 }
 
 $profilePath = Join-Path $documents 'PowerShell\Microsoft.PowerShell_profile.ps1'
@@ -58,7 +57,7 @@ else {
 # default -Path would read them as a wildcard. A path built from $env:USERPROFILE
 # would then match something other than the file meant, or nothing at all.
 if (-not (Test-Path -LiteralPath $body)) {
-    Write-Warning "Profile body not found: $body"
+    throw "Profile body not found: $body"
 }
 
 $current = Read-TextOrNull $profilePath
@@ -69,7 +68,7 @@ $current = Read-TextOrNull $profilePath
 # be copied either, so writing would drop the very file the backup below
 # promises to keep. Leave it alone and say so.
 if ($null -eq $current -and [IO.File]::Exists($profilePath)) {
-    Write-Warning "Could not read the profile already at $profilePath, so it was left alone"
+    throw "Could not read the profile already at $profilePath; left it alone"
 }
 elseif ($current -eq $loader) {
     Write-Host "already current: $profilePath"
@@ -112,7 +111,7 @@ else {
 
 # An earlier layout shipped the body straight to %USERPROFILE%\Documents.
 # On a redirected machine that copy is dead weight that shadows nothing but
-# confuses the next reader, so drop it. Only touch the literal path, and
+# confuses the next reader. Report it without deleting it. Check the literal path, and
 # only when it is not the real $PROFILE. Match the body's opening comment
 # rather than the marker: a machine that ran the earlier layout has a copy
 # from before the marker existed.
@@ -125,15 +124,14 @@ $legacy = Join-Path $env:USERPROFILE 'Documents\PowerShell\Microsoft.PowerShell_
 if ($legacy -ne $profilePath) {
     $legacyText = Read-TextOrNull $legacy
     if ($legacyText -match '# PowerShell 7 profile\. Carries the prompt ported from') {
-        Remove-Item -LiteralPath $legacy -Force
-        Write-Host "removed the mis-targeted copy: $legacy"
+        Write-Warning "kept legacy profile; review manually: $legacy"
     }
 }
 
 # The layout before this one also left files under the same (possibly
 # redirected) Documents folder, and .chezmoiremove cannot reach them: its
 # patterns resolve against the literal %USERPROFILE%, so on a redirected
-# machine they never match. Remove them here, where the redirected path is
+# machine they never match. Report them here, where the redirected path is
 # already known. Match a distinctive line first, so a hand-written file of
 # the same name survives.
 $stale = @(
@@ -162,7 +160,6 @@ foreach ($item in $stale) {
         ($text -split "`r?`n" | Where-Object { $_.Trim() -and $_.TrimStart() -notlike '#*' })) {
         continue
     }
-    Remove-Item -LiteralPath $item.Path -Force
-    Write-Host "removed a file from the earlier layout ($($item.Reason)): $($item.Path)"
+    Write-Warning "kept legacy profile ($($item.Reason)); review manually: $($item.Path)"
 }
 {{ end -}}

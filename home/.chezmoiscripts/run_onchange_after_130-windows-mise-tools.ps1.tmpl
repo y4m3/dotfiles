@@ -1,0 +1,39 @@
+{{- if eq .chezmoi.os "windows" -}}
+# Run after config deployment, and rerun when declarations change.
+# tools: {{ .packages.mise | toJson }}
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+{{ template "windows-mise.ps1" . }}
+
+# Trust only our generated global file, never an arbitrary project config.
+& $miseExe trust $env:MISE_GLOBAL_CONFIG_FILE
+if ($LASTEXITCODE -ne 0) { throw 'mise trust failed' }
+# Explicit declarations plus --no-config prevent a user's home/project
+# mise.toml from changing the requested tools or running installation hooks.
+$miseTools = @(
+{{- range $tool, $version := .packages.mise }}
+    '{{ $tool }}@{{ $version }}'
+{{- end }}
+)
+& $miseExe --no-config install @miseTools
+if ($LASTEXITCODE -ne 0) { throw 'mise install failed; rerun chezmoi apply after resolving the error' }
+& $miseExe --no-config reshim
+if ($LASTEXITCODE -ne 0) { throw 'mise reshim failed' }
+
+# Preserve all other user PATH entries and their unexpanded registry values.
+# A user PATH entry also exposes tools to GUI-launched programs after login.
+# Old machine PATH runtimes may still precede it: doctor reports that case.
+$envKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)
+try {
+    $userPath = [string]$envKey.GetValue('Path', '', [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+    $present = @($userPath -split ';' | Where-Object {
+        [Environment]::ExpandEnvironmentVariables($_).TrimEnd('\') -ieq $miseShims.TrimEnd('\')
+    })
+    if ($present.Count -eq 0) {
+        $newPath = if ($userPath) { "$miseShims;$userPath" } else { $miseShims }
+        $envKey.SetValue('Path', $newPath, [Microsoft.Win32.RegistryValueKind]::ExpandString)
+        Write-Host "added to user PATH: $miseShims"
+    }
+}
+finally { $envKey.Close() }
+{{ end -}}
