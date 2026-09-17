@@ -6,6 +6,10 @@ The source changes do not uninstall applications. `chezmoi apply` installs
 the new suppliers, deploys configuration, and adds mise shims to user PATH.
 It does not remove old runtimes, npm globals, GUI apps, or their settings.
 It can change which executable a new shell resolves; review the diff first.
+Windows legacy `.chezmoiremove` targets are also retained and reported by
+doctor. The profile-loader migration no longer deletes old profiles.
+Existing plugin fragments can still change Neovim behavior; inspect the
+reported candidates before authorizing any cleanup.
 
 1. Record existing versions/paths (`Get-Command node,uv,nvim -All`,
    `npm.cmd list -g --depth=0`, `uv tool list`) and review `chezmoi diff`.
@@ -20,6 +24,16 @@ It can change which executable a new shell resolves; review the diff first.
    Markdown, TOML and Python files. Verify a parser can be built with gcc.
 5. Only after those checks, decide whether to remove each old installation.
    Preserve existing packages until then. Never bulk-uninstall this list.
+
+Also verify project-local behavior: open a project with its own Node/mise
+version and formatter dependency, confirm its selected version, then open
+a standalone file and confirm the global fallback. SQLFluff is supplied,
+but database clients for dadbod remain project/machine choices.
+
+Run apply a second time after the first succeeds. Only the idempotent XDG
+check and profile-loader check should run again without input changes.
+If an installer fails, resolve its error and reapply; do not clear all
+chezmoi script state or uninstall old suppliers as a troubleshooting step.
 
 These winget IDs have moved to mise and may remain installed on an older PC:
 
@@ -86,6 +100,24 @@ winget pin add --id wez.wezterm --exact --source winget --blocking
 Pins do not stop official installers/self-updaters. New apps can appear in
 `winget upgrade --all` until pinned. Prefer the repository's allowlist update
 script for routine CLI maintenance.
+
+## Verification boundary
+
+The Windows review validated template rendering, PowerShell 5.1/7 syntax,
+script phases, Linux guards, failure propagation with mocked installers,
+and the update allowlist. No real chezmoi apply or uninstall was performed.
+
+In isolated temporary mise/uv/Neovim directories, the declared tools were
+installed and invoked through shims, and an explicit `mise --no-config
+install` retry succeeded. Neovim 0.11.5 loaded compiled Lua, Markdown,
+TOML and Python parsers. LSP initialization succeeded for ty, ruff,
+Marksman, LuaLS and Taplo; standalone formatting/linting checks passed
+for Prettier, StyLua, shfmt, ruff, SQLFluff and yamllint.
+
+These checks do not replace a full startup of the user's LazyVim config,
+real project LSP attachment, save-time formatting, GUI-inherited PATH,
+or a twice-run bootstrap on a fresh Windows installation. Follow the
+migration checklist before retiring any existing installation.
 
 ## References
 

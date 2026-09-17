@@ -9,15 +9,15 @@ $warnings = 0
 
 try {
 
-# packages.yaml backs check a and the PSGallery check below. Skip both
-# when it is missing.
-$yamlPath = Join-Path $PSScriptRoot 'home\.chezmoidata\packages.yaml'
-$yamlExists = Test-Path $yamlPath
-if ($yamlExists) {
-    $yaml = Get-Content $yamlPath -Raw
+# Use chezmoi's YAML parser, not regexes that depend on indentation/order.
+$packages = $null
+try {
+    $json = chezmoi execute-template --source $PSScriptRoot '{{ .packages | toJson }}'
+    if ($LASTEXITCODE -ne 0) { throw 'chezmoi could not read package declarations' }
+    $packages = ConvertFrom-Json -InputObject ($json -join [Environment]::NewLine)
 }
-else {
-    Write-Host "warn: packages.yaml not found: $yamlPath"
+catch {
+    Write-Host "warn: package declarations unavailable: $_"
     $warnings++
 }
 
@@ -29,9 +29,8 @@ if (-not $wingetAvailable) {
 }
 
 # a. winget packages declared in packages.yaml are actually installed.
-if ($yamlExists -and $wingetAvailable) {
-    $block = [regex]::Match($yaml, '(?ms)^  winget:\r?\n(.*?)(?=^  \S)').Groups[1].Value
-    $wingetIds = [regex]::Matches($block, '(?m)^\s*-\s+(\S+)') | ForEach-Object { $_.Groups[1].Value }
+if ($packages -and $wingetAvailable) {
+    $wingetIds = $packages.winget
     foreach ($id in $wingetIds) {
         $listing = @(winget list --id $id --exact --source winget --accept-source-agreements --disable-interactivity)
         $probeExit = $LASTEXITCODE
@@ -94,9 +93,9 @@ if ($yamlExists -and $wingetAvailable) {
 # b. Expected commands resolve, and not via an undeclared package manager.
 $commands = 'git', 'pwsh', 'mise', 'nvim', 'rg', 'fd', 'node', 'gcc', 'tar', 'curl', 'zoxide', 'fzf', 'lazygit', 'shfmt', 'tree-sitter', `
     'lua-language-server', 'marksman', 'stylua', 'taplo', 'uv', 'ruff', 'ty', 'sqlfluff', 'prettier', 'markdownlint-cli2', 'markdown-toc', `
-    'bat', 'eza', 'delta', 'gh', 'ghq', 'jq', 'less', 'shellcheck'
+    'bat', 'eza', 'delta', 'gh', 'ghq', 'jq', 'less', 'shellcheck', 'yamllint'
 foreach ($cmd in $commands) {
-    $resolved = Get-Command $cmd -ErrorAction SilentlyContinue
+    $resolved = Get-Command $cmd -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $resolved) {
         Write-Host "warn: command not found: $cmd"
         $warnings++
@@ -115,20 +114,41 @@ $miseData = if ($env:MISE_DATA_DIR) { $env:MISE_DATA_DIR }
 elseif ($env:XDG_DATA_HOME) { Join-Path $env:XDG_DATA_HOME 'mise' }
 else { Join-Path $env:LOCALAPPDATA 'mise' }
 foreach ($cmd in @('node', 'uv', 'tree-sitter', 'marksman', 'stylua', 'lua-language-server', 'taplo', 'shfmt', 'shellcheck', 'prettier', 'markdownlint-cli2', 'markdown-toc')) {
-    $resolved = Get-Command $cmd -ErrorAction SilentlyContinue
-    if ($resolved -and -not $resolved.Source.StartsWith($miseData.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) {
+    $resolved = Get-Command $cmd -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($resolved -and -not $resolved.Source.Replace('/', '\').StartsWith($miseData.Replace('/', '\').TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) {
         Write-Host "warn: $cmd is outside mise: $($resolved.Source). Keep it until the migration is verified."
         $warnings++
     }
 }
 Write-Host 'info: WezTerm is installed separately using its official installer; btop4win is not required'
 
+# A shim may exist even when its requested version is missing. Check the
+# declared versions without loading project config/hooks or installing tools.
+$mise = Get-Command mise -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($mise -and $packages) {
+    $names = @{ 'aqua:JohnnyMorganz/StyLua' = 'stylua'; 'aqua:mvdan/sh' = 'shfmt' }
+    foreach ($entry in $packages.mise.PSObject.Properties) {
+        $command = if ($names.ContainsKey($entry.Name)) { $names[$entry.Name] }
+        else { ($entry.Name -split '[:/]')[-1] }
+        $toolPath = & $mise.Source --no-config which $command --tool "$($entry.Name)@$($entry.Value)"
+        if ($LASTEXITCODE -ne 0 -or -not $toolPath) {
+            Write-Host "warn: declared mise tool unavailable: $($entry.Name)@$($entry.Value)"
+            $warnings++
+        }
+    }
+}
+
 # PSGallery modules declared in packages.yaml are actually installed.
-if ($yamlExists) {
-    $psgalleryBlock = [regex]::Match($yaml, '(?ms)^  psgallery:\r?\n(.*?)(?=^  \S)').Groups[1].Value
-    $psgalleryModules = [regex]::Matches($psgalleryBlock, '(?m)^\s*-\s+(\S+)') | ForEach-Object { $_.Groups[1].Value }
-    foreach ($mod in $psgalleryModules) {
-        if (Get-Module -ListAvailable $mod) {
+if ($packages) {
+    $pwsh = Get-Command pwsh -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    foreach ($mod in $packages.psgallery) {
+        # Bootstrap may run in 5.1, but PSFzf is installed for PowerShell 7.
+        $moduleFound = $false
+        if ($pwsh) {
+            & $pwsh.Source -NoProfile -Command "if (Get-Module -ListAvailable '$mod') { exit 0 } else { exit 1 }"
+            $moduleFound = $LASTEXITCODE -eq 0
+        }
+        if ($moduleFound) {
             Write-Host "ok: PSGallery module installed: $mod"
         }
         else {
@@ -196,9 +216,23 @@ else {
             $seen[$norm] = $true
         }
         $expanded = [Environment]::ExpandEnvironmentVariables($entry)
-        if (-not (Test-Path $expanded)) {
+        if (-not (Test-Path -LiteralPath $expanded)) {
             Write-Host "warn: PATH entry does not exist: $entry"
             $warnings++
+        }
+    }
+}
+
+# Windows retains the old cleanup candidates. Presence does not mean unused
+# or authorize removal; this is an inventory for a later manual decision.
+$removalManifest = Join-Path $PSScriptRoot 'home/.chezmoiremove'
+if (Test-Path -LiteralPath $removalManifest) {
+    foreach ($line in Get-Content -LiteralPath $removalManifest) {
+        $relative = $line.Trim()
+        if (-not $relative -or $relative.StartsWith('#') -or $relative.StartsWith('{{')) { continue }
+        $candidate = Join-Path $env:USERPROFILE $relative
+        if (Test-Path -LiteralPath $candidate) {
+            Write-Host "info: legacy cleanup candidate retained; review before removing: $candidate"
         }
     }
 }

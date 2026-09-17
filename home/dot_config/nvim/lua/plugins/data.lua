@@ -1,6 +1,6 @@
 return {
   -- yamllint guards packages.yaml (the repo's single source of truth).
-  -- Its binary comes from Nix like shellcheck/shfmt.
+  -- Nix supplies Linux; uv supplies Windows.
   {
     "mfussenegger/nvim-lint",
     opts = { linters_by_ft = { yaml = { "yamllint" } } },

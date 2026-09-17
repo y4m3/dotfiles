@@ -47,7 +47,7 @@ Nix does not run on Windows, so tool versions can differ from the Linux versions
 | uv itself | winget | mise | `mise upgrade uv`; do not use `uv self update` |
 | Marksman, StyLua, LuaLS, Taplo, tree-sitter CLI, shfmt, ShellCheck | winget | mise, explicit versions | edit `packages.mise`, then `chezmoi apply` |
 | markdown-toc, markdownlint-cli2, Prettier | global npm | mise npm backend, explicit versions | edit `packages.mise`, then `chezmoi apply` |
-| ruff, ty, SQLFluff on Windows | uv tool | uv tool | `uv tool upgrade --all` |
+| ruff, ty, SQLFluff, yamllint on Windows | uv tool (yamllint was missing) | uv tool | `uv tool upgrade --all` |
 | WezTerm | winget | official installer; chezmoi still supplies config | official release installer |
 | btop4win | winget | no longer declared | no automatic removal of existing installation |
 | Linux/WSL | Nix/Home Manager | unchanged | existing Nix workflow below |
@@ -74,6 +74,35 @@ the PowerShell profile also puts them before old machine PATH runtimes.
 Start a new session after apply. For a GUI/automation process with an old
 PATH, launch through `mise exec -- <command>` or restart its parent process.
 Bootstrap invokes mise explicitly and does not depend on a loaded profile.
+It installs explicit tool/version arguments with configuration loading
+disabled, so an unrelated home/project mise config cannot alter bootstrap.
+Conflicting XDG paths or `MISE_GLOBAL_CONFIG_FILE` are reported rather than
+silently installing to a different environment.
+
+### Script order
+
+Windows script numbers are a dependency sequence, with explicit phases:
+
+| Phase | Number / purpose | Frequency |
+| --- | --- | --- |
+| before configuration | 100 XDG environment | every apply, preserve existing compatible values |
+| before configuration | 110 winget infrastructure | on content/declaration change |
+| before configuration | 120 PowerShell modules | on content/declaration change |
+| configuration deployment | chezmoi-managed files | normal chezmoi behavior |
+| after configuration | 130 mise tools | on content/declaration change |
+| after configuration | 140 uv tools | on content/declaration change |
+| after configuration | 150 PowerShell profile loader | every apply, idempotent |
+
+The filenames use `run_before_`, `run_onchange_before_`, and
+`run_onchange_after_` explicitly. Numbers order scripts within their phase;
+they do not override the before/after boundary. Linux's existing 010–050
+and after-200/210 sequence is unchanged. Renamed onchange scripts may run
+again once; they ensure presence and never uninstall old packages.
+
+Windows legacy cleanup is report-only: `.chezmoiremove` renders empty
+there, doctor lists retained candidates, and the profile loader warns
+about old files instead of deleting them. Review these before removing
+anything, especially old nvim plugin specs that may still be loaded.
 
 ### Safe winget scope
 
@@ -182,6 +211,7 @@ Do these steps one time on each new machine:
 - To update nvim plugins: run `:Lazy update`.
   Then run `chezmoi add ~/.config/nvim/lazy-lock.json` and commit the file.
 - To check the shell scripts: run `./lint`.
+- To update PSFzf: use `Update-Module PSFzf` from PowerShell 7.
 - To validate Windows templates and winget failure handling without installing
   anything: run `pwsh -NoProfile -File tests/windows-bootstrap.ps1`.
 - Windows: run `.\doctor.ps1` to check the environment. It compares the declared packages against the machine, and it reports a tool that comes from a package manager this repo does not declare, or from a second build of a declared winget package.

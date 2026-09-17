@@ -100,13 +100,14 @@ packages:
     "npm:markdown-toc": "1.2.0"
     "npm:markdownlint-cli2": "0.23.2"
     "npm:prettier": "3.9.6"
-  # Consumed ONLY by run_onchange_after_130-windows-uv-tools.ps1.tmpl. On Linux,
+  # Consumed ONLY by run_onchange_after_140-windows-uv-tools.ps1.tmpl. On Linux,
   # Nix supplies the same tools (see packages.nix.intervene above).
   uv:
     - ruff
     - sqlfluff
     - ty
-  # Consumed ONLY by run_onchange_140-windows-psgallery.ps1.tmpl (PSReadLine
+    - yamllint  # shared nvim YAML lint configuration also runs on Windows
+  # Consumed ONLY by run_onchange_before_120-windows-psgallery.ps1.tmpl (PSReadLine
   # key chords for fzf).
   psgallery:
     - PSFzf

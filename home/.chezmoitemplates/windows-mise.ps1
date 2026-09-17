@@ -10,7 +10,12 @@ else {
 }
 # Explicit global config avoids a different XDG setting silently selecting
 # an unrelated file. These variables affect this script and its children only.
-$env:MISE_GLOBAL_CONFIG_FILE = Join-Path $env:USERPROFILE '.config\mise\config.toml'
+$managedMiseConfig = Join-Path $env:USERPROFILE '.config\mise\config.toml'
+if ($env:MISE_GLOBAL_CONFIG_FILE -and
+    [IO.Path]::GetFullPath($env:MISE_GLOBAL_CONFIG_FILE) -ine [IO.Path]::GetFullPath($managedMiseConfig)) {
+    throw "MISE_GLOBAL_CONFIG_FILE selects a different config; review manually: $env:MISE_GLOBAL_CONFIG_FILE"
+}
+$env:MISE_GLOBAL_CONFIG_FILE = $managedMiseConfig
 if (-not (Test-Path -LiteralPath $env:MISE_GLOBAL_CONFIG_FILE)) {
     throw "mise config not deployed: $env:MISE_GLOBAL_CONFIG_FILE"
 }

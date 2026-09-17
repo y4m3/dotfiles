@@ -1,5 +1,6 @@
 {{- if eq .chezmoi.os "windows" -}}
-# Install Windows apps via winget. Re-runs when the list in
+# Install Windows infrastructure via winget before deploying configuration.
+# Re-runs when the list in
 # .chezmoidata/packages.yaml changes.
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest

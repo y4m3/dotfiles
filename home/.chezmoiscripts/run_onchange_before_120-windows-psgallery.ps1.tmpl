@@ -1,5 +1,5 @@
 {{- if eq .chezmoi.os "windows" -}}
-# Install PSGallery modules declared in .chezmoidata/packages.yaml.
+# Install PSGallery modules after winget has supplied PowerShell.
 # Re-runs when that list changes.
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest

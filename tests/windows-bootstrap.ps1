@@ -33,7 +33,7 @@ foreach ($path in @('doctor.ps1', 'update-windows.ps1', 'home/dot_config/powersh
     if ($errors.Count) { throw "parse failed: $path : $errors" }
 }
 
-$wingetScript = Render (Join-Path $repo 'home/.chezmoiscripts/run_onchange_100-windows-apps.ps1.tmpl')
+$wingetScript = Render (Join-Path $repo 'home/.chezmoiscripts/run_onchange_before_110-windows-winget.ps1.tmpl')
 foreach ($scenario in @('present', 'missing', 'lookup-failed', 'install-failed')) {
     $mock = @'
 function winget {
@@ -94,4 +94,55 @@ function winget {
 # Linux ignores the new Windows-only config, and its suppliers stay Nix.
 $ignore = Render (Join-Path $repo 'home/.chezmoiignore') 'linux'
 if ($ignore -notmatch '(?m)^\.config/mise/') { throw 'mise config leaked onto Linux' }
-Write-Host 'OK: Windows templates, PowerShell syntax, Linux guards, winget retry behavior'
+# A Windows apply must not delete the pre-rebuild configuration.
+if ((Render (Join-Path $repo 'home/.chezmoiremove')).Trim()) { throw 'Windows cleanup still deletes legacy files' }
+$profile = Render (Join-Path $repo 'home/.chezmoiscripts/run_after_150-windows-pwsh-profile.ps1.tmpl')
+if ($profile -match 'Remove-Item') { throw 'profile migration still removes legacy files' }
+
+$expectedScripts = @(
+    'run_before_100-windows-xdg-env.ps1.tmpl',
+    'run_onchange_before_110-windows-winget.ps1.tmpl',
+    'run_onchange_before_120-windows-psgallery.ps1.tmpl',
+    'run_onchange_after_130-windows-mise-tools.ps1.tmpl',
+    'run_onchange_after_140-windows-uv-tools.ps1.tmpl',
+    'run_after_150-windows-pwsh-profile.ps1.tmpl'
+)
+$actualScripts = @($scripts.Name | Where-Object { $_ -like '*-windows-*' })
+if (Compare-Object $expectedScripts $actualScripts) { throw 'Windows script phases/order changed' }
+
+# Inject the external-tool resolver and fail before registry writes.
+# These children never call real mise, uv or installers.
+$helper = (chezmoi execute-template --source $repo '{{ template "windows-mise.ps1" . }}') -join "`n"
+$helper = $helper.Trim().Replace([string][char]13, '')
+foreach ($kind in @('mise', 'uv')) {
+    $file = if ($kind -eq 'mise') { $expectedScripts[3] } else { $expectedScripts[4] }
+    $body = Render (Join-Path $repo "home/.chezmoiscripts/$file")
+    if (-not $body.Contains($helper)) { throw 'could not isolate test helper' }
+    $body = $body.Replace($helper, '$miseExe = ''Mock-Mise''; $env:MISE_GLOBAL_CONFIG_FILE = ''unused''')
+    $mock = @'
+function Mock-Mise {
+    if ($args -contains 'which') {
+        if ($args -notcontains '--no-config') { throw 'project config isolation missing' }
+        $global:LASTEXITCODE = 0
+        return 'Mock-Uv'
+    }
+    if ($args -contains 'install') {
+        if ($args -notcontains '--no-config') { throw 'project config isolation missing' }
+        Write-Output 'MOCK-INSTALL-FAILED'
+        $global:LASTEXITCODE = 1
+        return
+    }
+    $global:LASTEXITCODE = 0
+}
+function Mock-Uv {
+    Write-Output 'MOCK-INSTALL-FAILED'
+    $global:LASTEXITCODE = 1
+}
+'@
+    $result = @(& $ps51 -NoProfile -NonInteractive -Command "$mock`n$body" 2>&1)
+    if ($LASTEXITCODE -eq 0 -or ($result -join ' ') -notmatch 'MOCK-INSTALL-FAILED') {
+        throw "$kind failure was not propagated"
+    }
+    Write-Host "ok: $kind failure prevents successful apply"
+}
+Write-Host 'OK: Windows syntax, phases, Linux guards, removal safety, installer failures'

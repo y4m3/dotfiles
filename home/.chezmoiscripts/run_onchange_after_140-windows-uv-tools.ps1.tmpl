@@ -6,16 +6,25 @@ Set-StrictMode -Version Latest
 
 {{ template "windows-mise.ps1" . }}
 # Resolve uv from this global toolset rather than an older winget copy.
-$uvPath = & $miseExe --cd $env:USERPROFILE which uv
+$uvPath = & $miseExe --no-config which uv --tool 'aqua:astral-sh/uv@{{ index .packages.mise "aqua:astral-sh/uv" }}'
 if ($LASTEXITCODE -ne 0 -or -not $uvPath) { throw 'mise-managed uv is not installed' }
 $uvPath = ([string]$uvPath).Trim()
 # Keep entry points stable and Python environments independent of mise's
 # runtime cleanup. uv owns the Python interpreter used by these CLI tools.
 $env:UV_TOOL_BIN_DIR = Join-Path $env:USERPROFILE '.local\bin'
 
+# Register PATH only after all requested tools installed successfully.
+$failed = @()
+{{ range .packages.uv }}
+Write-Host "installing: {{ . }}"
+& $uvPath tool install --managed-python {{ . }}
+if ($LASTEXITCODE -ne 0) { $failed += '{{ . }}' }
+{{ end -}}
+if ($failed.Count -gt 0) { throw ('uv tool install failed: ' + ($failed -join ', ')) }
+
 # uv tool puts entry points in %USERPROFILE%\.local\bin. Append it to the
 # user PATH if missing. Read and write the raw registry value (unexpanded),
-# same non-destructive style as run_once_110-windows-xdg-env: never remove
+# same non-destructive style as run_before_100-windows-xdg-env: never remove
 # existing entries. Compare entries expanded, case-insensitively, and
 # trailing-backslash-insensitively: an existing entry may already be a
 # literal "C:\Users\...\.local\bin" instead of the %USERPROFILE% form, and
@@ -39,11 +48,4 @@ finally {
     $envKey.Close()
 }
 
-$failed = @()
-{{ range .packages.uv }}
-Write-Host "installing: {{ . }}"
-& $uvPath tool install --managed-python {{ . }}
-if ($LASTEXITCODE -ne 0) { $failed += '{{ . }}' }
-{{ end -}}
-if ($failed.Count -gt 0) { throw ('uv tool install failed: ' + ($failed -join ', ')) }
 {{ end -}}
